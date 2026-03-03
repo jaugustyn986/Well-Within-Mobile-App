@@ -29,6 +29,11 @@ describe('computeMucusRank', () => {
     ).toBe(2);
   });
 
+
+  it('falls back to 0 for non-matching observation combos', () => {
+    expect(computeMucusRank({ sensation: 'dry', appearance: 'cloudy' })).toBe(0);
+  });
+
   it('uses clamped override when supplied', () => {
     expect(computeMucusRank({ mucusRankOverride: 9 })).toBe(3);
     expect(computeMucusRank({ mucusRankOverride: -3 })).toBe(0);
