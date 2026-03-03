@@ -1,0 +1,16 @@
+{
+  "name": "modern-creighton",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "core/rulesEngine",
+    "apps/mobile"
+  ],
+  "scripts": {
+    "test": "npm run test --workspace core-rules-engine",
+    "test:coverage": "npm run test:coverage --workspace core-rules-engine",
+    "lint": "npm run lint --workspace core-rules-engine",
+    "typecheck": "npm run typecheck --workspace core-rules-engine",
+    "start:mobile": "npm run start --workspace modern-creighton-mobile"
+  }
+}
