@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react-jsx",
+    "moduleResolution": "Node",
+    "types": ["react", "react-native"]
+  }
+}

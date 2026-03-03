@@ -1,0 +1,11 @@
+{
+  "entries": [
+    { "bleeding": "none", "mucusRankOverride": 0 },
+    { "bleeding": "none", "mucusRankOverride": 1 },
+    { "bleeding": "none", "mucusRankOverride": 3 },
+    { "missing": true },
+    { "bleeding": "none", "mucusRankOverride": 1 },
+    { "bleeding": "none", "mucusRankOverride": 0 },
+    { "bleeding": "none", "mucusRankOverride": 0 }
+  ]
+}
