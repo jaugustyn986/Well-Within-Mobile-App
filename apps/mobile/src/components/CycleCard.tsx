@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: BG_CARD,
     borderRadius: 12,
-    padding: 14,
+    padding: 16,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: BORDER_CARD,
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
   badgeText: { fontSize: 11, fontWeight: '600' },
   dateText: { fontSize: 13, color: TEXT_MUTED, marginTop: 2 },
-  statsRow: { flexDirection: 'row', gap: 10, marginTop: 10 },
+  statsRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
   statPill: {
     backgroundColor: BG_MISSING,
     paddingHorizontal: 10,

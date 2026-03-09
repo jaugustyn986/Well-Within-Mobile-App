@@ -1,5 +1,7 @@
 # UX Patterns for Fertility Charting
 
+**For tone, copy, layouts, and visual design philosophy, always reference [ux_tone_well_within.md](ux_tone_well_within.md).**
+
 Daily charting must be fast and frictionless.
 
 Users must be able to log observations in under 15 seconds.

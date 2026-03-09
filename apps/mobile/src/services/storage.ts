@@ -38,6 +38,10 @@ export async function deleteEntry(date: string): Promise<void> {
   await writeAll(all);
 }
 
+export async function clearAllEntries(): Promise<void> {
+  await AsyncStorage.removeItem(ENTRIES_KEY);
+}
+
 export function entriesToSortedArray(stored: StoredEntries): DailyEntry[] {
   return Object.keys(stored)
     .sort()

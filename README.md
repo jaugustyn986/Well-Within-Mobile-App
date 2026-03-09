@@ -1,8 +1,8 @@
-# modern-creighton
+# Well Within
 
 ![CI](https://github.com/OWNER/modern-creighton/actions/workflows/ci.yml/badge.svg)
 
-Mission: Build a privacy-first, deterministic Creighton TTC app.
+**Well Within** — a privacy-first, deterministic Creighton fertility charting app.
 
 ## Setup
 ```bash
@@ -41,19 +41,23 @@ npm run start:mobile
 | [docs/CREIGHTON.md](docs/CREIGHTON.md) | Creighton Method reference — recording codes, sticker colors, compliance |
 | [docs/mockups.md](docs/mockups.md) | Text wireframes and screenshot references |
 
+**Skills (AI and dev guidance):** For any UX, copy, layouts, or visual design work, reference [skills/ux_tone_well_within.md](skills/ux_tone_well_within.md). See [.cursor/rules/skills-reference.mdc](.cursor/rules/skills-reference.mdc) for the full skills list.
+
 ## App screens
 
-- **Calendar** — monthly grid with Creighton-aligned colors (red=bleeding, green=dry, blue dot=peak-type, yellow=post-peak). Multi-cycle aware.
-- **Daily Entry** — observation form (sensation, appearance, quantity, bleeding, intercourse, notes)
-- **Cycle History** — summary stats, pattern insights, peak-aligned overlay, cycle cards
-- **Cycle Detail** — per-cycle mucus chart, fertile timeline, daily log
-- **Help** — charting guide, calendar color key, onboarding replay
+- **Calendar** — monthly grid with Creighton-aligned colors. Includes a segmented toggle to switch between Calendar and Cycle History views.
+- **Daily Entry** — observation form (sensation, appearance, quantity, # of times, bleeding, intercourse, notes)
+- **Cycle History** — (inline tab) summary stats, pattern insights, peak-aligned overlay, cycle cards
+- **Cycle Detail** — per-cycle mucus chart, fertile timeline, daily log. Export to PDF via share sheet.
+- **Settings** — privacy info, JSON data export, clear all data with confirmation, app version
+- **Help** — charting guide, visual calendar color key with actual cell swatches, onboarding replay
 - **Onboarding** — 4-slide first-launch flow
 
 ## Notes
 - Multiple observations per day are supported; daily rank is max observation rank.
 - Multi-cycle engine (`core/rulesEngine/src/multiCycle.ts`) splits entries into individual cycles and computes aggregate stats/insights.
-- All UI colors are centralized in `apps/mobile/src/theme/colors.ts`.
+- All UI colors are centralized in `apps/mobile/src/theme/colors.ts`. The palette uses warm neutrals (#F6F3EF page, #3F3A36 text, #B89A8B accent) with an 8-point spacing system. Calendar/rules-engine colors are constants and never change.
+- Typography follows a consistent hierarchy: 28/600 title, 21/600 headers, 18/500 month labels, 15/400 body with lineHeight 22.
 - Intercourse is marked with a rose emoji (🌹) across the app.
 - RevenueCat and Supabase integration are scaffolded as placeholders only.
 - TODO: Manual override for trained users.

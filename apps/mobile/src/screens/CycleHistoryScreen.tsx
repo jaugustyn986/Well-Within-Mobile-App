@@ -71,12 +71,12 @@ export function CycleHistoryScreen(): JSX.Element {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: BG_PAGE },
-  loading: { textAlign: 'center', marginTop: 100, color: TEXT_MUTED, fontSize: 16 },
+  loading: { textAlign: 'center', marginTop: 100, color: TEXT_MUTED, fontSize: 15 },
   scrollContent: { paddingBottom: 32 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
-  emptyIcon: { fontSize: 48, marginBottom: 12 },
-  emptyTitle: { fontSize: 20, fontWeight: '700', color: TEXT_PRIMARY, marginBottom: 8 },
-  emptyText: { fontSize: 14, color: TEXT_MUTED, textAlign: 'center', lineHeight: 20 },
-  cardsSection: { marginHorizontal: 16, marginTop: 16 },
-  cardsHeading: { fontSize: 18, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
+  emptyIcon: { fontSize: 48, marginBottom: 16 },
+  emptyTitle: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
+  emptyText: { fontSize: 15, fontWeight: '400', color: TEXT_MUTED, textAlign: 'center', lineHeight: 22 },
+  cardsSection: { marginHorizontal: 16, marginTop: 24 },
+  cardsHeading: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
 });

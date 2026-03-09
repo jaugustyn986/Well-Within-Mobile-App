@@ -1,26 +1,35 @@
 // Backgrounds
-export const BG_PAGE = '#f8fafc';
-export const BG_CARD = '#ffffff';
-export const BG_DRY = '#dcfce7';
-export const BG_BLEEDING = '#fca5a5';
-export const BG_POST_PEAK = '#fef08a';
-export const BG_NO_ENTRY = '#ffffff';
-export const BG_MISSING = '#f1f5f9';
-export const BG_PEAK_TYPE = '#ffffff';
+export const BG_PAGE = '#F6F3EF';
+export const BG_CARD = '#FDFCFB';
+export const BG_DRY = '#dcfce7';        // calendar -- do not change
+export const BG_BLEEDING = '#fca5a5';    // calendar -- do not change
+export const BG_POST_PEAK = '#fef08a';   // calendar -- do not change
+export const BG_NO_ENTRY = '#ffffff';    // calendar -- do not change
+export const BG_MISSING = '#F5F3F1';
+export const BG_PEAK_TYPE = '#ffffff';   // calendar -- do not change
+export const BG_CARD_GRADIENT_START = '#F1EFEA';
+export const BG_CARD_GRADIENT_END = '#EAE7E3';
 
-// Indicator dots / accents
+// Indicator dots / accents (calendar -- do not change)
 export const PEAK_ACCENT = '#0369a1';
 export const FERTILE_ACCENT = '#16a34a';
 
 // Text
-export const TEXT_PRIMARY = '#1e293b';
-export const TEXT_SECONDARY = '#475569';
-export const TEXT_MUTED = '#94a3b8';
-export const TEXT_SUBTLE = '#64748b';
+export const TEXT_PRIMARY = '#3F3A36';
+export const TEXT_SECONDARY = '#5A5550';
+export const TEXT_MUTED = '#A09A94';
+export const TEXT_SUBTLE = '#6F6A65';
 
 // Borders
-export const BORDER_TODAY = '#000000';
-export const BORDER_CARD = '#e2e8f0';
+export const BORDER_TODAY = '#000000';   // calendar -- do not change
+export const BORDER_CARD = '#E7E2DE';
+
+// Accents
+export const ACCENT_WARM = '#B89A8B';
+export const ACCENT_WARM_TINT = '#F5F3F1';
+export const BRAND_NAME = '#3F3A36';
+export const ACCENT_RED = '#f43f5e';
+export const ACCENT_RED_DARK = '#be123c';
 
 // Intercourse marker
 export const INTERCOURSE_ICON = '\u{1F339}';

@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useResetOnboarding } from '../navigation/AppNavigator';
+import {
+  BG_BLEEDING, BG_DRY, BG_NO_ENTRY, BG_PEAK_TYPE, BG_POST_PEAK, BG_PAGE, BG_CARD,
+  PEAK_ACCENT, FERTILE_ACCENT, BORDER_CARD, BORDER_TODAY, INTERCOURSE_ICON,
+  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, TEXT_SUBTLE,
+} from '../theme/colors';
 
 interface AccordionItemData {
   title: string;
   icon: string;
-  content: string;
+  content?: string;
+  renderContent?: () => JSX.Element;
 }
 
 const SECTIONS: AccordionItemData[] = [
@@ -57,16 +63,58 @@ const SECTIONS: AccordionItemData[] = [
   {
     title: 'Calendar color guide',
     icon: '📅',
-    content:
-      '⬜ White — No entry logged\n' +
-      '🟥 Red/Pink — Bleeding day\n' +
-      '🟩 Green — Dry day (no mucus, rank 0)\n' +
-      '🟩 Green + dot — Non-peak mucus present (Type 1–2)\n' +
-      '⬜ White + blue dot — Peak-type mucus (Type 3, clear/stretchy/lubricative)\n' +
-      '⬜ White + blue dot + blue border — Confirmed Peak Day\n' +
-      '🟨 Yellow — Post-peak days (P+1, P+2, P+3)',
+    renderContent: () => <ColorGuideSwatches />,
   },
 ];
+
+function SwatchRow({ bg, dotColor, borderColor, label }: {
+  bg: string; dotColor?: string; borderColor?: string; label: string;
+}): JSX.Element {
+  return (
+    <View style={swatchStyles.row}>
+      <View style={[
+        swatchStyles.swatch,
+        { backgroundColor: bg },
+        borderColor ? { borderWidth: 2, borderColor } : { borderWidth: 1, borderColor: BORDER_CARD },
+      ]}>
+        {dotColor && <View style={[swatchStyles.dot, { backgroundColor: dotColor }]} />}
+      </View>
+      <Text style={swatchStyles.label}>{label}</Text>
+    </View>
+  );
+}
+
+function ColorGuideSwatches(): JSX.Element {
+  return (
+    <View style={swatchStyles.container}>
+      <SwatchRow bg={BG_NO_ENTRY} label="No entry logged" />
+      <SwatchRow bg={BG_BLEEDING} label="Bleeding day" />
+      <SwatchRow bg={BG_DRY} label="Dry day (no mucus)" />
+      <SwatchRow bg={BG_DRY} dotColor={FERTILE_ACCENT} label="Non-peak mucus (Type 1–2)" />
+      <SwatchRow bg={BG_PEAK_TYPE} dotColor={PEAK_ACCENT} label="Peak-type mucus (Type 3)" />
+      <SwatchRow bg={BG_PEAK_TYPE} dotColor={PEAK_ACCENT} borderColor={PEAK_ACCENT} label="Confirmed Peak Day" />
+      <SwatchRow bg={BG_POST_PEAK} label="Post-peak (P+1, P+2, P+3)" />
+      <SwatchRow bg={BG_DRY} borderColor={BORDER_TODAY} label="Today" />
+      <View style={swatchStyles.row}>
+        <View style={[swatchStyles.swatch, { borderWidth: 1, borderColor: BORDER_CARD, justifyContent: 'center', alignItems: 'center' }]}>
+          <Text style={{ fontSize: 14 }}>{INTERCOURSE_ICON}</Text>
+        </View>
+        <Text style={swatchStyles.label}>Intercourse recorded</Text>
+      </View>
+    </View>
+  );
+}
+
+const swatchStyles = StyleSheet.create({
+  container: { gap: 10 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  swatch: {
+    width: 32, height: 32, borderRadius: 8,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  dot: { width: 8, height: 8, borderRadius: 4, position: 'absolute', top: 4, right: 4 },
+  label: { fontSize: 14, color: TEXT_SECONDARY, flex: 1 },
+});
 
 function AccordionItem({ item }: { item: AccordionItemData }): JSX.Element {
   const [open, setOpen] = useState(false);
@@ -79,7 +127,9 @@ function AccordionItem({ item }: { item: AccordionItemData }): JSX.Element {
       </Pressable>
       {open && (
         <View style={styles.accordionBody}>
-          <Text style={styles.accordionContent}>{item.content}</Text>
+          {item.renderContent ? item.renderContent() : (
+            <Text style={styles.accordionContent}>{item.content}</Text>
+          )}
         </View>
       )}
     </View>
@@ -105,23 +155,23 @@ export function HelpScreen(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  scroll: { flex: 1, backgroundColor: '#f8fafc' },
+  scroll: { flex: 1, backgroundColor: BG_PAGE },
   content: { padding: 16, paddingBottom: 40 },
-  heading: { fontSize: 22, fontWeight: '700', color: '#1e293b', marginBottom: 16 },
+  heading: { fontSize: 28, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 16, letterSpacing: -0.2 },
   accordionItem: {
-    backgroundColor: '#fff', borderRadius: 12,
+    backgroundColor: BG_CARD, borderRadius: 12,
     marginBottom: 8, overflow: 'hidden',
   },
   accordionHeader: {
     flexDirection: 'row', alignItems: 'center', padding: 16,
   },
   accordionIcon: { fontSize: 18, marginRight: 10 },
-  accordionTitle: { flex: 1, fontSize: 15, fontWeight: '600', color: '#1e293b' },
-  chevron: { fontSize: 16, color: '#94a3b8' },
+  accordionTitle: { flex: 1, fontSize: 15, fontWeight: '500', color: TEXT_PRIMARY },
+  chevron: { fontSize: 16, color: TEXT_MUTED },
   accordionBody: { paddingHorizontal: 16, paddingBottom: 16 },
-  accordionContent: { fontSize: 13, color: '#475569', lineHeight: 20 },
+  accordionContent: { fontSize: 15, fontWeight: '400', color: TEXT_SECONDARY, lineHeight: 22 },
   showOnboarding: {
-    marginTop: 24, padding: 14, backgroundColor: '#e2e8f0', borderRadius: 10, alignItems: 'center',
+    marginTop: 24, padding: 14, backgroundColor: BORDER_CARD, borderRadius: 10, alignItems: 'center',
   },
-  showOnboardingText: { fontSize: 14, color: '#475569', fontWeight: '500' },
+  showOnboardingText: { fontSize: 14, color: TEXT_SECONDARY, fontWeight: '500' },
 });

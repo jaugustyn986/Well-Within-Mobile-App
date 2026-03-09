@@ -95,9 +95,9 @@ function LegendDot({ color, label }: { color: string; label: string }): JSX.Elem
 const styles = StyleSheet.create({
   container: {
     backgroundColor: BG_CARD, borderRadius: 12, padding: 16,
-    marginHorizontal: 16, marginTop: 12,
+    marginHorizontal: 16, marginTop: 16,
   },
-  title: { fontSize: 17, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 12 },
+  title: { fontSize: 18, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 12 },
   yAxis: {
     position: 'absolute', left: 16, top: 44,
     height: BAR_HEIGHT, justifyContent: 'space-between',

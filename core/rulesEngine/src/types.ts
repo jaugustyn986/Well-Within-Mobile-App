@@ -29,6 +29,7 @@ export interface DailyEntry {
   quantity?: Quantity;
   intercourse?: boolean;
   notes?: string;
+  timesObserved?: 1 | 2 | 3;
   missing?: boolean;
   observations?: Observation[];
   /** Test/fixture only -- bypasses sensation/appearance rank calculation. */

@@ -92,6 +92,38 @@ Layout (top to bottom):
    - Total fertile days shown at bottom.
 5. **Daily Log** — Scrollable list of every day. Each row: cycle-day circle (colored by phase), date, observation summary, phase badge, 🌹 if intercourse.
 
+## Calendar Screen (with Tab Toggle)
+
+Top bar: "Holistic Cycle" title (left), "+ Entry" button + gear icon (right).
+
+Below top bar: **Segmented pill toggle** with two tabs:
+- **Calendar** (active: green fill, white text; calendar icon)
+- **Cycle History** (inactive: white fill, gray text; clock icon)
+
+When "Calendar" is active: StatusBanner + CalendarGrid + TodayEntryCard + Help link.
+When "Cycle History" is active: CycleSummaryPanel + PatternInsights + PeakAlignedOverlay + CycleCards.
+
+## Cycle Detail (with Export)
+
+Custom header: back arrow (left), "Cycle N" title (center, bold), "Export" button (right, blue pill).
+
+Export taps opens a modal: "Include intercourse markers?" with Yes / No / Cancel options. Generates PDF and opens iOS share sheet.
+
+## Settings
+
+Layout (top to bottom):
+
+1. **Privacy card** — "How your data works" heading:
+   - Your entries are stored locally on your device
+   - The app uses your observations to calculate cycle patterns
+   - No third-party ad tracking is used
+   - You can clear or export your data at any time
+2. **Data Management card**:
+   - "Export Data" row — exports JSON via share sheet
+   - "Clear All Data" row (red text, pink background) — opens confirmation modal
+3. **Clear All Data modal** — "Are you sure? This cannot be undone." with Cancel (outlined) + Confirm (red filled) buttons
+4. **App Version** footer — "App Version 0.1.0"
+
 ## App Overview
 
 ![Full App Overview](images/app-overview.png)

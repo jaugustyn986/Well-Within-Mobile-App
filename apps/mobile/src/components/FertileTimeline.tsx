@@ -94,7 +94,7 @@ export function FertileTimeline({ cycle }: Props): JSX.Element {
 
 const styles = StyleSheet.create({
   container: { marginHorizontal: 16, marginTop: 16 },
-  heading: { fontSize: 18, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
+  heading: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
   card: {
     backgroundColor: BG_CARD,
     borderRadius: 12,

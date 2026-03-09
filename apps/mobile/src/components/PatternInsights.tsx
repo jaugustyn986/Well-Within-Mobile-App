@@ -37,7 +37,7 @@ export function PatternInsights({ insights }: Props): JSX.Element {
 
 const styles = StyleSheet.create({
   container: { marginHorizontal: 16, marginTop: 16 },
-  heading: { fontSize: 18, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
+  heading: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
   card: {
     backgroundColor: BG_CARD,
     borderRadius: 12,
@@ -45,8 +45,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: BORDER_CARD,
   },
-  bulletRow: { flexDirection: 'row', marginBottom: 6 },
-  bullet: { fontSize: 14, color: TEXT_SECONDARY, marginRight: 8, lineHeight: 20 },
-  insightText: { fontSize: 14, color: TEXT_SECONDARY, flex: 1, lineHeight: 20 },
-  emptyText: { fontSize: 14, color: TEXT_MUTED, textAlign: 'center' },
+  bulletRow: { flexDirection: 'row', marginBottom: 8 },
+  bullet: { fontSize: 15, color: TEXT_SECONDARY, marginRight: 8, lineHeight: 22 },
+  insightText: { fontSize: 15, fontWeight: '400', color: TEXT_SECONDARY, flex: 1, lineHeight: 22 },
+  emptyText: { fontSize: 15, fontWeight: '400', color: TEXT_MUTED, textAlign: 'center', lineHeight: 22 },
 });

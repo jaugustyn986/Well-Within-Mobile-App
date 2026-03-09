@@ -79,6 +79,9 @@ export function DailyLogList({ cycle }: Props): JSX.Element {
                 <Text style={styles.dateText}>{entry.date ? formatDate(entry.date) : '--'}</Text>
                 <Text style={styles.rankText}>
                   {bleeding ? `Bleeding (${entry.bleeding})` : getRankLabel(rank)}
+                  {!bleeding && entry.timesObserved && entry.timesObserved > 1
+                    ? ` x${entry.timesObserved}`
+                    : ''}
                 </Text>
               </View>
               <View style={styles.rowRight}>
@@ -99,7 +102,7 @@ export function DailyLogList({ cycle }: Props): JSX.Element {
 
 const styles = StyleSheet.create({
   container: { marginHorizontal: 16, marginTop: 16 },
-  heading: { fontSize: 18, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
+  heading: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
   card: {
     backgroundColor: BG_CARD,
     borderRadius: 12,

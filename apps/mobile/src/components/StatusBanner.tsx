@@ -1,6 +1,10 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { PhaseLabel } from '../../../../core/rulesEngine/src/types';
+import {
+  BG_CARD_GRADIENT_START,
+  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_SUBTLE,
+} from '../theme/colors';
 
 interface Props {
   cycleDay: number | null;
@@ -12,7 +16,7 @@ function getStatusInfo(label: PhaseLabel | null): { title: string; message: stri
     case 'fertile_open':
       return { title: 'Fertile', message: 'Mucus is present and fertility is elevated.', bg: '#fef3c7' };
     case 'peak_confirmed':
-      return { title: 'Peak', message: 'Peak Day detected! Ovulation likely occurred within the last 1–2 days.', bg: '#fce7f3' };
+      return { title: 'Peak', message: 'Peak Day detected! Ovulation likely occurred within the last 1\u20132 days.', bg: '#fce7f3' };
     case 'p_plus_1':
       return { title: 'Peak', message: 'P+1 of 3. Continue observing.', bg: '#fce7f3' };
     case 'p_plus_2':
@@ -20,11 +24,11 @@ function getStatusInfo(label: PhaseLabel | null): { title: string; message: stri
     case 'p_plus_3':
       return { title: 'Peak', message: 'P+3 confirmed! Fertile window closed.', bg: '#d1fae5' };
     case 'post_peak':
-      return { title: 'Tracking', message: 'Post-peak phase. Continue daily observations.', bg: '#ede9fe' };
+      return { title: 'Tracking', message: 'Post-peak phase. Continue daily observations.', bg: '#EDE8E4' };
     case 'fertile_unconfirmed_peak':
       return { title: 'Fertile', message: 'Fertile signs present. Peak not yet confirmed.', bg: '#fef3c7' };
     default:
-      return { title: 'Tracking', message: 'Early cycle. Continue daily observations.', bg: '#f1f5f9' };
+      return { title: 'Tracking', message: 'Early cycle. Continue daily observations.', bg: BG_CARD_GRADIENT_START };
   }
 }
 
@@ -46,7 +50,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 8,
   },
-  cycleDay: { fontSize: 12, color: '#64748b', marginBottom: 2 },
-  title: { fontSize: 22, fontWeight: '700', color: '#1e293b' },
-  message: { fontSize: 13, color: '#475569', marginTop: 4 },
+  cycleDay: { fontSize: 12, fontWeight: '500', color: TEXT_SUBTLE, marginBottom: 2 },
+  title: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY },
+  message: { fontSize: 14, fontWeight: '400', color: TEXT_SECONDARY, marginTop: 4, lineHeight: 22 },
 });

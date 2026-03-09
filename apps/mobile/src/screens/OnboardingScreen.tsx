@@ -9,6 +9,10 @@ import {
   type ListRenderItemInfo,
   type ViewToken,
 } from 'react-native';
+import {
+  BG_CARD, ACCENT_WARM, BORDER_CARD,
+  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
+} from '../theme/colors';
 
 interface Props {
   onComplete: () => void;
@@ -23,7 +27,7 @@ interface Slide {
 const SLIDES: Slide[] = [
   {
     id: '1',
-    title: 'Welcome to Holistic Cycle',
+    title: 'Welcome to Well Within',
     body: 'This app helps you track daily fertility observations and understand your fertile window while trying to conceive.',
   },
   {
@@ -34,12 +38,12 @@ const SLIDES: Slide[] = [
   {
     id: '3',
     title: 'When to Observe',
-    body: 'Check before and after toileting throughout the day. Make a final check at bedtime. At the end of the day, record the most fertile sign you observed — not just the most recent.',
+    body: 'Check before and after toileting throughout the day. Make a final check at bedtime. At the end of the day, record the most fertile sign you observed \u2014 not just the most recent.',
   },
   {
     id: '4',
     title: 'Start Charting',
-    body: 'Your cycle starts on the first day of bleeding. Tap the + Entry button to log your first observation. Let\'s begin!',
+    body: 'Your cycle starts on the first day of bleeding. Tap today\u2019s observation card to log your first entry. Let\u2019s begin!',
   },
 ];
 
@@ -113,7 +117,7 @@ export function OnboardingScreen({ onComplete }: Props): JSX.Element {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: BG_CARD },
   slide: {
     flex: 1,
     justifyContent: 'center',
@@ -121,23 +125,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 40,
   },
   slideTitle: {
-    fontSize: 26, fontWeight: '700', color: '#1e293b',
-    textAlign: 'center', marginBottom: 16,
+    fontSize: 28, fontWeight: '600', color: TEXT_PRIMARY,
+    textAlign: 'center', marginBottom: 16, letterSpacing: -0.2,
   },
   slideBody: {
-    fontSize: 16, color: '#475569', textAlign: 'center', lineHeight: 24,
+    fontSize: 16, fontWeight: '400', color: TEXT_SECONDARY, textAlign: 'center', lineHeight: 24,
   },
   footer: { paddingHorizontal: 24, paddingBottom: 48, alignItems: 'center' },
   dots: { flexDirection: 'row', marginBottom: 24, gap: 8 },
   dot: {
-    width: 8, height: 8, borderRadius: 4, backgroundColor: '#e2e8f0',
+    width: 8, height: 8, borderRadius: 4, backgroundColor: BORDER_CARD,
   },
-  activeDot: { backgroundColor: '#f43f5e', width: 24 },
+  activeDot: { backgroundColor: ACCENT_WARM, width: 24 },
   nextBtn: {
-    backgroundColor: '#f43f5e', borderRadius: 12,
+    backgroundColor: ACCENT_WARM, borderRadius: 12,
     paddingVertical: 14, paddingHorizontal: 48,
   },
-  nextText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  skipBtn: { marginTop: 12 },
-  skipText: { color: '#94a3b8', fontSize: 14 },
+  nextText: { color: BG_CARD, fontSize: 16, fontWeight: '600' },
+  skipBtn: { marginTop: 16 },
+  skipText: { color: TEXT_MUTED, fontSize: 14 },
 });

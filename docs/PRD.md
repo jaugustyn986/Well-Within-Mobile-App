@@ -44,6 +44,8 @@ The MVP includes the following core features:
 - Deterministic Fertility Rules Engine
 - Cycle Phase Labeling
 - First-launch onboarding
+- Settings (privacy, data export, clear data)
+- Export Cycle PDF
 - Shared Color Theme
 - Local Data Persistence
 - Basic Account System (optional for MVP)
@@ -397,6 +399,50 @@ Semantic color constants:
 - `BORDER_TODAY` (#000000) — black border for today
 - `INTERCOURSE_ICON` (🌹) — rose emoji for intercourse
 
+### Feature: Calendar / Cycle History Tab Toggle
+
+**User Story**
+As a user, I want to quickly switch between my calendar view and cycle history without navigating to a separate screen.
+
+**Requirement**
+
+The Calendar screen includes a segmented pill toggle at the top with two tabs: "Calendar" and "Cycle History". Tapping a tab switches the content below between the calendar view and the inline cycle history view. The standalone "Cycle History" card link is removed.
+
+The toggle uses `FERTILE_ACCENT` green for the active tab, `BG_CARD` white for inactive, and `BORDER_CARD` for the outer pill border. Component: `SegmentedToggle.tsx`.
+
+### Feature: Export Cycle PDF
+
+**User Story**
+As a user, I want to export a cycle report as a PDF so I can share it with my practitioner, spouse, or keep it for personal records.
+
+**Requirement**
+
+The Cycle Detail screen includes an "Export" button in the top-right header. The export flow:
+
+1. User taps Export
+2. A modal asks "Include intercourse markers?" (Yes / No / Cancel)
+3. A PDF is generated via `expo-print` from an HTML template (`exportCyclePdf.ts`)
+4. The iOS share sheet opens via `expo-sharing`, allowing save to Files, AirDrop, email, print, etc.
+
+PDF content includes: cycle number, date range, summary stats (length, peak day, fertile window, luteal phase), a colored mucus bar chart, and a day-by-day observation table with optional intercourse markers.
+
+### Feature: Settings
+
+**User Story**
+As a user, I want a settings screen where I can understand how my data is handled, export my data, and clear all data if needed.
+
+**Requirement**
+
+The Settings screen is accessible via a gear icon in the top-right of the Calendar screen (visible on both Calendar and Cycle History tabs).
+
+Layout:
+
+- **Privacy card**: "How your data works" heading + 4 trust-building bullet items (local storage, observation-based calculations, no ad tracking, exportable/clearable data)
+- **Data Management card**:
+  - "Export Data" — exports all entries as JSON via `expo-file-system` + `expo-sharing`
+  - "Clear All Data" — opens a confirmation modal ("Are you sure? This cannot be undone.") with Cancel and Confirm buttons. On confirm, removes all entry data from AsyncStorage.
+- **App Version** footer — reads version from `expo-constants` / `app.json`
+
 ### Feature: First-launch onboarding
 
 **User Story**  
@@ -449,6 +495,20 @@ Log of implemented features and doc updates for traceability.
 | 2025-03-05 | Navigation updates | Added CycleHistory and CycleDetail to RootStackParamList. CalendarScreen links to Cycle History. |
 | 2025-03-05 | Bug fix — multi-cycle calendar rendering | CalendarScreen now uses `useCycleHistory` to build `dayInfos` from per-cycle results instead of the single-cycle `recalculateCycle()`. Fixes days in past cycles showing as green/dry (they were labeled `'previous_cycle'` by the flat recalc). Blue peak border now shows correctly for all cycles. |
 | 2025-03-05 | Bug fix — indicator dots across all phases | `getIndicatorColor` in CalendarGrid now shows dots based on actual `mucusRank` regardless of phase label. Previously only fertile-phase days got dots; now any day with mucus (rank ≥ 1) shows the appropriate green or blue dot. |
+| 2025-03-05 | Calendar/Cycle History tab toggle | Replaced standalone Cycle History card link with in-screen SegmentedToggle (pill-shaped). Calendar and Cycle History content now toggle within CalendarScreen. |
+| 2025-03-05 | Export Cycle PDF | CycleDetailScreen has Export button. Uses `expo-print` + `expo-sharing`. Generates HTML-based PDF with cycle stats, mucus chart, day-by-day observations, optional intercourse markers. |
+| 2025-03-05 | Color guide visual swatches | HelpScreen calendar color guide now shows actual colored square swatches (matching calendar cells) instead of emoji text. Added rose emoji intercourse row and today border row. |
+| 2025-03-05 | Settings screen | New SettingsScreen: privacy info, JSON export, clear all data with confirmation modal, app version. Gear icon in CalendarScreen top bar. |
+| 2025-03-05 | Theme: accent colors | Added `ACCENT_RED` and `ACCENT_RED_DARK` to shared color theme for consistent button/destructive action styling. |
+| 2025-03-05 | App rebrand — Well Within | Renamed app from "Modern Creighton" / "Holistic Cycle" to "Well Within" in `app.json`, CalendarScreen, and PDF footer. Added `BRAND_NAME` (#8b7e74) and `ACCENT_WARM` (#c4927a) theme colors. |
+| 2025-03-05 | UX tone refresh | Applied warm, calm aesthetic across SegmentedToggle, EntryForm, SettingsScreen, CalendarScreen, and TodayEntryCard. Removed `+Entry` button; replaced with explicit tap-to-record CTA. Softened gear icon and help link. |
+| 2025-03-05 | "# of Times" observation field | Added optional `timesObserved` (1/2/3) to `DailyEntry` type. EntryForm shows pill selector with info bubble. DailyLogList displays multiplier (e.g., "Dry x2"). |
+| 2025-03-05 | PDF export enhancements | Renamed "Quantity" column to "Mucus Quantity". Added "# Times" column. Aligned PDF chart bar colors and heights to match in-app MucusChart (post-peak yellow, proportional height). |
+| 2025-03-05 | UI Polish Pass — warm palette | Shifted entire non-calendar palette to warm tones: `BG_PAGE` #F6F3EF, `BG_CARD` #FDFCFB, `BORDER_CARD` #E7E2DE, `TEXT_PRIMARY` #3F3A36, `TEXT_SECONDARY` #5A5550, `TEXT_SUBTLE` #6F6A65, `TEXT_MUTED` #A09A94. Added `BG_CARD_GRADIENT_START`/`END` tokens for StatusBanner. |
+| 2025-03-05 | UI Polish Pass — typography system | Applied consistent hierarchy: title 28/600, section headers 21/600, month labels 18/500, body 15/400 with lineHeight 22, CTA 15/500, badge 11/600. Title uses letterSpacing -0.2. |
+| 2025-03-05 | UI Polish Pass — 8pt spacing | Normalized margins and padding to 8/16/24/32 multiples across CalendarScreen, SegmentedToggle, TodayEntryCard, and section gaps for calmer vertical rhythm. |
+| 2025-03-05 | UI Polish Pass — component cleanup | Replaced 40+ hardcoded hex values with theme tokens in EntryForm, StatusBanner, OnboardingScreen, SettingsScreen, CycleDetailScreen, and SegmentedToggle. Softened toggle to muted clay (#B89A8B), warmed StatusBanner default/post-peak backgrounds, unified modal overlay opacity. |
+| 2025-03-05 | UI Polish Pass — PDF warm palette | Updated exportCyclePdf.ts non-chart colors (body text, borders, stat cards, footer) to match the warm app palette. |
 
 ---
 

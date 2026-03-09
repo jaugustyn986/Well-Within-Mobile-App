@@ -8,7 +8,17 @@ import { useCycleHistory } from '../hooks/useCycleHistory';
 import { StatusBanner } from '../components/StatusBanner';
 import { CalendarGrid } from '../components/CalendarGrid';
 import { TodayEntryCard } from '../components/TodayEntryCard';
+import { SegmentedToggle, TabKey } from '../components/SegmentedToggle';
+import { CycleSummaryPanel } from '../components/CycleSummaryPanel';
+import { PatternInsights } from '../components/PatternInsights';
+import { PeakAlignedOverlay } from '../components/PeakAlignedOverlay';
+import { CycleCard } from '../components/CycleCard';
 import { PhaseLabel } from '../../../../core/rulesEngine/src/types';
+import {
+  BG_PAGE, BG_CARD, BORDER_CARD,
+  TEXT_PRIMARY, TEXT_MUTED, TEXT_SUBTLE, TEXT_SECONDARY,
+  BRAND_NAME,
+} from '../theme/colors';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'Calendar'>;
 
@@ -21,6 +31,7 @@ export function CalendarScreen(): JSX.Element {
   const navigation = useNavigation<Nav>();
   const { entries, sortedEntries, result, loading, refresh } = useCycleData();
   const cycleHistory = useCycleHistory();
+  const [activeTab, setActiveTab] = useState<TabKey>('calendar');
 
   useFocusEffect(useCallback(() => {
     refresh();
@@ -100,6 +111,11 @@ export function CalendarScreen(): JSX.Element {
     });
   }, [cycleHistory.cycles, sortedEntries, result, today]);
 
+  const goToDetail = useCallback(
+    (cycleNumber: number) => navigation.navigate('CycleDetail', { cycleNumber }),
+    [navigation],
+  );
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -108,82 +124,111 @@ export function CalendarScreen(): JSX.Element {
     );
   }
 
+  const reversedCycles = [...cycleHistory.cycles].reverse();
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
-        <Text style={styles.appName}>Holistic Cycle</Text>
+        <Text style={styles.appName}>Well Within</Text>
         <Pressable
-          style={styles.addBtn}
-          onPress={() => navigation.navigate('DailyEntry', { date: today })}
+          style={styles.gearBtn}
+          onPress={() => navigation.navigate('Settings')}
+          hitSlop={8}
         >
-          <Text style={styles.addBtnText}>+ Entry</Text>
+          <Text style={styles.gearIcon}>{'\u2699'}</Text>
         </Pressable>
       </View>
 
+      <SegmentedToggle activeTab={activeTab} onTabChange={setActiveTab} />
+
       <ScrollView>
-        <StatusBanner cycleDay={cycleDay} phaseLabel={todayLabel} />
+        {activeTab === 'calendar' ? (
+          <>
+            <StatusBanner cycleDay={cycleDay} phaseLabel={todayLabel} />
 
-        <CalendarGrid
-          year={viewMonth.year}
-          month={viewMonth.month}
-          days={dayInfos}
-          onDayPress={(date) =>
-            navigation.navigate('DailyEntry', { date, existingEntry: !!entries[date] })
-          }
-          onPrevMonth={handlePrev}
-          onNextMonth={handleNext}
-        />
+            <CalendarGrid
+              year={viewMonth.year}
+              month={viewMonth.month}
+              days={dayInfos}
+              onDayPress={(date) =>
+                navigation.navigate('DailyEntry', { date, existingEntry: !!entries[date] })
+              }
+              onPrevMonth={handlePrev}
+              onNextMonth={handleNext}
+            />
 
-        <TodayEntryCard
-          entry={todayEntry}
-          mucusRank={todayRank}
-          date={today}
-          onPress={() => navigation.navigate('DailyEntry', { date: today, existingEntry: !!todayEntry })}
-        />
+            <TodayEntryCard
+              entry={todayEntry}
+              mucusRank={todayRank}
+              date={today}
+              onPress={() => navigation.navigate('DailyEntry', { date: today, existingEntry: !!todayEntry })}
+            />
 
-        <Pressable
-          style={styles.historyLink}
-          onPress={() => navigation.navigate('CycleHistory')}
-        >
-          <Text style={styles.historyText}>Cycle History</Text>
-          <Text style={styles.historySub}>View past cycles, patterns, and insights</Text>
-        </Pressable>
+            <Pressable
+              style={styles.helpLink}
+              onPress={() => navigation.navigate('Help')}
+            >
+              <Text style={styles.helpText}>Need help understanding your chart?</Text>
+              <Text style={styles.helpSub}>Learn about mucus types, peak day, and more</Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            {cycleHistory.cycles.length < 2 ? (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyIcon}>📊</Text>
+                <Text style={styles.emptyTitle}>Cycle History</Text>
+                <Text style={styles.emptyText}>
+                  Cycle insights will appear once multiple cycles are recorded.
+                </Text>
+              </View>
+            ) : (
+              <View style={styles.historyContent}>
+                <CycleSummaryPanel summary={cycleHistory.summary} />
+                <PatternInsights insights={cycleHistory.insights} />
+                <PeakAlignedOverlay cycles={cycleHistory.cycles} onCyclePress={goToDetail} />
 
-        <Pressable
-          style={styles.helpLink}
-          onPress={() => navigation.navigate('Help')}
-        >
-          <Text style={styles.helpText}>Need help understanding your chart?</Text>
-          <Text style={styles.helpSub}>Learn about mucus types, peak day, and more</Text>
-        </Pressable>
+                <View style={styles.cardsSection}>
+                  <Text style={styles.cardsHeading}>Your Cycles</Text>
+                  {reversedCycles.map((c) => (
+                    <CycleCard
+                      key={c.cycleNumber}
+                      cycle={c}
+                      onPress={() => goToDetail(c.cycleNumber)}
+                    />
+                  ))}
+                </View>
+              </View>
+            )}
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
-  loading: { textAlign: 'center', marginTop: 100, color: '#94a3b8', fontSize: 16 },
+  container: { flex: 1, backgroundColor: BG_PAGE },
+  loading: { textAlign: 'center', marginTop: 100, color: TEXT_MUTED, fontSize: 15 },
   topBar: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 16, paddingVertical: 12,
+    paddingHorizontal: 16, paddingVertical: 16,
   },
-  appName: { fontSize: 20, fontWeight: '700', color: '#be123c' },
-  addBtn: {
-    backgroundColor: '#f43f5e', paddingHorizontal: 14, paddingVertical: 8,
-    borderRadius: 20,
-  },
-  addBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
-  historyLink: {
-    backgroundColor: '#fff', borderRadius: 12, padding: 16,
-    marginHorizontal: 16, marginTop: 12,
-  },
-  historyText: { fontSize: 14, fontWeight: '600', color: '#0369a1' },
-  historySub: { fontSize: 12, color: '#94a3b8', marginTop: 2 },
+  appName: { fontSize: 28, fontWeight: '600', color: BRAND_NAME, letterSpacing: -0.2 },
+  gearBtn: { padding: 8 },
+  gearIcon: { fontSize: 22, color: TEXT_SUBTLE },
   helpLink: {
-    backgroundColor: '#fff', borderRadius: 12, padding: 16,
-    marginHorizontal: 16, marginTop: 12, marginBottom: 24,
+    backgroundColor: BG_CARD, borderRadius: 12, padding: 16,
+    marginHorizontal: 16, marginTop: 16, marginBottom: 32,
+    borderWidth: 1, borderColor: BORDER_CARD,
   },
-  helpText: { fontSize: 14, fontWeight: '600', color: '#be123c' },
-  helpSub: { fontSize: 12, color: '#94a3b8', marginTop: 2 },
+  helpText: { fontSize: 15, fontWeight: '500', color: TEXT_SECONDARY },
+  helpSub: { fontSize: 14, color: TEXT_MUTED, marginTop: 4, lineHeight: 22 },
+  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32, marginTop: 40 },
+  emptyIcon: { fontSize: 48, marginBottom: 16 },
+  emptyTitle: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
+  emptyText: { fontSize: 15, color: TEXT_MUTED, textAlign: 'center', lineHeight: 22 },
+  historyContent: { paddingBottom: 32 },
+  cardsSection: { marginHorizontal: 16, marginTop: 24 },
+  cardsHeading: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
 });

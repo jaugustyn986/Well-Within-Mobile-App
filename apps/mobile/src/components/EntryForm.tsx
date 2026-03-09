@@ -18,6 +18,11 @@ import {
   Quantity,
   Sensation,
 } from '../../../../core/rulesEngine/src/types';
+import {
+  BG_CARD, BG_PAGE, BG_MISSING,
+  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_SUBTLE, TEXT_MUTED,
+  BORDER_CARD, ACCENT_WARM, ACCENT_WARM_TINT, BRAND_NAME, ACCENT_RED,
+} from '../theme/colors';
 
 interface Props {
   initialEntry?: DailyEntry | null;
@@ -74,6 +79,8 @@ export function EntryForm({ initialEntry, date, onSave, onCancel, onDelete }: Pr
   const [sensation, setSensation] = useState<Sensation>(initialEntry?.sensation ?? 'dry');
   const [appearance, setAppearance] = useState<Appearance>(initialEntry?.appearance ?? 'none');
   const [quantity, setQuantity] = useState<Quantity>(initialEntry?.quantity ?? 'none');
+  const [timesObserved, setTimesObserved] = useState<1 | 2 | 3 | undefined>(initialEntry?.timesObserved);
+  const [showTimesInfo, setShowTimesInfo] = useState(false);
   const [intercourse, setIntercourse] = useState(initialEntry?.intercourse ?? false);
   const [notes, setNotes] = useState(initialEntry?.notes ?? '');
 
@@ -102,6 +109,7 @@ export function EntryForm({ initialEntry, date, onSave, onCancel, onDelete }: Pr
       sensation,
       appearance,
       quantity,
+      timesObserved,
       intercourse,
       notes: notes.trim() || undefined,
     });
@@ -212,6 +220,35 @@ export function EntryForm({ initialEntry, date, onSave, onCancel, onDelete }: Pr
             </View>
           </View>
 
+          <View style={styles.section}>
+            <View style={styles.labelRow}>
+              <Text style={styles.fieldLabel}># of Times</Text>
+              <Pressable onPress={() => setShowTimesInfo(!showTimesInfo)} hitSlop={8}>
+                <View style={styles.infoBubble}>
+                  <Text style={styles.infoBubbleText}>i</Text>
+                </View>
+              </Pressable>
+            </View>
+            {showTimesInfo && (
+              <Text style={styles.infoTooltip}>
+                How many times you noticed this observation during the day.
+              </Text>
+            )}
+            <View style={styles.pillRow}>
+              {([1, 2, 3] as const).map((v) => (
+                <Pressable
+                  key={v}
+                  style={[styles.pill, timesObserved === v && styles.pillSelected]}
+                  onPress={() => setTimesObserved(timesObserved === v ? undefined : v)}
+                >
+                  <Text style={[styles.pillText, timesObserved === v && styles.pillTextSelected]}>
+                    {v}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
           <View style={styles.intercourseRow}>
             <Text style={styles.fieldLabel}>Intercourse Today?</Text>
             <Switch value={intercourse} onValueChange={setIntercourse} />
@@ -274,85 +311,95 @@ export function EntryForm({ initialEntry, date, onSave, onCancel, onDelete }: Pr
 
 const styles = StyleSheet.create({
   keyboardAvoid: { flex: 1 },
-  scroll: { flex: 1, backgroundColor: '#fff' },
+  scroll: { flex: 1, backgroundColor: BG_CARD },
   content: { padding: 16, paddingBottom: 40 },
   section: { marginTop: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: '#1e293b' },
+  sectionTitle: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY },
   dateBox: {
-    borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 8,
+    borderWidth: 1, borderColor: BORDER_CARD, borderRadius: 8,
     padding: 12, marginTop: 8,
   },
-  dateText: { fontSize: 15, color: '#1e293b' },
-  fieldLabel: { fontSize: 14, fontWeight: '600', color: '#334155', marginBottom: 8 },
+  dateText: { fontSize: 15, fontWeight: '400', color: TEXT_PRIMARY },
+  fieldLabel: { fontSize: 14, fontWeight: '600', color: TEXT_SECONDARY, marginBottom: 8 },
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pill: {
     paddingHorizontal: 14, paddingVertical: 8,
-    borderRadius: 20, borderWidth: 1, borderColor: '#e2e8f0',
+    borderRadius: 20, borderWidth: 1, borderColor: BORDER_CARD,
   },
-  pillSelected: { backgroundColor: '#fce7f3', borderColor: '#f43f5e' },
-  pillText: { fontSize: 13, color: '#475569' },
-  pillTextSelected: { color: '#be123c', fontWeight: '600' },
+  pillSelected: { backgroundColor: ACCENT_WARM_TINT, borderColor: ACCENT_WARM },
+  pillText: { fontSize: 14, fontWeight: '400', color: TEXT_SECONDARY },
+  pillTextSelected: { color: BRAND_NAME, fontWeight: '600' },
   cardGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   card: {
     width: '47%',
     padding: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
-    backgroundColor: '#fff',
+    borderColor: BORDER_CARD,
+    backgroundColor: BG_CARD,
   },
-  cardSelected: { backgroundColor: '#fce7f3', borderColor: '#f43f5e' },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#1e293b' },
-  cardTitleSelected: { color: '#be123c' },
-  cardDesc: { fontSize: 11, color: '#64748b', marginTop: 2 },
-  cardHint: { fontSize: 11, color: '#94a3b8', marginTop: 4 },
-  cardHintPeak: { color: '#be123c', fontWeight: '600' },
+  cardSelected: { backgroundColor: ACCENT_WARM_TINT, borderColor: ACCENT_WARM },
+  cardTitle: { fontSize: 15, fontWeight: '600', color: TEXT_PRIMARY },
+  cardTitleSelected: { color: BRAND_NAME },
+  cardDesc: { fontSize: 11, color: TEXT_SUBTLE, marginTop: 2 },
+  cardHint: { fontSize: 11, color: TEXT_MUTED, marginTop: 4 },
+  cardHintPeak: { color: ACCENT_WARM, fontWeight: '600' },
   intercourseRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: '#fff7ed', padding: 14, borderRadius: 10, marginTop: 16,
+    backgroundColor: ACCENT_WARM_TINT, padding: 16, borderRadius: 10, marginTop: 16,
   },
   seminalTip: {
     fontSize: 12, color: '#92400e', backgroundColor: '#fffbeb',
-    padding: 10, borderRadius: 8, marginTop: 6,
+    padding: 10, borderRadius: 8, marginTop: 8,
   },
   notesInput: {
-    borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 8,
-    padding: 12, minHeight: 80, textAlignVertical: 'top', fontSize: 14,
+    borderWidth: 1, borderColor: BORDER_CARD, borderRadius: 8,
+    padding: 12, minHeight: 80, textAlignVertical: 'top', fontSize: 14, color: TEXT_PRIMARY,
   },
   warningBox: {
     backgroundColor: '#fef3c7', padding: 12, borderRadius: 8, marginTop: 16,
   },
   warningText: { fontSize: 12, color: '#92400e' },
   summaryBox: {
-    backgroundColor: '#f8fafc', padding: 14, borderRadius: 10,
-    marginTop: 16, borderWidth: 1, borderColor: '#e2e8f0',
+    backgroundColor: BG_PAGE, padding: 16, borderRadius: 10,
+    marginTop: 16, borderWidth: 1, borderColor: BORDER_CARD,
   },
-  summaryType: { fontSize: 16, fontWeight: '700', color: '#1e293b' },
-  summaryDesc: { fontSize: 13, color: '#475569', marginTop: 4 },
-  summaryHint: { fontSize: 12, color: '#64748b', marginTop: 6, fontStyle: 'italic' },
+  summaryType: { fontSize: 16, fontWeight: '600', color: TEXT_PRIMARY },
+  summaryDesc: { fontSize: 14, fontWeight: '400', color: TEXT_SECONDARY, marginTop: 4, lineHeight: 22 },
+  summaryHint: { fontSize: 14, fontWeight: '400', color: TEXT_SUBTLE, marginTop: 8, fontStyle: 'italic' },
   buttons: { flexDirection: 'row', gap: 12, marginTop: 24 },
   cancelBtn: {
     flex: 1, alignItems: 'center', paddingVertical: 14,
-    borderRadius: 10, borderWidth: 1, borderColor: '#e2e8f0',
+    borderRadius: 12, borderWidth: 1, borderColor: BORDER_CARD,
   },
-  cancelText: { fontSize: 15, color: '#475569', fontWeight: '600' },
+  cancelText: { fontSize: 15, fontWeight: '500', color: TEXT_SECONDARY },
   saveBtn: {
     flex: 1, alignItems: 'center', paddingVertical: 14,
-    borderRadius: 10, backgroundColor: '#f43f5e',
+    borderRadius: 12, backgroundColor: ACCENT_WARM,
   },
-  saveText: { fontSize: 15, color: '#fff', fontWeight: '700' },
+  saveText: { fontSize: 15, color: BG_CARD, fontWeight: '600' },
   deleteBtn: { alignItems: 'center', marginTop: 16 },
-  deleteText: { fontSize: 14, color: '#ef4444', fontWeight: '500' },
+  deleteText: { fontSize: 14, color: ACCENT_RED, fontWeight: '500' },
   missingRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    padding: 14, backgroundColor: '#f8fafc', borderRadius: 10, marginTop: 12,
+    padding: 16, backgroundColor: BG_MISSING, borderRadius: 10, marginTop: 16,
   },
-  missingLabel: { fontSize: 14, fontWeight: '500', color: '#334155' },
+  missingLabel: { fontSize: 14, fontWeight: '500', color: TEXT_SECONDARY },
   missingNote: { backgroundColor: '#fef3c7', padding: 12, borderRadius: 8, marginTop: 8 },
-  missingNoteText: { fontSize: 13, color: '#92400e' },
+  missingNoteText: { fontSize: 14, fontWeight: '400', color: '#92400e', lineHeight: 22 },
   mostFertileNote: {
     backgroundColor: '#f0fdf4', borderLeftWidth: 3, borderLeftColor: '#16a34a',
-    padding: 10, borderRadius: 6, marginTop: 16,
+    padding: 10, borderRadius: 8, marginTop: 16,
   },
   mostFertileText: { fontSize: 12, color: '#166534', fontStyle: 'italic' },
+  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  infoBubble: {
+    width: 18, height: 18, borderRadius: 9,
+    backgroundColor: BG_MISSING, justifyContent: 'center', alignItems: 'center',
+  },
+  infoBubbleText: { fontSize: 11, fontWeight: '700', color: TEXT_SUBTLE },
+  infoTooltip: {
+    fontSize: 12, color: TEXT_SUBTLE, backgroundColor: BG_PAGE,
+    padding: 8, borderRadius: 8, marginBottom: 8,
+  },
 });
