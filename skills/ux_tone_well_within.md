@@ -388,3 +388,21 @@ All non-calendar UI colors live in `apps/mobile/src/theme/colors.ts`. Calendar/r
 - 16px: card padding, standard element spacing
 - 24px: section spacing
 - 32px: large separation
+
+## Iconography
+
+**No emojis in the UI.** The only exception is the rose (🌹) used as the intercourse marker, which stays because it is a deliberate design choice embedded in the data layer (`INTERCOURSE_ICON`).
+
+All icons must use the `LineIcon` component (`apps/mobile/src/components/LineIcon.tsx`). This component renders warm, minimal line-art shapes using pure React Native Views -- no external SVG library required.
+
+Design rules for icons:
+- Stroke color: `ACCENT_WARM` (#B89A8B)
+- Background: `ACCENT_WARM_TINT` (#F5F3F1)
+- Frame: soft rounded-square with `BORDER_CARD` border
+- Large icons (onboarding): `size={72}` in a ~90px frame
+- Small icons (accordions, lists, settings): `size={20}` in a ~32px frame
+- Gear icon (navigation): `size={20}`
+
+When adding new icons, add a new variant to the `IconName` type and a corresponding render function in `LineIcon.tsx`. Keep shapes geometric and minimal -- circles, rounded rectangles, lines, and simple transforms only.
+
+**App logo.** The official Well Within logo is a bitmap asset at `apps/mobile/assets/logo.png`. It is used on onboarding slide 1 and in the main app header (CalendarScreen) next to the "Well Within" title. The logo file **must have a transparent background** (no opaque fill) so it overlays the app's background colors (`BG_CARD`, `BG_PAGE`) cleanly. Do not introduce a solid background into the logo asset.

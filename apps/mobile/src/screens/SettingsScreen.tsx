@@ -4,6 +4,7 @@ import Constants from 'expo-constants';
 import * as FileSystem from 'expo-file-system/legacy';
 import { shareAsync } from 'expo-sharing';
 import { getAllEntries, clearAllEntries } from '../services/storage';
+import { LineIcon, type IconName } from '../components/LineIcon';
 import {
   BG_PAGE, BG_CARD,
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
@@ -12,11 +13,11 @@ import {
 
 const APP_VERSION = Constants.expoConfig?.version ?? '0.1.0';
 
-const PRIVACY_ITEMS = [
-  { icon: '📱', text: 'Your entries are stored locally on your device' },
-  { icon: '📊', text: 'The app uses your observations to calculate cycle patterns' },
-  { icon: '🚫', text: 'No third-party ad tracking is used' },
-  { icon: '🔒', text: 'You can clear or export your data at any time' },
+const PRIVACY_ITEMS: { icon: IconName; text: string }[] = [
+  { icon: 'device', text: 'Your entries are stored locally on your device' },
+  { icon: 'analytics', text: 'The app uses your observations to calculate cycle patterns' },
+  { icon: 'shield', text: 'No third-party ad tracking is used' },
+  { icon: 'lock', text: 'You can clear or export your data at any time' },
 ];
 
 export function SettingsScreen(): JSX.Element {
@@ -57,7 +58,7 @@ export function SettingsScreen(): JSX.Element {
         <Text style={styles.sectionSubtitle}>How your data works</Text>
         {PRIVACY_ITEMS.map((item, i) => (
           <View key={i} style={styles.privacyRow}>
-            <Text style={styles.privacyIcon}>{item.icon}</Text>
+            <LineIcon name={item.icon} size={20} />
             <Text style={styles.privacyText}>{item.text}</Text>
           </View>
         ))}
@@ -131,7 +132,6 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 2 },
   sectionSubtitle: { fontSize: 14, color: TEXT_MUTED, marginBottom: 16 },
   privacyRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 16 },
-  privacyIcon: { fontSize: 16, marginTop: 2 },
   privacyText: { fontSize: 15, fontWeight: '400', color: TEXT_SECONDARY, flex: 1, lineHeight: 22 },
   actionRow: {
     flexDirection: 'row',

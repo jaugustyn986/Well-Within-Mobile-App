@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { BG_CARD, BORDER_CARD, ACCENT_WARM, TEXT_SECONDARY, TEXT_SUBTLE } from '../theme/colors';
+import { LineIcon } from './LineIcon';
 
 export type TabKey = 'calendar' | 'history';
 
@@ -17,7 +18,7 @@ export function SegmentedToggle({ activeTab, onTabChange }: Props): JSX.Element 
           style={[styles.tab, activeTab === 'calendar' && styles.tabActive]}
           onPress={() => onTabChange('calendar')}
         >
-          <Text style={[styles.tabIcon, activeTab === 'calendar' && styles.tabIconActive]}>📅</Text>
+          <LineIcon name="grid" size={14} />
           <Text style={[styles.tabLabel, activeTab === 'calendar' && styles.tabLabelActive]}>
             Calendar
           </Text>
@@ -26,7 +27,7 @@ export function SegmentedToggle({ activeTab, onTabChange }: Props): JSX.Element 
           style={[styles.tab, activeTab === 'history' && styles.tabActive]}
           onPress={() => onTabChange('history')}
         >
-          <Text style={[styles.tabIcon, activeTab === 'history' && styles.tabIconActive]}>🕐</Text>
+          <LineIcon name="clock" size={14} />
           <Text style={[styles.tabLabel, activeTab === 'history' && styles.tabLabelActive]}>
             Cycle History
           </Text>
@@ -58,8 +59,6 @@ const styles = StyleSheet.create({
   tabActive: {
     backgroundColor: ACCENT_WARM,
   },
-  tabIcon: { fontSize: 14, color: TEXT_SUBTLE },
-  tabIconActive: { opacity: 1 },
   tabLabel: {
     fontSize: 14,
     fontWeight: '500',

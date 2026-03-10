@@ -8,6 +8,7 @@ import { CycleSummaryPanel } from '../components/CycleSummaryPanel';
 import { PatternInsights } from '../components/PatternInsights';
 import { PeakAlignedOverlay } from '../components/PeakAlignedOverlay';
 import { CycleCard } from '../components/CycleCard';
+import { LineIcon } from '../components/LineIcon';
 import { BG_PAGE, TEXT_MUTED, TEXT_PRIMARY } from '../theme/colors';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'CycleHistory'>;
@@ -35,7 +36,9 @@ export function CycleHistoryScreen(): JSX.Element {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyIcon}>📊</Text>
+          <View style={{ marginBottom: 16 }}>
+            <LineIcon name="chart" size={48} />
+          </View>
           <Text style={styles.emptyTitle}>Cycle History</Text>
           <Text style={styles.emptyText}>
             Cycle insights will appear once multiple cycles are recorded.
@@ -74,7 +77,6 @@ const styles = StyleSheet.create({
   loading: { textAlign: 'center', marginTop: 100, color: TEXT_MUTED, fontSize: 15 },
   scrollContent: { paddingBottom: 32 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
-  emptyIcon: { fontSize: 48, marginBottom: 16 },
   emptyTitle: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
   emptyText: { fontSize: 15, fontWeight: '400', color: TEXT_MUTED, textAlign: 'center', lineHeight: 22 },
   cardsSection: { marginHorizontal: 16, marginTop: 24 },

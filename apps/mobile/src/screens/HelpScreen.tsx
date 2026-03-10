@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useResetOnboarding } from '../navigation/AppNavigator';
+import { LineIcon, type IconName } from '../components/LineIcon';
 import {
   BG_BLEEDING, BG_DRY, BG_NO_ENTRY, BG_PEAK_TYPE, BG_POST_PEAK, BG_PAGE, BG_CARD,
   FERTILE_ACCENT, PEAK_BORDER, BORDER_CARD, BORDER_TODAY, INTERCOURSE_ICON,
@@ -9,7 +10,7 @@ import {
 
 interface AccordionItemData {
   title: string;
-  icon: string;
+  icon: IconName;
   content?: string;
   renderContent?: () => JSX.Element;
 }
@@ -17,52 +18,52 @@ interface AccordionItemData {
 const SECTIONS: AccordionItemData[] = [
   {
     title: 'How do I make my observation?',
-    icon: '👁',
+    icon: 'eye',
     content:
       'Use folded toilet tissue and wipe front to back.\n\n' +
-      '• Note the sensation at the vulva (what you feel)\n' +
-      '• Note the appearance of any mucus on the tissue (what you see)\n' +
-      '• Check before and after toileting throughout the day\n' +
-      '• Make a final observation at bedtime\n' +
-      '• Record the most fertile observation of the day\n' +
-      '• Record the most fertile sign you observed all day — not just the last one',
+      '\u2022 Note the sensation at the vulva (what you feel)\n' +
+      '\u2022 Note the appearance of any mucus on the tissue (what you see)\n' +
+      '\u2022 Check before and after toileting throughout the day\n' +
+      '\u2022 Make a final observation at bedtime\n' +
+      '\u2022 Record the most fertile observation of the day\n' +
+      '\u2022 Record the most fertile sign you observed all day \u2014 not just the last one',
   },
   {
     title: 'What do the mucus types mean?',
-    icon: '💧',
+    icon: 'droplet',
     content:
-      'Type 0 - Dry\nNo mucus present. No discharge observed at the vulva. Dry day — record as no mucus.\n\n' +
-      'Type 1 - Damp\nSticky, pasty, or cloudy mucus. Slightly moist feeling. Non-peak type — early fertility sign.\n\n' +
+      'Type 0 - Dry\nNo mucus present. No discharge observed at the vulva. Dry day \u2014 record as no mucus.\n\n' +
+      'Type 1 - Damp\nSticky, pasty, or cloudy mucus. Slightly moist feeling. Non-peak type \u2014 early fertility sign.\n\n' +
       'Type 2 - Wet\nWet, cloudy mucus. Fertile but not peak-type. Indicates rising fertility.\n\n' +
-      'Type 3 - Peak\nClear, stretchy, or lubricative mucus (like raw egg white). Peak-type mucus — this signals ovulation is near.',
+      'Type 3 - Peak\nClear, stretchy, or lubricative mucus (like raw egg white). Peak-type mucus \u2014 this signals ovulation is near.',
   },
   {
     title: 'What is the Peak Day?',
-    icon: '✨',
+    icon: 'sparkle',
     content:
       'The Peak Day is the last day you observe peak-type mucus (clear, stretchy, or lubricative).\n\n' +
-      'Why it matters: Ovulation typically occurs within 1–2 days after the Peak Day. This is your body\'s signal that the egg has been released.\n\n' +
+      'Why it matters: Ovulation typically occurs within 1\u20132 days after the Peak Day. This is your body\'s signal that the egg has been released.\n\n' +
       'The app uses the P+3 Rule: After Peak Day, you need 3 days of lower-quality mucus to confirm ovulation. Your fertile window ends at P+3.',
   },
   {
     title: 'When should we try to conceive?',
-    icon: '❤️',
+    icon: 'heart',
     content:
-      'Best timing:\nHave intercourse every 1–2 days starting when you first see mucus (Type 1 or higher) and continue through Peak Day.\n\n' +
-      'The fertile window is approximately 6 days before ovulation through 1 day after. Your chances are highest 1–2 days before ovulation.\n\n' +
+      'Best timing:\nHave intercourse every 1\u20132 days starting when you first see mucus (Type 1 or higher) and continue through Peak Day.\n\n' +
+      'The fertile window is approximately 6 days before ovulation through 1 day after. Your chances are highest 1\u20132 days before ovulation.\n\n' +
       'Tip: Don\'t wait for peak-type mucus to start! Sperm can survive in fertile mucus for several days, so starting early improves your chances.',
   },
   {
     title: 'What do the status messages mean?',
-    icon: '📊',
+    icon: 'chart',
     content:
       'Tracking: You\'re recording observations but haven\'t yet entered your fertile window.\n\n' +
       'Fertile: You\'re in your fertile window! Mucus is present and fertility is elevated.\n\n' +
-      'Peak: Peak Day detected! Ovulation likely occurred within the last 1–2 days.',
+      'Peak: Peak Day detected! Ovulation likely occurred within the last 1\u20132 days.',
   },
   {
     title: 'Calendar color guide',
-    icon: '📅',
+    icon: 'grid',
     renderContent: () => <ColorGuideSwatches />,
   },
 ];
@@ -90,7 +91,7 @@ function ColorGuideSwatches(): JSX.Element {
       <SwatchRow bg={BG_NO_ENTRY} label="No entry logged" />
       <SwatchRow bg={BG_BLEEDING} label="Bleeding day" />
       <SwatchRow bg={BG_DRY} label="Dry day (no mucus)" />
-      <SwatchRow bg={BG_DRY} dotColor={FERTILE_ACCENT} label="Non-peak mucus (Type 1–2)" />
+      <SwatchRow bg={BG_DRY} dotColor={FERTILE_ACCENT} label="Non-peak mucus (Type 1\u20132)" />
       <SwatchRow bg={BG_PEAK_TYPE} label="Peak-type mucus (Type 3)" />
       <SwatchRow bg={BG_PEAK_TYPE} borderColor={PEAK_BORDER} label="Confirmed Peak Day" />
       <SwatchRow bg={BG_POST_PEAK} label="Post-peak (P+1, P+2, P+3)" />
@@ -121,9 +122,11 @@ function AccordionItem({ item }: { item: AccordionItemData }): JSX.Element {
   return (
     <View style={styles.accordionItem}>
       <Pressable style={styles.accordionHeader} onPress={() => setOpen(!open)}>
-        <Text style={styles.accordionIcon}>{item.icon}</Text>
+        <View style={styles.accordionIconWrap}>
+          <LineIcon name={item.icon} size={20} />
+        </View>
         <Text style={styles.accordionTitle}>{item.title}</Text>
-        <Text style={styles.chevron}>{open ? '∧' : '∨'}</Text>
+        <Text style={styles.chevron}>{open ? '\u2227' : '\u2228'}</Text>
       </Pressable>
       {open && (
         <View style={styles.accordionBody}>
@@ -165,7 +168,7 @@ const styles = StyleSheet.create({
   accordionHeader: {
     flexDirection: 'row', alignItems: 'center', padding: 16,
   },
-  accordionIcon: { fontSize: 18, marginRight: 10 },
+  accordionIconWrap: { marginRight: 10 },
   accordionTitle: { flex: 1, fontSize: 15, fontWeight: '500', color: TEXT_PRIMARY },
   chevron: { fontSize: 16, color: TEXT_MUTED },
   accordionBody: { paddingHorizontal: 16, paddingBottom: 16 },

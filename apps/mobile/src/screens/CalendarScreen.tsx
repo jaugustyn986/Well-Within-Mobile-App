@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
@@ -14,11 +14,15 @@ import { PatternInsights } from '../components/PatternInsights';
 import { PeakAlignedOverlay } from '../components/PeakAlignedOverlay';
 import { CycleCard } from '../components/CycleCard';
 import { PhaseLabel } from '../../../../core/rulesEngine/src/types';
+import { LineIcon } from '../components/LineIcon';
 import {
   BG_PAGE, BG_CARD, BORDER_CARD,
   TEXT_PRIMARY, TEXT_MUTED, TEXT_SUBTLE, TEXT_SECONDARY,
   BRAND_NAME,
 } from '../theme/colors';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const logoSource = require('../../assets/logo.png');
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'Calendar'>;
 
@@ -129,13 +133,16 @@ export function CalendarScreen(): JSX.Element {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.topBar}>
-        <Text style={styles.appName}>Well Within</Text>
+        <View style={styles.titleRow}>
+          <Image source={logoSource} style={styles.topBarLogo} resizeMode="contain" />
+          <Text style={styles.appName}>Well Within</Text>
+        </View>
         <Pressable
           style={styles.gearBtn}
           onPress={() => navigation.navigate('Settings')}
           hitSlop={8}
         >
-          <Text style={styles.gearIcon}>{'\u2699'}</Text>
+          <LineIcon name="gear" size={20} />
         </Pressable>
       </View>
 
@@ -176,7 +183,9 @@ export function CalendarScreen(): JSX.Element {
           <>
             {cycleHistory.cycles.length < 2 ? (
               <View style={styles.emptyContainer}>
-                <Text style={styles.emptyIcon}>📊</Text>
+                <View style={{ marginBottom: 16 }}>
+                  <LineIcon name="chart" size={48} />
+                </View>
                 <Text style={styles.emptyTitle}>Cycle History</Text>
                 <Text style={styles.emptyText}>
                   Cycle insights will appear once multiple cycles are recorded.
@@ -214,9 +223,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 16,
   },
+  titleRow: { flexDirection: 'row', alignItems: 'center' },
+  topBarLogo: { width: 32, height: 32, marginRight: 8 },
   appName: { fontSize: 28, fontWeight: '600', color: BRAND_NAME, letterSpacing: -0.2 },
   gearBtn: { padding: 8 },
-  gearIcon: { fontSize: 22, color: TEXT_SUBTLE },
   helpLink: {
     backgroundColor: BG_CARD, borderRadius: 12, padding: 16,
     marginHorizontal: 16, marginTop: 16, marginBottom: 32,
@@ -225,7 +235,6 @@ const styles = StyleSheet.create({
   helpText: { fontSize: 15, fontWeight: '500', color: TEXT_SECONDARY },
   helpSub: { fontSize: 14, color: TEXT_MUTED, marginTop: 4, lineHeight: 22 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32, marginTop: 40 },
-  emptyIcon: { fontSize: 48, marginBottom: 16 },
   emptyTitle: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
   emptyText: { fontSize: 15, color: TEXT_MUTED, textAlign: 'center', lineHeight: 22 },
   historyContent: { paddingBottom: 32 },

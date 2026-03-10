@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import {
   Dimensions,
   FlatList,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -13,6 +14,10 @@ import {
   BG_CARD, ACCENT_WARM, BORDER_CARD,
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
 } from '../theme/colors';
+import { LineIcon, type IconName } from '../components/LineIcon';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const logoSource = require('../../assets/logo.png');
 
 interface Props {
   onComplete: () => void;
@@ -20,6 +25,7 @@ interface Props {
 
 interface Slide {
   id: string;
+  icon: IconName | 'logo';
   title: string;
   body: string;
 }
@@ -27,23 +33,27 @@ interface Slide {
 const SLIDES: Slide[] = [
   {
     id: '1',
+    icon: 'logo',
     title: 'Welcome to Well Within',
-    body: 'This app helps you track daily fertility observations and understand your fertile window while trying to conceive.',
+    body: 'Your cycle tells a story. Well Within helps you notice the natural signs your body gives each day so you can better understand your fertility and your health.',
   },
   {
     id: '2',
-    title: 'What to Observe',
-    body: 'Each time you use the bathroom, note the sensation at the vulva and any visible mucus on the tissue. These two observations are all you need.',
+    icon: 'observe',
+    title: 'What to Notice',
+    body: 'Each time you use the bathroom, simply notice anything you see or feel on the tissue. These small observations reveal where you are in your cycle.',
   },
   {
     id: '3',
+    icon: 'clock',
     title: 'When to Observe',
-    body: 'Check before and after toileting throughout the day. Make a final check at bedtime. At the end of the day, record the most fertile sign you observed \u2014 not just the most recent.',
+    body: 'Check before and after using the bathroom during the day. At night, record the most fertile sign you noticed that day \u2014 not just the most recent one.',
   },
   {
     id: '4',
+    icon: 'calendar',
     title: 'Start Charting',
-    body: 'Your cycle starts on the first day of bleeding. Tap today\u2019s observation card to log your first entry. Let\u2019s begin!',
+    body: 'Your cycle begins on the first day of bleeding. Tap today\u2019s observation card to record your first entry and begin learning your body\u2019s natural rhythm.',
   },
 ];
 
@@ -73,6 +83,13 @@ export function OnboardingScreen({ onComplete }: Props): JSX.Element {
 
   const renderItem = ({ item }: ListRenderItemInfo<Slide>) => (
     <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
+      <View style={styles.iconArea}>
+        {item.icon === 'logo' ? (
+          <Image source={logoSource} style={styles.logo} resizeMode="contain" />
+        ) : (
+          <LineIcon name={item.icon} size={72} />
+        )}
+      </View>
       <Text style={styles.slideTitle}>{item.title}</Text>
       <Text style={styles.slideBody}>{item.body}</Text>
     </View>
@@ -124,6 +141,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 40,
   },
+  iconArea: { marginBottom: 32 },
+  logo: { width: 160, height: 160 },
   slideTitle: {
     fontSize: 28, fontWeight: '600', color: TEXT_PRIMARY,
     textAlign: 'center', marginBottom: 16, letterSpacing: -0.2,
@@ -139,7 +158,7 @@ const styles = StyleSheet.create({
   activeDot: { backgroundColor: ACCENT_WARM, width: 24 },
   nextBtn: {
     backgroundColor: ACCENT_WARM, borderRadius: 12,
-    paddingVertical: 14, paddingHorizontal: 48,
+    paddingVertical: 14, paddingHorizontal: 48, width: '100%', alignItems: 'center',
   },
   nextText: { color: BG_CARD, fontSize: 16, fontWeight: '600' },
   skipBtn: { marginTop: 16 },

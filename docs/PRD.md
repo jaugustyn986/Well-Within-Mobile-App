@@ -521,6 +521,15 @@ Log of implemented features and doc updates for traceability.
 | 2026-03-05 | Data migration v3 | Migrates: `slippery` → `wet` + `lubricative`; `stretch` values merged into `sensation`; single `appearance` → `appearances` array. |
 | 2026-03-05 | PDF export update | Replaced Stretch column with Appearance column showing all selected appearances. Updated to use `appearances` array field. |
 | 2026-03-05 | Help screen update | Removed "slippery" from mucus type descriptions. Updated peak day explanation to reference stretchy/lubricative. |
+| 2026-03-05 | Peak chart color consistency | Changed MucusChart and PDF export peak bar color from blue/teal (#0369a1) to warm grey (#D6D3CF), matching calendar coloring. Removed unused `PEAK_ACCENT` color constant. |
+| 2026-03-05 | Codebase cleanup | Removed unused color constants (PEAK_ACCENT, ACCENT_RED_DARK, BG_CARD_GRADIENT_END). Fixed `catch (e: any)` to `catch (e: unknown)` with proper type guards. Updated always-dry.json fixture to new `appearances` schema. Expanded index.test.ts to cover all 9 exported functions. |
+| 2026-03-05 | Onboarding refresh | Updated all 4 onboarding slides with warmer copy matching the app's UX tone. Added line-art icons above each slide title using new `LineIcon` component. |
+| 2026-03-05 | Line-art icon system | Created `LineIcon.tsx` component with 15 icon variants (cycle, observe, clock, calendar, eye, droplet, sparkle, heart, chart, grid, device, analytics, shield, lock, gear). Pure React Native Views, zero external dependencies. |
+| 2026-03-05 | Emoji removal | Replaced all emojis with `LineIcon` components: HelpScreen accordion icons (6), SettingsScreen privacy icons (4), CalendarScreen gear icon (1). Only the rose intercourse marker remains as an intentional exception. |
+| 2026-03-05 | UX skill: iconography rules | Added "Iconography" section to `skills/ux_tone_well_within.md` codifying no-emoji rule and `LineIcon` usage guidelines. |
+| 2026-03-05 | App logo and icon fixes | Official logo asset added at `apps/mobile/assets/logo.png`; used on onboarding slide 1 (160x160) and in CalendarScreen top bar (32x32) next to "Well Within". Observe icon rewritten as tissue-with-droplet; clock icon hands fixed for proper alignment. |
+| 2026-03-05 | Transparent logo background | Removed opaque beige background from logo PNG so the logo overlays the app's background color seamlessly on onboarding and in the main header. Asset remains at `apps/mobile/assets/logo.png`. |
+| 2026-03-05 | Clock icon refinement | Clock icon (onboarding slide 3, Cycle History toggle) finalized: hands at 10:30 and 4:30 with center dot, same stroke as circle, centered in frame. Implemented in `LineIcon` clock variant. |
 
 ---
 
