@@ -2,3 +2,6 @@ node_modules
 dist
 .expo
 coverage
+
+# App Store Connect API key — never commit
+apps/mobile/credentials/*.p8

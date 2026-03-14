@@ -1,0 +1,23 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "production": {
+      "ios": {
+        "autoIncrement": true
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6760519448",
+        "ascApiKeyPath": "credentials/AuthKey_V39393U3TH.p8",
+        "ascApiKeyId": "V39393U3TH",
+        "ascApiKeyIssuerId": "332678d9-0c3d-4685-a2db-a67b45ed4859"
+      }
+    }
+  }
+}

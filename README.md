@@ -32,10 +32,48 @@ node ./core/rulesEngine/dist/bin/cli.js --fixture core/rulesEngine/fixtures/simp
 npm run start:mobile
 ```
 
+## iOS TestFlight workflow (Expo + EAS)
+
+Use this flow when preparing and shipping a TestFlight build. For the full path from **making a change → testing locally → TestFlight → App Store**, see [docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md). All steps are **manual** — nothing auto-pushes to TestFlight or the store.
+
+1. Local iteration (Windows-friendly)
+```bash
+npm run start:mobile
+```
+- On Windows, use a physical iPhone with Expo Go (or a dev build). iOS Simulator is macOS-only.
+- Iterate on UI/logic locally before cloud build submission.
+
+2. Release preflight checks
+```bash
+npm run mobile:preflight:release
+```
+
+3. Build for TestFlight (production profile)
+```bash
+npm run mobile:build:ios:testflight
+```
+
+4. Submit to App Store Connect / TestFlight
+```bash
+npm run mobile:submit:ios:production
+```
+
+Notes:
+- This workflow targets TestFlight distribution only (App Store Connect path).
+- Submit is **non-interactive** when the App Store Connect API key (`.p8`) is in `apps/mobile/credentials/` and `eas.json` is configured (ascAppId, API key path, Key ID, Issuer ID). No Apple ID login prompt.
+- Manage builds and testers: [App Store Connect → TestFlight (Well Within)](https://appstoreconnect.apple.com/apps/6760519448/testflight/ios).
+- Do **not** run `eas device:create` unless you explicitly decide to use direct internal device installs later.
+
+Before each release run, update and follow:
+- `docs/TESTFLIGHT_READINESS_CHECKLIST.md`
+- `skills/app_store_release_best_practices.md`
+- `skills/expo_release_commands.md`
+
 ## Documentation
 
 | Doc | Purpose |
 |-----|---------|
+| [docs/RELEASE_PROCESS.md](docs/RELEASE_PROCESS.md) | **Cursor → local Expo → TestFlight → App Store** — when each step is quick vs when it needs more from Apple or takes longer |
 | [docs/prd.md](docs/prd.md) | Product Requirements Document — features, specs, implementation log |
 | [docs/RULES_ENGINE_SPEC.md](docs/RULES_ENGINE_SPEC.md) | Rules engine source of truth — ranking, peak detection, multi-cycle layer |
 | [docs/CREIGHTON.md](docs/CREIGHTON.md) | Creighton Method reference — recording codes, sticker colors, compliance |

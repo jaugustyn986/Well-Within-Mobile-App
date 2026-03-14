@@ -1,5 +1,5 @@
 ---
-description: Reference project skills for fertility charting, rules engine, mobile UX, privacy, and testing
+description: Reference project skills for fertility charting, rules engine, mobile UX, privacy, testing, and App Store release
 alwaysApply: true
 ---
 
@@ -29,5 +29,11 @@ When working in this repo, read and follow the guidance in the `skills/` folder.
 
 - **Testing** — `skills/testing_strategy.md`  
   Rules engine: 100% coverage; every verification example in docs must have a unit test; tests run in CI.
+
+- **App Store release** — `skills/app_store_release_best_practices.md`  
+  **Reference when preparing for TestFlight or App Store submission.** Stability, privacy disclosure, data controls, versioning, assets, metadata, and avoiding misleading health claims.
+
+- **Expo iOS release** — `skills/expo_release_commands.md`  
+  **Reference when building or submitting to TestFlight.** EAS setup, `eas build --platform ios`, `eas submit --platform ios`, build number management, and release workflow. Use with the readiness checklist and App Store skill.
 
 Before changing fertility behavior, the rules engine, or mobile screens, re-read the relevant skill file(s).
