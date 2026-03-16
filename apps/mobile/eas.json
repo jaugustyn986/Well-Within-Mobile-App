@@ -4,6 +4,16 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EAS_BUILD_PROFILE": "development"
+      },
+      "ios": {
+        "simulator": false
+      }
+    },
     "production": {
       "ios": {
         "autoIncrement": true

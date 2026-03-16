@@ -5,7 +5,8 @@
     "moduleResolution": "Node",
     "types": [
       "react",
-      "react-native"
+      "react-native",
+      "jest"
     ]
   },
   "include": ["**/*.ts", "**/*.tsx"],

@@ -6,8 +6,9 @@ import {
   saveDailyEntry,
   deleteEntry,
   entriesToSortedArray,
-  StoredEntries,
-} from '../services/storage';
+  type StoredEntries,
+} from '../services/storageV2';
+import { useSync } from '../context/SyncProvider';
 
 interface CycleData {
   entries: StoredEntries;
@@ -28,6 +29,7 @@ const EMPTY_RESULT: CycleResult = {
 };
 
 export function useCycleData(): CycleData {
+  const sync = useSync();
   const [entries, setEntries] = useState<StoredEntries>({});
   const [result, setResult] = useState<CycleResult>(EMPTY_RESULT);
   const [loading, setLoading] = useState(true);
@@ -50,13 +52,15 @@ export function useCycleData(): CycleData {
     await saveDailyEntry(date, entry);
     const stored = await getAllEntries();
     recompute(stored);
-  }, [recompute]);
+    if (sync?.syncNow) void sync.syncNow();
+  }, [recompute, sync]);
 
   const remove = useCallback(async (date: string) => {
     await deleteEntry(date);
     const stored = await getAllEntries();
     recompute(stored);
-  }, [recompute]);
+    if (sync?.syncNow) void sync.syncNow();
+  }, [recompute, sync]);
 
   useEffect(() => {
     refresh();

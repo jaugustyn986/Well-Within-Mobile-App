@@ -5,3 +5,6 @@ coverage
 
 # App Store Connect API key — never commit
 apps/mobile/credentials/*.p8
+
+# Supabase (local only; do not commit URL or key)
+apps/mobile/.env

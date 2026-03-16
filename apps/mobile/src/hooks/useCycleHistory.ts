@@ -6,7 +6,7 @@ import {
   computeCycleSummary,
   generateInsights,
 } from '../../../../core/rulesEngine/src/multiCycle';
-import { getAllEntries, entriesToSortedArray } from '../services/storage';
+import { getAllEntries, entriesToSortedArray } from '../services/storageV2';
 
 interface CycleHistoryData {
   cycles: CycleSlice[];

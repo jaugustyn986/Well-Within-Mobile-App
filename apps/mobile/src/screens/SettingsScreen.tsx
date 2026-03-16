@@ -3,8 +3,14 @@ import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'rea
 import Constants from 'expo-constants';
 import * as FileSystem from 'expo-file-system/legacy';
 import { shareAsync } from 'expo-sharing';
-import { getAllEntries, clearAllEntries } from '../services/storage';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { getAllEntries, clearAllEntries } from '../services/storageV2';
+import { useAuth } from '../context/AuthProvider';
+import { useSync } from '../context/SyncProvider';
+import { hasSupabaseEnv } from '../config/env';
 import { LineIcon, type IconName } from '../components/LineIcon';
+import type { RootStackParamList } from '../navigation/AppNavigator';
 import {
   BG_PAGE, BG_CARD,
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
@@ -20,9 +26,15 @@ const PRIVACY_ITEMS: { icon: IconName; text: string }[] = [
   { icon: 'lock', text: 'You can clear or export your data at any time' },
 ];
 
+type SettingsNav = NativeStackNavigationProp<RootStackParamList, 'Settings'>;
+
 export function SettingsScreen(): JSX.Element {
+  const navigation = useNavigation<SettingsNav>();
+  const auth = useAuth();
+  const sync = useSync();
   const [showClearModal, setShowClearModal] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const showBackupSync = hasSupabaseEnv();
 
   const handleExportJson = useCallback(async () => {
     setExporting(true);
@@ -51,8 +63,77 @@ export function SettingsScreen(): JSX.Element {
     }
   }, []);
 
+  const formatSyncTime = (iso: string | null) => {
+    if (!iso) return 'Not synced yet';
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString();
+    } catch {
+      return iso;
+    }
+  };
+
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+      {showBackupSync && (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Backup & Sync</Text>
+          <Text style={styles.sectionSubtitle}>
+            Your observations stay private. You can keep using the app without an account.
+          </Text>
+          {auth?.user ? (
+            <>
+              <Text style={styles.syncEmail}>{auth.user.email}</Text>
+              <Text style={styles.syncMeta}>
+                Last sync: {formatSyncTime(sync?.lastSyncedAt ?? null)}
+              </Text>
+              {sync?.lastSyncError ? (
+                <Text style={styles.syncError}>{sync.lastSyncError}</Text>
+              ) : null}
+              <Pressable
+                style={[styles.actionRow, { marginTop: 12 }]}
+                onPress={() => void sync?.syncNow?.()}
+                disabled={sync?.isSyncing}
+              >
+                <View style={styles.actionLeft}>
+                  <View style={styles.actionIconCircle}>
+                    <Text style={styles.actionIconText}>{'↻'}</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.actionTitle}>
+                      {sync?.isSyncing ? 'Syncing...' : 'Sync now'}
+                    </Text>
+                  </View>
+                </View>
+              </Pressable>
+              <Pressable
+                style={[styles.actionRow, styles.dangerRow]}
+                onPress={() => void auth?.signOut?.()}
+              >
+                <View style={styles.actionLeft}>
+                  <Text style={[styles.actionTitle, styles.dangerText]}>Sign out</Text>
+                </View>
+              </Pressable>
+            </>
+          ) : (
+            <Pressable
+              style={styles.actionRow}
+              onPress={() => navigation.navigate('Auth')}
+            >
+              <View style={styles.actionLeft}>
+                <View style={styles.actionIconCircle}>
+                  <Text style={styles.actionIconText}>{'↑'}</Text>
+                </View>
+                <View>
+                  <Text style={styles.actionTitle}>Sign in with email</Text>
+                  <Text style={styles.actionSub}>Back up your data with a free account</Text>
+                </View>
+              </View>
+              <Text style={styles.actionChevron}>{'›'}</Text>
+            </Pressable>
+          )}
+        </View>
+      )}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Privacy</Text>
         <Text style={styles.sectionSubtitle}>How your data works</Text>
@@ -155,6 +236,9 @@ const styles = StyleSheet.create({
   actionChevron: { fontSize: 20, color: TEXT_MUTED },
   dangerRow: { borderTopWidth: 0, marginTop: 4 },
   dangerText: { color: ACCENT_RED },
+  syncEmail: { fontSize: 15, color: TEXT_PRIMARY, marginBottom: 4 },
+  syncMeta: { fontSize: 13, color: TEXT_MUTED, marginBottom: 4 },
+  syncError: { fontSize: 13, color: ACCENT_RED, marginBottom: 8 },
   versionText: {
     fontSize: 13, color: TEXT_MUTED, textAlign: 'center', marginTop: 12,
   },
