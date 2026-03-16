@@ -21,7 +21,7 @@ import {
 } from '../../../../core/rulesEngine/src/types';
 import {
   BG_CARD, BG_PAGE, BG_MISSING,
-  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_SUBTLE, TEXT_MUTED,
+  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_SUBTLE,
   BORDER_CARD, ACCENT_WARM, ACCENT_WARM_TINT, BRAND_NAME, ACCENT_RED,
 } from '../theme/colors';
 
@@ -29,7 +29,6 @@ interface Props {
   initialEntry?: DailyEntry | null;
   date: string;
   onSave: (entry: DailyEntry) => void;
-  onCancel: () => void;
   onDelete?: () => void;
 }
 
@@ -95,7 +94,7 @@ const CLASSIFICATION_LABELS: Record<string, { title: string; desc: string; hint:
   },
 };
 
-export function EntryForm({ initialEntry, date, onSave, onCancel, onDelete }: Props): JSX.Element {
+export function EntryForm({ initialEntry, date, onSave, onDelete }: Props): JSX.Element {
   const [missing, setMissing] = useState(initialEntry?.missing ?? false);
   const [bleeding, setBleeding] = useState<BleedingType>(initialEntry?.bleeding ?? 'none');
   const [sensation, setSensation] = useState<Sensation>(initialEntry?.sensation ?? 'dry');
@@ -156,7 +155,7 @@ export function EntryForm({ initialEntry, date, onSave, onCancel, onDelete }: Pr
 
   return (
     <KeyboardAvoidingView style={styles.keyboardAvoid} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Daily Observation</Text>
         <View style={styles.dateBox}>
@@ -314,21 +313,17 @@ export function EntryForm({ initialEntry, date, onSave, onCancel, onDelete }: Pr
         </>
       )}
 
-      <View style={styles.buttons}>
-        <Pressable style={styles.cancelBtn} onPress={onCancel}>
-          <Text style={styles.cancelText}>Cancel</Text>
-        </Pressable>
-        <Pressable style={styles.saveBtn} onPress={handleSave}>
-          <Text style={styles.saveText}>Save Entry</Text>
-        </Pressable>
-      </View>
-
       {onDelete && (
         <Pressable style={styles.deleteBtn} onPress={onDelete}>
           <Text style={styles.deleteText}>Delete Entry</Text>
         </Pressable>
       )}
     </ScrollView>
+    <View style={styles.stickyFooter}>
+      <Pressable style={styles.saveBtnSticky} onPress={handleSave}>
+        <Text style={styles.saveText}>Save Entry</Text>
+      </Pressable>
+    </View>
     </KeyboardAvoidingView>
   );
 }
@@ -336,7 +331,7 @@ export function EntryForm({ initialEntry, date, onSave, onCancel, onDelete }: Pr
 const styles = StyleSheet.create({
   keyboardAvoid: { flex: 1 },
   scroll: { flex: 1, backgroundColor: BG_CARD },
-  content: { padding: 16, paddingBottom: 40 },
+  scrollContent: { padding: 16, paddingBottom: 120 },
   section: { marginTop: 16 },
   sectionTitle: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY },
   dateBox: {
@@ -385,18 +380,23 @@ const styles = StyleSheet.create({
   summaryType: { fontSize: 16, fontWeight: '600', color: TEXT_PRIMARY },
   summaryDesc: { fontSize: 14, fontWeight: '400', color: TEXT_SECONDARY, marginTop: 4, lineHeight: 22 },
   summaryHint: { fontSize: 14, fontWeight: '400', color: TEXT_SUBTLE, marginTop: 8, fontStyle: 'italic' },
-  buttons: { flexDirection: 'row', gap: 12, marginTop: 24 },
-  cancelBtn: {
-    flex: 1, alignItems: 'center', paddingVertical: 14,
-    borderRadius: 12, borderWidth: 1, borderColor: BORDER_CARD,
+  stickyFooter: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 24,
+    backgroundColor: BG_CARD,
+    borderTopWidth: 1,
+    borderTopColor: BORDER_CARD,
   },
-  cancelText: { fontSize: 15, fontWeight: '500', color: TEXT_SECONDARY },
-  saveBtn: {
-    flex: 1, alignItems: 'center', paddingVertical: 14,
-    borderRadius: 12, backgroundColor: ACCENT_WARM,
+  saveBtnSticky: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: ACCENT_WARM,
   },
   saveText: { fontSize: 15, color: BG_CARD, fontWeight: '600' },
-  deleteBtn: { alignItems: 'center', marginTop: 16 },
+  deleteBtn: { alignItems: 'center', marginTop: 24 },
   deleteText: { fontSize: 14, color: ACCENT_RED, fontWeight: '500' },
   missingRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',

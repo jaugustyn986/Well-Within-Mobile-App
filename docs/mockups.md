@@ -10,6 +10,7 @@ Banner: "High fertility signs"
 Peak is only highlighted after P+3 confirmed.
 
 ## Daily Entry screen
+- Modal: Cancel in header (top right, secondary). Sticky bottom primary action: "Save Entry". Scrollable form with bottom padding so content does not sit under the sticky button. Delete Entry (if editing) appears above the sticky footer.
 - Bleeding: dropdown (heavy/moderate/light/spotting/brown/none)
 - Sensation: radio (dry/damp/wet/slippery)
 - Appearance: radio (none/cloudy/clear/stretchy)
@@ -114,7 +115,7 @@ Export taps opens a modal: "Include intercourse markers?" with Yes / No / Cancel
 Layout (top to bottom):
 
 1. **Privacy card** — "How your data works" heading:
-   - Your entries are stored locally on your device
+   - Your chart data stays on this device unless you choose to back it up by signing in. If you enable backup, your data is securely sent and stored in the cloud to help restore it on a new device.
    - The app uses your observations to calculate cycle patterns
    - No third-party ad tracking is used
    - You can clear or export your data at any time

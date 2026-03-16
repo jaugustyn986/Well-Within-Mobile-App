@@ -20,7 +20,7 @@ import {
 const APP_VERSION = Constants.expoConfig?.version ?? '0.1.0';
 
 const PRIVACY_ITEMS: { icon: IconName; text: string }[] = [
-  { icon: 'device', text: 'Your entries are stored locally on your device' },
+  { icon: 'device', text: 'Your chart data stays on this device unless you choose to back it up by signing in. If you enable backup, your data is securely sent and stored in the cloud to help restore it on a new device.' },
   { icon: 'analytics', text: 'The app uses your observations to calculate cycle patterns' },
   { icon: 'shield', text: 'No third-party ad tracking is used' },
   { icon: 'lock', text: 'You can clear or export your data at any time' },

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -10,6 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthProvider';
 import {
   BG_PAGE,
@@ -24,8 +25,15 @@ import {
 
 export function AuthScreen(): JSX.Element {
   const auth = useAuth();
+  const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    if (auth?.user) {
+      navigation.goBack();
+    }
+  }, [auth?.user, navigation]);
 
   const handleSendMagicLink = useCallback(async () => {
     const trimmed = email.trim();

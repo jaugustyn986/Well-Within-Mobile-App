@@ -45,7 +45,7 @@ The app always sends this URL as `emailRedirectTo` when calling `signInWithOtp`,
 1. **App init:** `WebBrowser.maybeCompleteAuthSession()` is called so Expo can complete any in-progress auth session if needed.
 2. **URL handling:** The app subscribes to incoming URLs (e.g. `Linking.addEventListener('url', ...)` and `Linking.getInitialURL()`). When the app is opened via `wellwithin://auth/callback?access_token=...&refresh_token=...`, that URL is passed to a helper.
 3. **Parsing:** The helper uses `QueryParams.getQueryParams(url)` (from `expo-auth-session`) to read `access_token` and `refresh_token`.
-4. **Session:** It calls `supabase.auth.setSession({ access_token, refresh_token })`. Supabase persists the session (e.g. via the configured storage) and updates auth state. The UI (e.g. Settings) then shows the user as signed in.
+4. **Session:** It calls `supabase.auth.setSession({ access_token, refresh_token })`. Supabase persists the session (e.g. via the configured storage) and updates auth state. The UI (e.g. Settings) then shows the user as signed in. If the user was still on the Auth (email) screen when they opened the app via the link, the Auth screen automatically dismisses so they see the signed-in state (e.g. Settings).
 
 Code lives in [apps/mobile/src/services/auth.ts](../apps/mobile/src/services/auth.ts) (`createSessionFromUrl`) and [apps/mobile/src/navigation/AppNavigator.tsx](../apps/mobile/src/navigation/AppNavigator.tsx) (URL listener and initial URL).
 
