@@ -424,7 +424,7 @@ The Cycle Detail screen includes an "Export" button in the top-right header. The
 3. A PDF is generated via `expo-print` from an HTML template (`exportCyclePdf.ts`)
 4. The iOS share sheet opens via `expo-sharing`, allowing save to Files, AirDrop, email, print, etc.
 
-PDF content includes: cycle number, date range, summary stats (length, peak day, fertile window, luteal phase), a colored mucus bar chart, and a day-by-day observation table with optional intercourse markers. The PDF mucus chart matches the in-app MucusChart: same Y-axis labels (3 Peak, 2 Wet, 1 Damp, 0 Dry), 120px bar scale, fixed 16px bar width per day, and legend (Dry, Mucus, Peak, Post-peak).
+PDF content includes: cycle number, date range, summary stats (length, peak day, fertile window, luteal phase), and a day-by-day observation table (Day, Date, Bleeding, Sensation, Appearance, Freq, Rank, Code, Phase, optional I/C). The **Daily Mucus Pattern chart is in-app only**; it is not included in the PDF because the HTML-to-PDF renderer (expo-print) does not reliably render the chart. The day-by-day table includes the Rank column (0–3) so mucus pattern data is still present in the export.
 
 ### Feature: Settings
 
@@ -522,7 +522,7 @@ Log of implemented features and doc updates for traceability.
 | 2026-03-05 | PDF export update | Replaced Stretch column with Appearance column showing all selected appearances. Updated to use `appearances` array field. |
 | 2026-03-05 | Help screen update | Removed "slippery" from mucus type descriptions. Updated peak day explanation to reference stretchy/lubricative. |
 | 2026-03-05 | Peak chart color consistency | Changed MucusChart and PDF export peak bar color from blue/teal (#0369a1) to warm grey (#D6D3CF), matching calendar coloring. Removed unused `PEAK_ACCENT` color constant. |
-| 2026-03-11 | PDF mucus chart match app | Aligned PDF Daily Mucus Pattern with in-app MucusChart: added Y-axis labels (3 Peak, 2 Wet, 1 Damp, 0 Dry), 120px bar height, fixed 16px/24px column width, fixed-height bar area, and legend (Dry, Mucus, Peak, Post-peak). Single file: `apps/mobile/src/utils/exportCyclePdf.ts`. |
+| 2026-03-11 | PDF: remove Daily Mucus Pattern chart | Removed the Daily Mucus Pattern chart from the cycle PDF export. The HTML-to-PDF engine (expo-print) did not render the chart reliably (sparse/wrong layout in PDF). PDF now contains cycle stats and day-by-day table only; the Rank column preserves mucus data. Chart remains in-app on Cycle Detail. `apps/mobile/src/utils/exportCyclePdf.ts`. |
 | 2026-03-11 | Magic link auth screen dismiss | When the user opens the app via the magic link while still on the Auth (email) screen, the Auth screen now automatically dismisses (goBack) so they see Settings with signed-in state. AuthScreen.tsx: useEffect navigates back when auth.user is set. |
 | 2026-03-11 | Entry modal layout | Daily Entry modal: sticky bottom primary action "Save Entry"; Cancel moved to header (top right, secondary). Scrollable form has bottom padding so the sticky button does not overlap the last fields. EntryForm.tsx + DailyEntryScreen.tsx. |
 | 2026-03-11 | App image update — single rose-on-cream asset | Replaced app icon and in-app logo with one asset: `apps/mobile/assets/icon-1024.png` (stylized rose on cream #F6F3EF). Used for home screen/App Store icon, splash, onboarding slide 1, and Calendar header. Docs: `README.md`, `skills/ux_tone_well_within.md`, `docs/APP_ASSETS.md`, TestFlight checklist. |

@@ -85,7 +85,7 @@ Layout (top to bottom):
 
 1. **Header** — "Cycle N" title + back arrow
 2. **Stats Row** — Three cards: Length (days), Peak Day (cycle day), Fertile End (day number or "--")
-3. **Daily Mucus Pattern** — Bar chart (adapted MucusChart). Bar colors match the calendar theme. Rose emoji (🌹) appears above bars for intercourse days.
+3. **Daily Mucus Pattern** — Bar chart (adapted MucusChart). Bar colors match the calendar theme. Rose emoji (🌹) appears above bars for intercourse days. (In-app only; not included in exported PDF.)
 4. **Fertile Window Timeline** — Vertical timeline with three milestones:
    - 🟢 Fertile Start (Day N)
    - 🔵 Peak Day (Day N)
@@ -108,7 +108,7 @@ When "Cycle History" is active: CycleSummaryPanel + PatternInsights + PeakAligne
 
 Custom header: back arrow (left), "Cycle N" title (center, bold), "Export" button (right, blue pill).
 
-Export taps opens a modal: "Include intercourse markers?" with Yes / No / Cancel options. Generates PDF and opens iOS share sheet.
+Export taps opens a modal: "Include intercourse markers?" with Yes / No / Cancel options. Generates PDF (cycle stats + day-by-day observation table; Daily Mucus Pattern chart is in-app only) and opens iOS share sheet.
 
 ## Settings
 

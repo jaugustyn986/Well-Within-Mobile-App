@@ -15,19 +15,6 @@ const PHASE_DISPLAY: Record<PhaseLabel, string> = {
   previous_cycle: 'Prev Cycle',
 };
 
-const C_DRY = '#dcfce7';
-const C_POST_PEAK = '#fef08a';
-const C_PEAK = '#D6D3CF';
-const C_FERTILE = '#16a34a';
-
-function barColor(rank: number | null, phase: PhaseLabel): string {
-  if (rank === null) return C_DRY;
-  if (phase === 'p_plus_1' || phase === 'p_plus_2' || phase === 'p_plus_3') return C_POST_PEAK;
-  if (rank >= 3) return C_PEAK;
-  if (rank >= 1) return C_FERTILE;
-  return C_DRY;
-}
-
 function phaseBg(phase: PhaseLabel): string {
   switch (phase) {
     case 'peak_confirmed': return '#E8E6E3';
@@ -36,11 +23,6 @@ function phaseBg(phase: PhaseLabel): string {
     default: return '#ffffff';
   }
 }
-
-const MAX_RANK = 3;
-const BAR_HEIGHT = 120; // match app MucusChart
-const BAR_WIDTH_PX = 16;
-const COL_WIDTH_PX = 24;
 
 export function buildCyclePdfHtml(cycle: CycleSlice, includeIntercourse: boolean): string {
   const fertileStart = cycle.result.fertileStartIndex !== null
@@ -51,39 +33,6 @@ export function buildCyclePdfHtml(cycle: CycleSlice, includeIntercourse: boolean
     : '--';
   const peakDay = cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--';
   const luteal = cycle.lutealPhase !== null ? `${cycle.lutealPhase} days` : '--';
-
-  const chartBars = cycle.result.mucusRanks
-    .map((rank, i) => {
-      const h = rank !== null ? Math.max((rank / MAX_RANK) * BAR_HEIGHT, 4) : 0;
-      const color = barColor(rank, cycle.result.phaseLabels[i]);
-      const isPeak = cycle.result.peakIndex === i;
-      const border = isPeak ? 'border:2px solid #4A4541;' : '';
-      const marker = includeIntercourse && cycle.entries[i]?.intercourse ? '🌹' : '';
-      const dayLabelStyle = isPeak ? 'font-size:10px;color:#4A4541;font-weight:600;margin-top:4px;' : 'font-size:10px;color:#A09A94;margin-top:4px;';
-      return `<div style="display:flex;flex-direction:column;align-items:center;width:${COL_WIDTH_PX}px;margin:0 1px;">
-        <span style="font-size:8px;margin-bottom:2px;">${marker}</span>
-        <div style="height:${BAR_HEIGHT}px;display:flex;align-items:flex-end;justify-content:center;">
-          <div style="width:${BAR_WIDTH_PX}px;height:${h}px;background:${color};border-radius:4px;${border}"></div>
-        </div>
-        <span style="${dayLabelStyle}">${i + 1}</span>
-      </div>`;
-    })
-    .join('');
-
-  const yAxisLabels = `<div style="display:flex;flex-direction:column;justify-content:space-between;height:${BAR_HEIGHT}px;padding-top:0;padding-bottom:0;width:40px;font-size:9px;color:#A09A94;box-sizing:border-box;">
-    <span>3 Peak</span><span>2 Wet</span><span>1 Damp</span><span>0 Dry</span>
-  </div>`;
-
-  const chartSection = `<div style="display:flex;align-items:flex-start;margin-bottom:12px;padding:16px;background:#FDFCFB;border:1px solid #E7E2DE;border-radius:12px;">
-    ${yAxisLabels}
-    <div style="display:flex;flex-direction:row;align-items:flex-end;flex-wrap:nowrap;margin-left:10px;">${chartBars}</div>
-  </div>
-  <div style="display:flex;flex-direction:row;justify-content:center;gap:12px;margin-top:12px;flex-wrap:wrap;">
-    <span style="display:inline-flex;align-items:center;font-size:11px;color:#6F6A65;"><span style="width:10px;height:10px;border-radius:5px;background:${C_DRY};border:1px solid #E7E2DE;margin-right:4px;"></span>Dry</span>
-    <span style="display:inline-flex;align-items:center;font-size:11px;color:#6F6A65;"><span style="width:10px;height:10px;border-radius:5px;background:${C_FERTILE};border:1px solid #E7E2DE;margin-right:4px;"></span>Mucus</span>
-    <span style="display:inline-flex;align-items:center;font-size:11px;color:#6F6A65;"><span style="width:10px;height:10px;border-radius:5px;background:${C_PEAK};border:1px solid #E7E2DE;margin-right:4px;"></span>Peak</span>
-    <span style="display:inline-flex;align-items:center;font-size:11px;color:#6F6A65;"><span style="width:10px;height:10px;border-radius:5px;background:${C_POST_PEAK};border:1px solid #E7E2DE;margin-right:4px;"></span>Post-peak</span>
-  </div>`;
 
   const intercourseHeader = includeIntercourse ? '<th style="padding:6px 8px;text-align:center;">I/C</th>' : '';
 
@@ -115,10 +64,11 @@ export function buildCyclePdfHtml(cycle: CycleSlice, includeIntercourse: boolean
     })
     .join('');
 
-  return `<!DOCTYPE html>
+  const fullHtml = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <style>
     body { font-family: -apple-system, Helvetica, Arial, sans-serif; padding: 24px; color: #3F3A36; }
     h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
@@ -144,9 +94,6 @@ export function buildCyclePdfHtml(cycle: CycleSlice, includeIntercourse: boolean
     <div class="stat"><div class="stat-value">${luteal}</div><div class="stat-label">Luteal Phase</div></div>
   </div>
 
-  <h2 style="font-size:14px;margin-bottom:8px;">Daily Mucus Pattern</h2>
-  ${chartSection}
-
   <h2 style="font-size:14px;margin-bottom:8px;">Day-by-Day Observations</h2>
   <table>
     <thead>
@@ -169,4 +116,5 @@ export function buildCyclePdfHtml(cycle: CycleSlice, includeIntercourse: boolean
   <div class="footer">Generated by Well Within · ${new Date().toLocaleDateString()}</div>
 </body>
 </html>`;
+  return fullHtml;
 }

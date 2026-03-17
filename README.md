@@ -86,7 +86,7 @@ Before each release run, update and follow:
 - **Calendar** — monthly grid with Creighton-aligned colors. Includes a segmented toggle to switch between Calendar and Cycle History views.
 - **Daily Entry** — observation form (sensation, appearance, quantity, # of times, bleeding, intercourse, notes)
 - **Cycle History** — (inline tab) summary stats, pattern insights, peak-aligned overlay, cycle cards
-- **Cycle Detail** — per-cycle mucus chart, fertile timeline, daily log. Export to PDF via share sheet.
+- **Cycle Detail** — per-cycle mucus chart, fertile timeline, daily log. Export to PDF via share sheet (PDF includes cycle stats and day-by-day table; the mucus chart is in-app only).
 - **Settings** — privacy info, JSON data export, clear all data with confirmation, app version
 - **Help** — charting guide, visual calendar color key with actual cell swatches, onboarding replay
 - **Onboarding** — 4-slide first-launch flow

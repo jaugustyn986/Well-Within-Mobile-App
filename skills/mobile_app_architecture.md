@@ -51,7 +51,7 @@ Avoid heavy frameworks such as Redux unless necessary.
 
 Additional dependencies
 
-expo-print — HTML-to-PDF generation for cycle export
+expo-print — HTML-to-PDF generation for cycle export (stats + day-by-day table only; Daily Mucus Pattern chart is in-app only, not in PDF)
 expo-sharing — native share sheet for PDF and JSON export
 expo-constants — read app version from app.json
 expo-file-system — write temp files for JSON export
