@@ -6,7 +6,7 @@ A short reference for engineers new to the codebase. Covers architecture, data f
 
 ## 1. Architecture overview
 
-- **Monorepo:** `apps/mobile` (React Native + Expo), `core/rulesEngine` (pure TypeScript), `infra` (Supabase schema).
+- **Monorepo:** `apps/mobile` (React Native + Expo), `core/rulesEngine` (workspace package **`core-rules-engine`**, pure TypeScript), `infra` (Supabase schema). The mobile app imports the engine via `from 'core-rules-engine'`; Metro is configured in `apps/mobile/metro.config.js` for workspace resolution.
 - **Local-first:** The app reads and writes to local storage first. Sync with Supabase is optional and runs when the user is signed in. The rules engine lives in `core/rulesEngine` and has no network or auth; it only computes cycle results from `DailyEntry[]`.
 - **Auth:** Email magic link (OTP) only via Supabase. No password in Phase 1. Session is established when the user taps the link and the app opens via `wellwithin://auth/callback` and calls `setSession(access_token, refresh_token)`.
 - **Sync:** Pull merges remote rows into local (date-level last-writer-wins). Push upserts dirty local entries; deletes are soft (`deleted_at`). Invalid payloads are skipped and logged.
@@ -20,6 +20,8 @@ A short reference for engineers new to the codebase. Covers architecture, data f
 3. **Rules engine** is fed sorted entries (from storage) to compute cycle result; it does not touch sync or network.
 4. **Sync** (when signed in): pull fetches remote rows, validates `entry_payload`, merges into local; push sends dirty rows (upsert/soft delete), then marks successfully pushed rows clean.
 5. **UI** reads from storage (and rules engine output); hooks like `useCycleData` hide the storage/sync details.
+
+For **dev client** debugging (Metro, why `localhost` fails on a phone, using rules engine tests), see [DEV_BUILD_DEBUGGING.md](DEV_BUILD_DEBUGGING.md).
 
 ---
 

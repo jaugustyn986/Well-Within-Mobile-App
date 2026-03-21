@@ -10,15 +10,15 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { computeMucusRank } from '../../../../core/rulesEngine/src/rank';
-import { classifyFertility } from '../../../../core/rulesEngine/src/creightonCode';
 import {
   Appearance,
   BleedingType,
+  classifyFertility,
+  computeMucusRank,
   DailyEntry,
   Frequency,
   Sensation,
-} from '../../../../core/rulesEngine/src/types';
+} from 'core-rules-engine';
 import {
   BG_CARD, BG_PAGE, BG_MISSING,
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_SUBTLE,

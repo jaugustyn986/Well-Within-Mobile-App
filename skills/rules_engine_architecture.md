@@ -35,11 +35,13 @@ The engine performs:
 
 Multi-cycle layer (core/rulesEngine/src/multiCycle.ts):
 
-splitIntoCycles(entries) — splits sorted entries into individual CycleSlice objects by bleeding boundaries
+splitIntoCycles(entries) — splits sorted entries into individual CycleSlice objects by bleeding boundaries; leading days with no heavy/moderate bleeding before the first such day are merged into that first period cycle (avoids a spurious one-day “cycle” in history UI)
 computeCycleSummary(cycles) — aggregate stats (avg length, peak day, luteal phase)
 generateInsights(cycles) — human-readable insight strings (requires 2+ completed cycles)
 
 These functions wrap recalculateCycle() without modifying it.
+
+The mobile app consumes this package by name: **`core-rules-engine`** (npm workspace). Do not import the engine from React components using deep relative paths into `core/rulesEngine/src`.
 
 The rules engine must never depend on:
 

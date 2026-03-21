@@ -2,8 +2,17 @@
   "name": "core-rules-engine",
   "version": "0.1.0",
   "private": true,
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "react-native": "src/index.ts",
+  "exports": {
+    ".": {
+      "react-native": "./src/index.ts",
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./fixtures/simple-peak.json": "./fixtures/simple-peak.json"
+  },
   "bin": {
     "well-within-engine": "dist/bin/cli.js"
   },

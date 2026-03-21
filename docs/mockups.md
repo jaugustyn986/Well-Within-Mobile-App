@@ -25,9 +25,9 @@ Place screenshot images in `docs/images/` with the filenames below so they rende
 
 ![Understanding Your Chart](images/understanding-your-chart-overview.png)
 
-![Mucus Types Overview](images/understanding-your-chart-mucus-types.png)
+![Sensation and appearance](images/understanding-your-chart-sensation-appearance.png)
 
-![Dry Type 0 Details](images/understanding-your-chart-type-0-dry.png)
+![Example dry day](images/understanding-your-chart-example-dry.png)
 
 ![Peak Day Explanation](images/understanding-your-chart-peak-day.png)
 
@@ -54,7 +54,7 @@ Place screenshots in `docs/images/` with the filenames below to match the in-app
 | Slide | Title | Body |
 |-------|-------|------|
 | 1 | Welcome to Well Within | This app helps you track daily fertility observations and understand your fertile window while trying to conceive. |
-| 2 | What to Observe | Each time you use the bathroom, note the sensation at the vulva and any visible mucus on the tissue. These two observations are all you need. |
+| 2 | What to Observe | Each time you use the bathroom, note the sensation and any visible mucus on the tissue. These two observations are all you need. |
 | 3 | When to Observe | Check before and after toileting throughout the day. Make a final check at bedtime. At the end of the day, record the most fertile sign you observed — not just the most recent. |
 | 4 | Start Charting | Your cycle starts on the first day of bleeding. Tap the + Entry button to log your first observation. Let's begin! |
 
@@ -75,7 +75,7 @@ Layout (top to bottom):
    - Avg Peak Day | Avg Luteal Phase (days)
 3. **Pattern Insights** — Bullet list of computed insights (e.g., "Peak day has ranged from day 12–16"). Empty state: "Track at least 2 complete cycles to see pattern insights."
 4. **Peak-Aligned Overlay** — Horizontal rows of colored cells (one row per cycle), aligned at peak day (column 0). Colors match the calendar grid (green=dry, red=bleeding, blue dot=peak, yellow=post-peak). Empty state: "Complete a cycle with a confirmed peak to see the overlay."
-5. **Cycle Cards** — Scrollable list of cards (newest first). Each card shows: cycle number, start date, length, peak day, luteal phase, and status badge (Complete / In Progress / No Peak). Tapping a card navigates to Cycle Detail.
+5. **Cycle Cards** — Scrollable list of cards (newest first). Each card shows: cycle number, start date, length, peak day, luteal phase, and status badge (Complete / In Progress / No Peak). Tapping a card navigates to Cycle Detail. *(Engine: `splitIntoCycles` merges a leading stretch of non–heavy/moderate days into the first period cycle so cards do not include a spurious 1-day “cycle” before real flow.)*
 
 ## Cycle Detail
 

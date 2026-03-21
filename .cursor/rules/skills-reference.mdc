@@ -9,6 +9,9 @@ When working in this repo, read and follow the guidance in the `skills/` folder.
 
 ## Skills to apply
 
+- **Human–agent workflow** — `.cursor/rules/collaboration_workflow.mdc`  
+  Spec before code, one bounded task, list files before edits, data-model assumptions before persistence, test plan + manual QA per change, diff-first for auth/db/sync/privacy, separate prompts for implement / cleanup / verify; agent calls out if steps are skipped.
+
 - **Fertility logic and wording** — `skills/fertility_charting_domain.md`  
   Use only observable, deterministic rules. No prediction, ML, or proprietary branding.
 

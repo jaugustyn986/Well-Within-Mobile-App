@@ -32,7 +32,7 @@ export function CycleHistoryScreen(): JSX.Element {
     );
   }
 
-  if (cycles.length < 2) {
+  if (cycles.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.emptyContainer}>
@@ -41,7 +41,7 @@ export function CycleHistoryScreen(): JSX.Element {
           </View>
           <Text style={styles.emptyTitle}>Cycle History</Text>
           <Text style={styles.emptyText}>
-            Cycle insights will appear once multiple cycles are recorded.
+            Your cycles will show here once you begin charting.
           </Text>
         </View>
       </SafeAreaView>
@@ -63,6 +63,7 @@ export function CycleHistoryScreen(): JSX.Element {
             <CycleCard
               key={c.cycleNumber}
               cycle={c}
+              allCycles={cycles}
               onPress={() => goToDetail(c.cycleNumber)}
             />
           ))}

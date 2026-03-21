@@ -5,7 +5,7 @@ import type { RouteProp } from '@react-navigation/native';
 import { Pressable, Text } from 'react-native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { EntryForm } from '../components/EntryForm';
-import { DailyEntry } from '../../../../core/rulesEngine/src/types';
+import { DailyEntry } from 'core-rules-engine';
 import { getDailyEntry, saveDailyEntry, deleteEntry } from '../services/storageV2';
 import { TEXT_SECONDARY } from '../theme/colors';
 

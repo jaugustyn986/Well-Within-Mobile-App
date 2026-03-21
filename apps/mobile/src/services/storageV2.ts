@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { DailyEntry } from '../../../../core/rulesEngine/src/types';
+import type { DailyEntry } from 'core-rules-engine';
 import { validateDailyEntry } from '../lib/validateEntry';
 
 export const STORAGE_KEY_V1 = 'wellwithin_entries_state_v1';

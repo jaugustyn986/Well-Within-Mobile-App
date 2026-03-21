@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { PhaseLabel } from '../../../../core/rulesEngine/src/types';
+import { PhaseLabel } from 'core-rules-engine';
 import {
   BG_CARD_GRADIENT_START,
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_SUBTLE,

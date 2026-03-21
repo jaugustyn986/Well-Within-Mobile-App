@@ -3,6 +3,13 @@
     "strict": true,
     "jsx": "react-jsx",
     "moduleResolution": "Node",
+    "baseUrl": ".",
+    "paths": {
+      "core-rules-engine": ["../../core/rulesEngine/src/index.ts"],
+      "core-rules-engine/fixtures/simple-peak.json": [
+        "../../core/rulesEngine/fixtures/simple-peak.json"
+      ]
+    },
     "types": [
       "react",
       "react-native",

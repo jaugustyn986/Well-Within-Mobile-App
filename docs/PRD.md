@@ -151,7 +151,7 @@ The application must provide a chart view displaying daily observations across t
 The chart must show:
 
 - Each day in the cycle
-- Mucus ranking for each day
+- Chart strength for each day (internally derived from observation; displayed as Dry, Damp, Wet, or Peak-type — not as numeric ranks in the UI)
 - Fertile window
 - Peak day
 - Post-peak days
@@ -159,14 +159,7 @@ The chart must show:
 **Chart elements**
 
 - **X-axis:** Cycle day
-- **Y-axis:** Mucus rank
-
-**Rank scale**
-
-- 0 — Dry
-- 1 — Damp
-- 2 — Wet
-- 3 — Peak quality
+- **Y-axis:** Observation strength (bar height reflects internal 0–3 scale; labels in the app use words only)
 
 **Visual indicators**
 
@@ -213,21 +206,16 @@ Each cycle is represented as a list of daily entries.
 
 Missing days must be supported.
 
-#### Rules Engine Step 1 — Mucus Ranking
+#### Rules Engine Step 1 — Mucus ranking (observation strength)
 
-Each day must be converted to a numeric mucus rank.
+Each day must be converted to an internal numeric mucus rank (0–3) from `sensation` and `appearances`, using the **maximum** across sensation, appearance boosts, and the lubricative promotion rule. The app and PDF export show **qualitative labels** (Dry, Damp, Wet, Peak-type), not the raw numbers.
 
-**Ranking logic**
+**Canonical logic:** [RULES_ENGINE_SPEC.md](RULES_ENGINE_SPEC.md#mucus-rank-mapping) (single source of truth).
 
-- **Rank 0** — Condition: sensation = dry AND appearance = none
-- **Rank 1** — Condition: sensation = damp
-- **Rank 2** — Condition: sensation = wet
-- **Rank 3** — Condition: any of sensation = slippery, appearance = clear, appearance = stretchy
+**Rank precedence (summary)**
 
-**Rank precedence**
-
-- If multiple signals exist, the highest rank applies.  
-  - Example: wet sensation + clear appearance → Rank 3
+- If multiple signals apply, the **highest** internal rank wins.  
+  - Example: wet sensation + clear appearance → peak-type strength (internal rank 3).
 
 #### Rules Engine Step 2 — Fertile Window Start
 
@@ -306,7 +294,7 @@ As a user editing past observations, I want the system to automatically recomput
 
 Any modification to entries must trigger a full recalculation of:
 
-- mucus ranking
+- mucus ranking (observation strength)
 - fertile window
 - peak detection
 - phase labels
@@ -370,7 +358,7 @@ The app must provide a Cycle Detail screen that shows:
 
 Cycle splitting is handled by pure functions in `core/rulesEngine/src/multiCycle.ts`:
 
-- `splitIntoCycles(entries)` — splits sorted entries into individual cycles by detecting bleeding boundaries (first heavy/moderate bleeding day not preceded by heavy/moderate).
+- `splitIntoCycles(entries)` — splits sorted entries into individual cycles by detecting bleeding boundaries (first heavy/moderate bleeding day not preceded by heavy/moderate). Leading chart days with **no** heavy or moderate bleeding before that first period day are **merged** into the same cycle so Cycle History does not show a bogus one-day cycle (e.g. light/spotting the day before flow). See [RULES_ENGINE_SPEC.md](RULES_ENGINE_SPEC.md) (Multi-Cycle Layer).
 - `computeCycleSummary(cycles)` — computes aggregate statistics.
 - `generateInsights(cycles)` — produces human-readable insight strings.
 
@@ -424,7 +412,7 @@ The Cycle Detail screen includes an "Export" button in the top-right header. The
 3. A PDF is generated via `expo-print` from an HTML template (`exportCyclePdf.ts`)
 4. The iOS share sheet opens via `expo-sharing`, allowing save to Files, AirDrop, email, print, etc.
 
-PDF content includes: cycle number, date range, summary stats (length, peak day, fertile window, luteal phase), and a day-by-day observation table (Day, Date, Bleeding, Sensation, Appearance, Freq, Rank, Code, Phase, optional I/C). The **Daily Mucus Pattern chart is in-app only**; it is not included in the PDF because the HTML-to-PDF renderer (expo-print) does not reliably render the chart. The day-by-day table includes the Rank column (0–3) so mucus pattern data is still present in the export.
+PDF content includes: cycle number, date range, summary stats (length, peak day, fertile window, luteal phase), and a day-by-day observation table (Day, Date, Bleeding, Sensation, Appearance, Freq, Chart, Code, Phase, optional I/C). The **Chart** column shows qualitative strength (Dry, Damp, Wet, Peak-type), not numeric ranks. The **Daily Mucus Pattern chart is in-app only**; it is not included in the PDF because the HTML-to-PDF renderer (expo-print) does not reliably render the chart.
 
 ### Feature: Settings
 
@@ -520,9 +508,13 @@ Log of implemented features and doc updates for traceability.
 | 2026-03-05 | Rules engine v3 | Rewrote rank.ts with new sensation ranks, multi-select appearance boost, and lubricative promotion logic. Rewrote creightonCode.ts with full base code table and multi-select appearance suffix concatenation in Creighton order. |
 | 2026-03-05 | Data migration v3 | Migrates: `slippery` → `wet` + `lubricative`; `stretch` values merged into `sensation`; single `appearance` → `appearances` array. |
 | 2026-03-05 | PDF export update | Replaced Stretch column with Appearance column showing all selected appearances. Updated to use `appearances` array field. |
+| 2026-03-21 | Help & export — sensation/appearance education | Understanding Your Chart: observation copy without "vulva"; replaced mucus-type list with engine-aligned sensation + appearance section from `observationEducationCopy.ts`; qualitative PDF **Chart** column (no numeric rank); Calendar help teaser updated; mockups/gitkeep screenshot names. |
+| 2026-03-21 | Cycle History — leading-day merge | `splitIntoCycles()` merges leading days with no heavy/moderate bleeding into the first period cycle so the list does not show a bogus one-day cycle (e.g. light/spotting before flow). Tests in `core/rulesEngine/__tests__/multiCycle.test.ts`. Spec: `docs/RULES_ENGINE_SPEC.md`. Dev debugging: `docs/DEV_BUILD_DEBUGGING.md`. |
+| 2026-03-21 | Repo hygiene & docs sync | `core-rules-engine` `package.json` `main`/`types` point to `dist/src/*` (matches `tsc` output). Removed unused `apps/mobile/src/services/storage.ts` (superseded by `storageV2.ts`) and unused `apps/mobile/src/config/revenuecat.ts`. `.gitignore`: `.cursor/debug-*.log`. README + `SYSTEM_OVERVIEW` link dev debugging doc. |
+| 2026-03-21 | Monorepo — `core-rules-engine` imports | Mobile app declares workspace dependency `core-rules-engine`; all engine imports use `from 'core-rules-engine'`. Package exposes `react-native` + `exports` for Metro; `apps/mobile/metro.config.js` watches repo root and fixes `nodeModulesPaths`. Jest `moduleNameMapper` maps the package for tests. |
 | 2026-03-05 | Help screen update | Removed "slippery" from mucus type descriptions. Updated peak day explanation to reference stretchy/lubricative. |
 | 2026-03-05 | Peak chart color consistency | Changed MucusChart and PDF export peak bar color from blue/teal (#0369a1) to warm grey (#D6D3CF), matching calendar coloring. Removed unused `PEAK_ACCENT` color constant. |
-| 2026-03-11 | PDF: remove Daily Mucus Pattern chart | Removed the Daily Mucus Pattern chart from the cycle PDF export. The HTML-to-PDF engine (expo-print) did not render the chart reliably (sparse/wrong layout in PDF). PDF now contains cycle stats and day-by-day table only; the Rank column preserves mucus data. Chart remains in-app on Cycle Detail. `apps/mobile/src/utils/exportCyclePdf.ts`. |
+| 2026-03-11 | PDF: remove Daily Mucus Pattern chart | Removed the Daily Mucus Pattern chart from the cycle PDF export. The HTML-to-PDF engine (expo-print) did not render the chart reliably (sparse/wrong layout in PDF). PDF now contains cycle stats and day-by-day table only; chart strength is preserved in the day-by-day table. Chart remains in-app on Cycle Detail. `apps/mobile/src/utils/exportCyclePdf.ts`. |
 | 2026-03-11 | Magic link auth screen dismiss | When the user opens the app via the magic link while still on the Auth (email) screen, the Auth screen now automatically dismisses (goBack) so they see Settings with signed-in state. AuthScreen.tsx: useEffect navigates back when auth.user is set. |
 | 2026-03-11 | Entry modal layout | Daily Entry modal: sticky bottom primary action "Save Entry"; Cancel moved to header (top right, secondary). Scrollable form has bottom padding so the sticky button does not overlap the last fields. EntryForm.tsx + DailyEntryScreen.tsx. |
 | 2026-03-11 | App image update — single rose-on-cream asset | Replaced app icon and in-app logo with one asset: `apps/mobile/assets/icon-1024.png` (stylized rose on cream #F6F3EF). Used for home screen/App Store icon, splash, onboarding slide 1, and Calendar header. Docs: `README.md`, `skills/ux_tone_well_within.md`, `docs/APP_ASSETS.md`, TestFlight checklist. |
@@ -551,7 +543,7 @@ Log of implemented features and doc updates for traceability.
 ### MVP Must-Haves
 
 - Daily entry structure: bleeding, ESQ (sensation/appearance/quantity), intercourse boolean, notes.
-- Deterministic mucus rank (0-3) function.
+- Deterministic mucus rank (0–3) internally; user-facing labels without numeric ranks.
 - Peak detection algorithm: candidate + confirmation after 3 lower-quality days.
 - Fertile window starts first mucus day after bleeding, ends at P+3 inclusive.
 - Recompute entire cycle on any edit.

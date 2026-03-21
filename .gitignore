@@ -3,6 +3,9 @@ dist
 .expo
 coverage
 
+# Cursor agent debug NDJSON (session-specific; do not commit)
+.cursor/debug-*.log
+
 # App Store Connect API key — never commit
 apps/mobile/credentials/*.p8
 

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { DailyEntry } from '../../../../core/rulesEngine/src/types';
+import type { DailyEntry } from 'core-rules-engine';
 
 const bleedingType = z.enum(['heavy', 'moderate', 'light', 'spotting', 'none', 'brown']);
 const sensation = z.enum(['dry', 'damp', 'wet', 'shiny', 'sticky', 'tacky', 'stretchy']);

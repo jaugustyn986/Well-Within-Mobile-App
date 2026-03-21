@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { CycleSlice } from '../../../../core/rulesEngine/src/multiCycle';
+import { CycleSlice } from 'core-rules-engine';
 import {
   BG_CARD, BG_DRY, BG_POST_PEAK,
   FERTILE_ACCENT, PEAK_BORDER,

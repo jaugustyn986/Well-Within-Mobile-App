@@ -10,7 +10,7 @@ Architecture principles:
 
 UI should remain thin.
 
-All fertility logic must live in the rules engine.
+All fertility logic must live in the rules engine (`core-rules-engine` workspace package). Import in app code with `from 'core-rules-engine'`.
 
 Screens should only:
 
@@ -45,7 +45,7 @@ Routes: Calendar, DailyEntry, Help, CycleHistory, CycleDetail, Settings, Onboard
 State management
 
 Local state is acceptable for MVP.
-AsyncStorage for persistence.
+Persistence: `apps/mobile/src/services/storageV2.ts` (versioned envelope + migration from legacy keys). Do not reintroduce a parallel storage layer.
 
 Avoid heavy frameworks such as Redux unless necessary.
 

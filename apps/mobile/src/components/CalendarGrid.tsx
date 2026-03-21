@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { PhaseLabel } from '../../../../core/rulesEngine/src/types';
+import { PhaseLabel } from 'core-rules-engine';
 import {
   BG_BLEEDING, BG_CARD, BG_DRY, BG_NO_ENTRY, BG_PEAK_TYPE, BG_POST_PEAK,
   FERTILE_ACCENT, PEAK_BORDER,

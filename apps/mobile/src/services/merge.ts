@@ -1,4 +1,4 @@
-import type { DailyEntry } from '../../../../core/rulesEngine/src/types';
+import type { DailyEntry } from 'core-rules-engine';
 import type { StoredEntryRecord } from './storageV2';
 
 export interface RemoteRow {

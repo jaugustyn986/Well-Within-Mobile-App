@@ -3,7 +3,7 @@ import { SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
 import { useCycleData } from '../hooks/useCycleData';
 import { MucusChart } from '../components/MucusChart';
 import { StatusBanner } from '../components/StatusBanner';
-import { PhaseLabel } from '../../../../core/rulesEngine/src/types';
+import { PhaseLabel } from 'core-rules-engine';
 
 function todayString(): string {
   const d = new Date();

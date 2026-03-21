@@ -23,9 +23,30 @@ export interface CycleSummary {
 }
 
 /**
+ * First slice has no heavy/moderate bleeding (preamble before first period day).
+ * Drop the next boundary so those days merge into the cycle that starts with H/M.
+ */
+function leadingSliceHasNoHeavyModerate(
+  entries: DailyEntry[],
+  boundaries: number[],
+): boolean {
+  if (boundaries.length < 2) return false;
+  const start = boundaries[0];
+  const endExclusive = boundaries[1];
+  for (let i = start; i < endExclusive; i++) {
+    const b = entries[i]?.bleeding;
+    if (b === 'heavy' || b === 'moderate') return false;
+  }
+  return true;
+}
+
+/**
  * Splits a sorted array of DailyEntry into individual cycles.
  * A new cycle starts on the first day of heavy/moderate bleeding that
  * is NOT preceded by another heavy/moderate day.
+ *
+ * Leading days with no heavy/moderate bleeding before the first such day are merged
+ * into that cycle (avoids a bogus 1-day "cycle" from spotting/light before flow).
  */
 export function splitIntoCycles(entries: DailyEntry[]): CycleSlice[] {
   if (entries.length === 0) return [];
@@ -42,6 +63,10 @@ export function splitIntoCycles(entries: DailyEntry[]): CycleSlice[] {
         boundaries.push(i);
       }
     }
+  }
+
+  while (leadingSliceHasNoHeavyModerate(entries, boundaries)) {
+    boundaries.splice(1, 1);
   }
 
   const slices: CycleSlice[] = [];
@@ -108,7 +133,7 @@ export function computeCycleSummary(cycles: CycleSlice[]): CycleSummary {
   const lutealPhases = completedCycles.filter((c) => c.lutealPhase !== null).map((c) => c.lutealPhase!);
 
   return {
-    cyclesTracked: cycles.length,
+    cyclesTracked: completedCycles.length,
     avgLength: lengths.length > 0 ? Math.round(lengths.reduce((a, b) => a + b, 0) / lengths.length) : null,
     shortestLength: lengths.length > 0 ? Math.min(...lengths) : null,
     longestLength: lengths.length > 0 ? Math.max(...lengths) : null,

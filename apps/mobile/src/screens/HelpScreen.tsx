@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  HELP_COLOR_GUIDE_NON_PEAK_MUCUS,
+  HELP_COLOR_GUIDE_PEAK_TYPE_MUCUS,
+  HELP_HOW_TO_OBSERVE_BODY,
+  HELP_HOW_TO_OBSERVE_TITLE,
+  HELP_SENSATION_APPEARANCE_BODY,
+  HELP_SENSATION_APPEARANCE_TITLE,
+  HELP_TRYING_TO_CONCEIVE_BODY,
+} from 'core-rules-engine';
 import { useResetOnboarding } from '../navigation/AppNavigator';
 import { LineIcon, type IconName } from '../components/LineIcon';
 import {
   BG_BLEEDING, BG_DRY, BG_NO_ENTRY, BG_PEAK_TYPE, BG_POST_PEAK, BG_PAGE, BG_CARD,
   FERTILE_ACCENT, PEAK_BORDER, BORDER_CARD, BORDER_TODAY, INTERCOURSE_ICON,
-  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, TEXT_SUBTLE,
+  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
 } from '../theme/colors';
 
 interface AccordionItemData {
@@ -17,25 +26,14 @@ interface AccordionItemData {
 
 const SECTIONS: AccordionItemData[] = [
   {
-    title: 'How do I make my observation?',
+    title: HELP_HOW_TO_OBSERVE_TITLE,
     icon: 'eye',
-    content:
-      'Use folded toilet tissue and wipe front to back.\n\n' +
-      '\u2022 Note the sensation at the vulva (what you feel)\n' +
-      '\u2022 Note the appearance of any mucus on the tissue (what you see)\n' +
-      '\u2022 Check before and after toileting throughout the day\n' +
-      '\u2022 Make a final observation at bedtime\n' +
-      '\u2022 Record the most fertile observation of the day\n' +
-      '\u2022 Record the most fertile sign you observed all day \u2014 not just the last one',
+    content: HELP_HOW_TO_OBSERVE_BODY,
   },
   {
-    title: 'What do the mucus types mean?',
+    title: HELP_SENSATION_APPEARANCE_TITLE,
     icon: 'droplet',
-    content:
-      'Type 0 - Dry\nNo mucus present. No discharge observed at the vulva. Dry day \u2014 record as no mucus.\n\n' +
-      'Type 1 - Damp\nSticky, pasty, or cloudy mucus. Slightly moist feeling. Non-peak type \u2014 early fertility sign.\n\n' +
-      'Type 2 - Wet\nWet, cloudy mucus. Fertile but not peak-type. Indicates rising fertility.\n\n' +
-      'Type 3 - Peak\nClear, stretchy, or lubricative mucus (like raw egg white). Peak-type mucus \u2014 this signals ovulation is near.',
+    content: HELP_SENSATION_APPEARANCE_BODY,
   },
   {
     title: 'What is the Peak Day?',
@@ -48,10 +46,7 @@ const SECTIONS: AccordionItemData[] = [
   {
     title: 'When should we try to conceive?',
     icon: 'heart',
-    content:
-      'Best timing:\nHave intercourse every 1\u20132 days starting when you first see mucus (Type 1 or higher) and continue through Peak Day.\n\n' +
-      'The fertile window is approximately 6 days before ovulation through 1 day after. Your chances are highest 1\u20132 days before ovulation.\n\n' +
-      'Tip: Don\'t wait for peak-type mucus to start! Sperm can survive in fertile mucus for several days, so starting early improves your chances.',
+    content: HELP_TRYING_TO_CONCEIVE_BODY,
   },
   {
     title: 'What do the status messages mean?',
@@ -91,8 +86,8 @@ function ColorGuideSwatches(): JSX.Element {
       <SwatchRow bg={BG_NO_ENTRY} label="No entry logged" />
       <SwatchRow bg={BG_BLEEDING} label="Bleeding day" />
       <SwatchRow bg={BG_DRY} label="Dry day (no mucus)" />
-      <SwatchRow bg={BG_DRY} dotColor={FERTILE_ACCENT} label="Non-peak mucus (Type 1\u20132)" />
-      <SwatchRow bg={BG_PEAK_TYPE} label="Peak-type mucus (Type 3)" />
+      <SwatchRow bg={BG_DRY} dotColor={FERTILE_ACCENT} label={HELP_COLOR_GUIDE_NON_PEAK_MUCUS} />
+      <SwatchRow bg={BG_PEAK_TYPE} label={HELP_COLOR_GUIDE_PEAK_TYPE_MUCUS} />
       <SwatchRow bg={BG_PEAK_TYPE} borderColor={PEAK_BORDER} label="Confirmed Peak Day" />
       <SwatchRow bg={BG_POST_PEAK} label="Post-peak (P+1, P+2, P+3)" />
       <SwatchRow bg={BG_DRY} borderColor={BORDER_TODAY} label="Today" />

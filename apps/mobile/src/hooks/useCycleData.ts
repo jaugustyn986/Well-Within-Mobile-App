@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { recalculateCycle } from '../../../../core/rulesEngine/src/recalc';
-import { CycleResult, DailyEntry } from '../../../../core/rulesEngine/src/types';
+import { recalculateCycle, CycleResult, DailyEntry } from 'core-rules-engine';
 import {
   getAllEntries,
   saveDailyEntry,

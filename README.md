@@ -78,6 +78,8 @@ Before each release run, update and follow:
 | [docs/RULES_ENGINE_SPEC.md](docs/RULES_ENGINE_SPEC.md) | Rules engine source of truth — ranking, peak detection, multi-cycle layer |
 | [docs/CREIGHTON.md](docs/CREIGHTON.md) | Creighton Method reference — recording codes, sticker colors, compliance |
 | [docs/mockups.md](docs/mockups.md) | Text wireframes and screenshot references |
+| [docs/DEV_ENV_SETUP.md](docs/DEV_ENV_SETUP.md) | Install, `.env`, Expo Go vs dev client, EAS development build |
+| [docs/DEV_BUILD_DEBUGGING.md](docs/DEV_BUILD_DEBUGGING.md) | Dev build debugging — Metro, device vs `127.0.0.1`, rules engine tests |
 
 **Skills (AI and dev guidance):** For any UX, copy, layouts, or visual design work, reference [skills/ux_tone_well_within.md](skills/ux_tone_well_within.md). See [.cursor/rules/skills-reference.mdc](.cursor/rules/skills-reference.mdc) for the full skills list.
 
@@ -93,17 +95,18 @@ Before each release run, update and follow:
 
 ## Notes
 - Multiple observations per day are supported; daily rank is max observation rank.
-- Multi-cycle engine (`core/rulesEngine/src/multiCycle.ts`) splits entries into individual cycles and computes aggregate stats/insights.
+- Multi-cycle engine (`core/rulesEngine`, package **`core-rules-engine`**) splits entries into individual cycles and computes aggregate stats/insights. Leading non–heavy/moderate days before the first period flow are merged into that cycle so history does not show a bogus one-day cycle. The mobile app imports this package by name; see `apps/mobile/metro.config.js` for monorepo bundling.
 - All UI colors are centralized in `apps/mobile/src/theme/colors.ts`. The palette uses warm neutrals (#F6F3EF page, #3F3A36 text, #B89A8B accent) with an 8-point spacing system. Calendar/rules-engine colors are constants and never change.
 - Typography follows a consistent hierarchy: 28/600 title, 21/600 headers, 18/500 month labels, 15/400 body with lineHeight 22.
 - **App icon and logo:** A single asset at `apps/mobile/assets/icon-1024.png` is used for the app icon (home screen / App Store), splash screen, and in-app logo (onboarding slide 1 and Calendar header). The image is the Well Within rose on a cream background (#F6F3EF) so it matches the app’s theme. See `docs/APP_ASSETS.md` for details.
 - **Icons:** All UI icons use the `LineIcon` component (`apps/mobile/src/components/LineIcon.tsx`) except the intercourse marker (rose 🌹). See `skills/ux_tone_well_within.md` for iconography rules.
 - Intercourse is marked with a rose emoji (🌹) across the app.
-- RevenueCat and Supabase integration are scaffolded as placeholders only.
+- **Supabase** — optional cloud backup/sync when signed in (`EXPO_PUBLIC_SUPABASE_*` in `apps/mobile/.env`). **RevenueCat** — not integrated yet (see PRD Engineering Trim).
 - TODO: Manual override for trained users.
 
 
 ## Troubleshooting
+- **Dev build / device logging:** If something that should hit your PC via `localhost` does not work on a physical phone, read [docs/DEV_BUILD_DEBUGGING.md](docs/DEV_BUILD_DEBUGGING.md) (loopback vs LAN, Metro, optional ingest tools).
 - If Bash shows `syntax error near unexpected token '('`, do **not** paste shell and PowerShell variants on one line. Use one command only:
   - Git Bash: `npm run clean`
   - PowerShell: `Remove-Item -Recurse -Force node_modules,package-lock.json`

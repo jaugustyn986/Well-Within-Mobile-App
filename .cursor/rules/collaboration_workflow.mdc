@@ -1,0 +1,48 @@
+---
+description: Human–agent collaboration protocol; bounded tasks, spec-first, files before edits, test/QA, diff-first for sensitive work; agent calls out skipped steps
+alwaysApply: true
+---
+
+# Human–agent collaboration protocol
+
+Jim and agents follow this workflow by default. If Jim skips a step, **call it out once**, politely: name the missing step and the smallest fix (e.g. paste or link a spec, split into one task, or confirm proceeding without the step). If Jim **explicitly** overrides (e.g. “ignore protocol this turn”), proceed after that confirmation.
+
+## 1. Feature spec before implementation
+
+- Work from an explicit spec: a doc path, issue link, or pasted summary of scope and acceptance criteria.
+- If there is no spec and Jim did not waive the rule, **stop and ask** for it before writing or changing code.
+
+## 2. One bounded task per turn
+
+- Each request should be a single coherent task (one feature slice, one bugfix, or one refactor with clear bounds).
+- If the prompt bundles multiple unrelated features, large refactors, or “and also…”, **call out** and propose splitting or a clear order of work.
+
+## 3. Files before edits
+
+- Before the first patch, **list** paths you intend to create, edit, or delete and a one-line rationale each.
+- Then implement; if the plan changes materially, say so before continuing.
+
+## 4. Data model assumptions before backend or storage work
+
+- Before changing persistence, schema, migrations, sync payloads, or server-side data shapes, **state in plain language**: entities, fields, ownership, migration or rollout approach, and privacy implications.
+- After that, implement. For depth on health data and privacy, use `skills/privacy_and_health_data.md`.
+
+## 5. Test plan and manual QA with every change
+
+- **Automated tests**: What to add or update, which commands or suites apply, aligned with `skills/testing_strategy.md`.
+- **Manual QA**: A short checklist a human can run (app/simulator steps, edge cases touched).
+
+Deliver both in the same response cycle as the implementation (or, if diff-first applies, include them with the proposed diff).
+
+## 6. Diff-first for sensitive work (no apply until approved)
+
+For **auth, database, sync, and privacy-related** changes, **propose** the diff or patch (or step-by-step edits) and wait for **explicit approval** before applying.
+
+Treat as in scope: anything covered by `skills/privacy_and_health_data.md`, `skills/supabase_auth_and_sync.md`, SQL migrations, credential or secrets paths, remote schema, RLS policies, and encryption or export of user health data.
+
+Elsewhere, Jim’s preference to have the agent run commands and implement still applies after plan/files/assumptions are agreed.
+
+## 7. Separate prompts for implementation, cleanup, and verification
+
+- Prefer **distinct** messages: (a) implement, (b) cleanup/style/docs-only, (c) verify (tests, QA, regression).
+- If a single message mixes all three, **call out** and suggest splitting or confirm Jim wants one combined pass.

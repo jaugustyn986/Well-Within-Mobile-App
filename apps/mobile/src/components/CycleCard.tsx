@@ -1,20 +1,17 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { CycleSlice } from '../../../../core/rulesEngine/src/multiCycle';
+import { CycleSlice } from 'core-rules-engine';
+import { formatCyclePrimarySecondary } from '../utils/cycleDisplay';
 import {
   BG_CARD, BG_DRY, BG_POST_PEAK, BG_MISSING,
-  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
+  TEXT_PRIMARY, TEXT_MUTED,
   BORDER_CARD,
 } from '../theme/colors';
 
 interface Props {
   cycle: CycleSlice;
+  allCycles: CycleSlice[];
   onPress: () => void;
-}
-
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function getStatusStyle(status: CycleSlice['status']): { bg: string; text: string; label: string } {
@@ -28,19 +25,22 @@ function getStatusStyle(status: CycleSlice['status']): { bg: string; text: strin
   }
 }
 
-export function CycleCard({ cycle, onPress }: Props): JSX.Element {
+export function CycleCard({ cycle, allCycles, onPress }: Props): JSX.Element {
   const statusInfo = getStatusStyle(cycle.status);
-  const startFormatted = formatDate(cycle.startDate);
+  const { primary, secondary } = useMemo(
+    () => formatCyclePrimarySecondary(cycle, allCycles),
+    [cycle, allCycles],
+  );
 
   return (
     <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.topRow}>
-        <Text style={styles.cycleTitle}>Cycle {cycle.cycleNumber}</Text>
+        <Text style={styles.primaryTitle} numberOfLines={2}>{primary}</Text>
         <View style={[styles.badge, { backgroundColor: statusInfo.bg }]}>
           <Text style={[styles.badgeText, { color: statusInfo.text }]}>{statusInfo.label}</Text>
         </View>
       </View>
-      <Text style={styles.dateText}>{startFormatted}</Text>
+      <Text style={styles.secondaryLine}>{secondary}</Text>
       <View style={styles.statsRow}>
         <StatPill label="Length" value={`${cycle.length}d`} />
         <StatPill label="Peak" value={cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--'} />
@@ -68,11 +68,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: BORDER_CARD,
   },
-  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cycleTitle: { fontSize: 16, fontWeight: '600', color: TEXT_PRIMARY },
-  badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 },
+  primaryTitle: { fontSize: 16, fontWeight: '600', color: TEXT_PRIMARY, flex: 1 },
+  badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, flexShrink: 0 },
   badgeText: { fontSize: 11, fontWeight: '600' },
-  dateText: { fontSize: 13, color: TEXT_MUTED, marginTop: 2 },
+  secondaryLine: { fontSize: 13, color: TEXT_MUTED, marginTop: 4 },
   statsRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
   statPill: {
     backgroundColor: BG_MISSING,

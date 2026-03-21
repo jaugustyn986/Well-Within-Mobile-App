@@ -1,7 +1,7 @@
 import React from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-import fixture from '../../../../core/rulesEngine/fixtures/simple-peak.json';
-import { recalculateCycle } from '../../../../core/rulesEngine/src';
+import fixture from 'core-rules-engine/fixtures/simple-peak.json';
+import { recalculateCycle } from 'core-rules-engine';
 
 export function EngineDemoScreen(): JSX.Element {
   const result = recalculateCycle(fixture.entries);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { DailyEntry } from '../../../../core/rulesEngine/src/types';
+import { mucusChartStrengthLabel, DailyEntry } from 'core-rules-engine';
 import {
   BG_CARD, BG_MISSING,
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, TEXT_SUBTLE,
@@ -15,13 +15,7 @@ interface Props {
 }
 
 function getMucusLabel(rank: number | null): string {
-  switch (rank) {
-    case 0: return 'Dry';
-    case 1: return 'Damp';
-    case 2: return 'Wet';
-    case 3: return 'Peak-type';
-    default: return 'No observation';
-  }
+  return mucusChartStrengthLabel(rank, 'No observation');
 }
 
 function getFertilityHint(rank: number | null): string {

@@ -8,6 +8,9 @@ import {
   splitIntoCycles,
   computeCycleSummary,
   generateInsights,
+  mucusChartStrengthLabel,
+  buildCycleComparisonNarrative,
+  buildCycleComparisonStructured,
 } from '../src';
 
 describe('package index exports', () => {
@@ -21,5 +24,8 @@ describe('package index exports', () => {
     expect(typeof splitIntoCycles).toBe('function');
     expect(typeof computeCycleSummary).toBe('function');
     expect(typeof generateInsights).toBe('function');
+    expect(typeof mucusChartStrengthLabel).toBe('function');
+    expect(typeof buildCycleComparisonNarrative).toBe('function');
+    expect(typeof buildCycleComparisonStructured).toBe('function');
   });
 });

@@ -4,12 +4,14 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Print from 'expo-print';
 import { shareAsync } from 'expo-sharing';
+import { buildCycleComparisonNarrative } from 'core-rules-engine';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useCycleHistory } from '../hooks/useCycleHistory';
 import { MucusChart } from '../components/MucusChart';
 import { FertileTimeline } from '../components/FertileTimeline';
 import { DailyLogList } from '../components/DailyLogList';
 import { buildCyclePdfHtml } from '../utils/exportCyclePdf';
+import { formatCyclePrimarySecondary } from '../utils/cycleDisplay';
 import {
   BG_CARD, BG_PAGE,
   TEXT_PRIMARY, TEXT_MUTED, TEXT_SECONDARY,
@@ -32,11 +34,23 @@ export function CycleDetailScreen({ route, navigation }: Props): JSX.Element {
     [cycles, cycleNumber],
   );
 
+  const headerLabels = useMemo(
+    () => (cycle ? formatCyclePrimarySecondary(cycle, cycles) : { primary: '', secondary: '' }),
+    [cycle, cycles],
+  );
+
+  const comparisonNarrative = useMemo(
+    () => (cycle ? buildCycleComparisonNarrative(cycle, cycles) : ''),
+    [cycle, cycles],
+  );
+
   const handleExport = useCallback(async (includeIntercourse: boolean) => {
     if (!cycle) return;
     setExporting(true);
     try {
-      const html = buildCyclePdfHtml(cycle, includeIntercourse);
+      const { primary, secondary } = formatCyclePrimarySecondary(cycle, cycles);
+      const headerSubtitle = `${primary} · ${secondary} · ${cycle.length} days`;
+      const html = buildCyclePdfHtml(cycle, includeIntercourse, { headerSubtitle });
       const { uri } = await Print.printToFileAsync({ html });
       await shareAsync(uri, { mimeType: 'application/pdf' });
     } catch (e: unknown) {
@@ -45,7 +59,7 @@ export function CycleDetailScreen({ route, navigation }: Props): JSX.Element {
     } finally {
       setExporting(false);
     }
-  }, [cycle]);
+  }, [cycle, cycles]);
 
   const queueExport = useCallback((includeIntercourse: boolean) => {
     setPendingIncludeIntercourse(includeIntercourse);
@@ -87,17 +101,22 @@ export function CycleDetailScreen({ route, navigation }: Props): JSX.Element {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={styles.backBtn}>
+        <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={styles.headerSide}>
           <Text style={styles.backArrow}>{'‹'}</Text>
         </Pressable>
-        <Text style={styles.headerTitle}>Cycle {cycle.cycleNumber}</Text>
-        <Pressable
-          style={[styles.exportBtn, exporting && styles.exportBtnDisabled]}
-          onPress={() => setShowIntercoursePrompt(true)}
-          disabled={exporting}
-        >
-          <Text style={styles.exportBtnText}>{exporting ? 'Exporting...' : 'Export'}</Text>
-        </Pressable>
+        <View style={styles.headerCenter}>
+          <Text style={styles.headerPrimary} numberOfLines={2}>{headerLabels.primary}</Text>
+          <Text style={styles.headerSecondary}>{headerLabels.secondary}</Text>
+        </View>
+        <View style={[styles.headerSide, styles.headerSideRight]}>
+          <Pressable
+            style={[styles.exportBtn, exporting && styles.exportBtnDisabled]}
+            onPress={() => setShowIntercoursePrompt(true)}
+            disabled={exporting}
+          >
+            <Text style={styles.exportBtnText}>{exporting ? 'Exporting...' : 'Export'}</Text>
+          </Pressable>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -107,12 +126,16 @@ export function CycleDetailScreen({ route, navigation }: Props): JSX.Element {
           <StatBox label="Fertile End" value={fertileEndLabel} />
         </View>
 
+        <View style={styles.comparisonCard}>
+          <Text style={styles.comparisonText}>{comparisonNarrative}</Text>
+        </View>
+
         <MucusChart
           mucusRanks={cycle.result.mucusRanks}
           phaseLabels={cycle.result.phaseLabels}
           peakIndex={cycle.result.peakIndex}
           intercourseFlags={intercourseFlags}
-          title={`Cycle ${cycle.cycleNumber} Pattern`}
+          title="Your pattern this cycle"
         />
 
         <FertileTimeline cycle={cycle} />
@@ -163,27 +186,54 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 12,
   },
+  headerSide: {
+    width: 88,
+    justifyContent: 'center',
+  },
+  headerSideRight: { alignItems: 'flex-end' },
   backBtn: { paddingRight: 8 },
   backArrow: { fontSize: 28, color: TEXT_PRIMARY, fontWeight: '300', lineHeight: 32 },
-  headerTitle: {
-    flex: 1,
-    fontSize: 21,
+  headerCenter: { flex: 1, alignItems: 'center', paddingHorizontal: 4 },
+  headerPrimary: {
+    fontSize: 17,
     fontWeight: '600',
     color: TEXT_PRIMARY,
     textAlign: 'center',
   },
+  headerSecondary: {
+    fontSize: 13,
+    color: TEXT_MUTED,
+    marginTop: 2,
+    textAlign: 'center',
+  },
   exportBtn: {
     backgroundColor: ACCENT_WARM,
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
   },
   exportBtnDisabled: { opacity: 0.5 },
-  exportBtnText: { color: BG_CARD, fontWeight: '600', fontSize: 14 },
+  exportBtnText: { color: BG_CARD, fontWeight: '600', fontSize: 13 },
   scrollContent: { paddingBottom: 32 },
+  comparisonCard: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    marginBottom: 4,
+    backgroundColor: BG_CARD,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+  },
+  comparisonText: {
+    fontSize: 15,
+    fontWeight: '400',
+    color: TEXT_SECONDARY,
+    lineHeight: 22,
+  },
   statsRow: {
     flexDirection: 'row',
     gap: 8,

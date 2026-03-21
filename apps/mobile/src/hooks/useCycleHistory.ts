@@ -5,7 +5,7 @@ import {
   splitIntoCycles,
   computeCycleSummary,
   generateInsights,
-} from '../../../../core/rulesEngine/src/multiCycle';
+} from 'core-rules-engine';
 import { getAllEntries, entriesToSortedArray } from '../services/storageV2';
 
 interface CycleHistoryData {

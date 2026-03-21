@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { CycleSlice } from '../../../../core/rulesEngine/src/multiCycle';
+import { CycleSlice } from 'core-rules-engine';
 import {
   BG_BLEEDING, BG_CARD, BG_DRY, BG_MISSING, BG_PEAK_TYPE, BG_POST_PEAK,
   FERTILE_ACCENT, PEAK_BORDER,
@@ -34,10 +34,15 @@ function getCellDotColor(rank: number | null, phase: string, bleeding: boolean):
   return null;
 }
 
+function hasPeakForOverlay(c: CycleSlice): boolean {
+  return (
+    c.peakDay !== null &&
+    (c.status === 'complete' || c.status === 'in_progress')
+  );
+}
+
 export function PeakAlignedOverlay({ cycles, onCyclePress }: Props): JSX.Element {
-  const peakCycles = cycles
-    .filter((c) => c.peakDay !== null && c.status === 'complete')
-    .slice(-6);
+  const peakCycles = cycles.filter(hasPeakForOverlay).slice(-6);
 
   if (peakCycles.length === 0) {
     return (
@@ -45,7 +50,7 @@ export function PeakAlignedOverlay({ cycles, onCyclePress }: Props): JSX.Element
         <Text style={styles.heading}>Peak-Aligned Overlay</Text>
         <View style={styles.card}>
           <Text style={styles.emptyText}>
-            Overlay will appear once cycles with confirmed peaks are recorded.
+            Overlay will appear once a peak day is recorded, so you can compare your current cycle with past ones.
           </Text>
         </View>
       </View>

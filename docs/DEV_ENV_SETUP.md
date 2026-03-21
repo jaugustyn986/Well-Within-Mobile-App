@@ -77,3 +77,15 @@ To test magic link and sync on a real device (or simulator with a dev build):
 4. On the same device, open the email and tap the link. The app should open and show you as signed in. Then add or edit an entry and tap **Sync now** in Settings to verify sync.
 
 For more detail on Supabase and deep linking, see [docs/SUPABASE_SETUP.md](SUPABASE_SETUP.md) and [docs/DEEP_LINKING.md](DEEP_LINKING.md).
+
+---
+
+## 6. Debugging dev builds
+
+See **[DEV_BUILD_DEBUGGING.md](DEV_BUILD_DEBUGGING.md)** for Metro vs device networking (`127.0.0.1`), custom dev clients vs Expo Go, optional desktop log ingest, and using rules engine tests to verify chart logic without relying on a physical device.
+
+---
+
+## 7. Monorepo: rules engine import
+
+The app depends on the workspace package **`core-rules-engine`** (`core/rulesEngine`). Imports use `from 'core-rules-engine'` (not long `../../..` paths). **`apps/mobile/metro.config.js`** sets `watchFolders` and `nodeModulesPaths` so Metro resolves the workspace package and transpiles its TypeScript. After `npm install` from the repo root, the symlink appears under `node_modules`.

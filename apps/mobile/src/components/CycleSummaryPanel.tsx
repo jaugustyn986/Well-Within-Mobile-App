@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { CycleSummary } from '../../../../core/rulesEngine/src/multiCycle';
+import { CycleSummary } from 'core-rules-engine';
 import { BG_CARD, TEXT_PRIMARY, TEXT_MUTED, BORDER_CARD } from '../theme/colors';
 
 interface Props {
@@ -21,7 +21,7 @@ export function CycleSummaryPanel({ summary }: Props): JSX.Element {
     <View style={styles.container}>
       <Text style={styles.heading}>Cycle Summary</Text>
       <View style={styles.grid}>
-        <StatCard label="Cycles Tracked" value={String(summary.cyclesTracked)} />
+        <StatCard label="Complete cycles" value={String(summary.cyclesTracked)} />
         <StatCard label="Avg Cycle (days)" value={summary.avgLength !== null ? String(summary.avgLength) : '--'} />
         <StatCard label="Avg Peak Day" value={summary.avgPeakDay !== null ? `Day ${summary.avgPeakDay}` : '--'} />
         <StatCard label="Avg Luteal Phase" value={summary.avgLutealPhase !== null ? `${summary.avgLutealPhase} days` : '--'} />

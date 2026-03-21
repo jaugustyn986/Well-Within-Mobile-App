@@ -5,3 +5,5 @@ export * from './fertileWindow';
 export * from './recalc';
 export * from './multiCycle';
 export * from './creightonCode';
+export * from './observationEducationCopy';
+export * from './cycleComparisonSummary';

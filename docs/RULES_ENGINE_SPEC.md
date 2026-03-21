@@ -3,6 +3,9 @@
 > This module must be deterministic, pure, and non-predictive. AI, forecasting, or probabilistic scoring are explicitly forbidden.
 
 ## Mucus Rank Mapping
+
+The app and exported PDF show **qualitative chart labels** (Dry, Damp, Wet, Peak-type) derived from the numeric ranks below; users do not see 0–3 in the product UI.
+
 Given a daily entry or observation with `sensation` and `appearances` (array):
 
 The rank is the **maximum** across all applicable signals:
@@ -390,7 +393,7 @@ The rules engine includes a multi-cycle utility module (`core/rulesEngine/src/mu
 
 ### Functions
 
-- **`splitIntoCycles(entries)`** — Takes a flat, date-sorted array of `DailyEntry` objects and splits them into individual `CycleSlice` objects. A new cycle starts on the first day of heavy or moderate bleeding that is not a continuation of an existing heavy/moderate bleeding sequence (same bleeding reset rule as the core engine).
+- **`splitIntoCycles(entries)`** — Takes a flat, date-sorted array of `DailyEntry` objects and splits them into individual `CycleSlice` objects. A new cycle starts on the first day of heavy or moderate bleeding that is not a continuation of an existing heavy/moderate bleeding sequence (same bleeding reset rule as the core engine). Any leading days at the start of the chart that have **no** heavy or moderate bleeding are merged into the first cycle (the one that begins on that first heavy/moderate day), so history does not show a spurious one-day “cycle” from spotting/light-only days before flow.
 - **`computeCycleSummary(cycles)`** — Accepts an array of `CycleSlice` and returns aggregate statistics: total cycles tracked, average cycle length, average peak day, and average luteal phase.
 - **`generateInsights(cycles)`** — Accepts an array of `CycleSlice` (requires ≥ 2 completed cycles) and returns human-readable insight strings covering peak day range, typical fertile window start, luteal phase average, and cycle consistency.
 

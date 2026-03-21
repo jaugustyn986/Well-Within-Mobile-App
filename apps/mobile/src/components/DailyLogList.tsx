@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { CycleSlice } from '../../../../core/rulesEngine/src/multiCycle';
-import { PhaseLabel } from '../../../../core/rulesEngine/src/types';
+import { mucusChartStrengthLabel, CycleSlice, PhaseLabel } from 'core-rules-engine';
 import {
   BG_BLEEDING, BG_CARD, BG_DRY, BG_MISSING, BG_PEAK_TYPE, BG_POST_PEAK,
   FERTILE_ACCENT, PEAK_BORDER,
@@ -43,13 +42,7 @@ function formatDate(dateStr: string): string {
 }
 
 function getRankLabel(rank: number | null): string {
-  switch (rank) {
-    case 0: return 'Dry';
-    case 1: return 'Damp';
-    case 2: return 'Wet';
-    case 3: return 'Peak-type';
-    default: return '--';
-  }
+  return mucusChartStrengthLabel(rank, '--');
 }
 
 export function DailyLogList({ cycle }: Props): JSX.Element {

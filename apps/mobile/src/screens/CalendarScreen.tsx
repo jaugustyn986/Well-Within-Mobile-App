@@ -13,7 +13,7 @@ import { CycleSummaryPanel } from '../components/CycleSummaryPanel';
 import { PatternInsights } from '../components/PatternInsights';
 import { PeakAlignedOverlay } from '../components/PeakAlignedOverlay';
 import { CycleCard } from '../components/CycleCard';
-import { PhaseLabel } from '../../../../core/rulesEngine/src/types';
+import { PhaseLabel } from 'core-rules-engine';
 import { LineIcon } from '../components/LineIcon';
 import {
   BG_PAGE, BG_CARD, BORDER_CARD,
@@ -178,19 +178,19 @@ export function CalendarScreen(): JSX.Element {
               onPress={() => navigation.navigate('Help')}
             >
               <Text style={styles.helpText}>Need help understanding your chart?</Text>
-              <Text style={styles.helpSub}>Learn about mucus types, peak day, and more</Text>
+              <Text style={styles.helpSub}>Learn about sensation, appearance, peak day, and more</Text>
             </Pressable>
           </>
         ) : (
           <>
-            {cycleHistory.cycles.length < 2 ? (
+            {cycleHistory.cycles.length === 0 ? (
               <View style={styles.emptyContainer}>
                 <View style={{ marginBottom: 16 }}>
                   <LineIcon name="chart" size={48} />
                 </View>
                 <Text style={styles.emptyTitle}>Cycle History</Text>
                 <Text style={styles.emptyText}>
-                  Cycle insights will appear once multiple cycles are recorded.
+                  Your cycles will show here once you begin charting.
                 </Text>
               </View>
             ) : (
@@ -205,6 +205,7 @@ export function CalendarScreen(): JSX.Element {
                     <CycleCard
                       key={c.cycleNumber}
                       cycle={c}
+                      allCycles={cycleHistory.cycles}
                       onPress={() => goToDetail(c.cycleNumber)}
                     />
                   ))}

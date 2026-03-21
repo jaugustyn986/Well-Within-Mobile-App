@@ -1,6 +1,10 @@
-import { CycleSlice } from '../../../../core/rulesEngine/src/multiCycle';
-import { generateCreightonCode } from '../../../../core/rulesEngine/src/creightonCode';
-import { PhaseLabel } from '../../../../core/rulesEngine/src/types';
+import {
+  CycleSlice,
+  generateCreightonCode,
+  mucusChartStrengthLabel,
+  PDF_CHART_STRENGTH_HEADER,
+  PhaseLabel,
+} from 'core-rules-engine';
 
 const PHASE_DISPLAY: Record<PhaseLabel, string> = {
   dry: 'Dry',
@@ -24,7 +28,14 @@ function phaseBg(phase: PhaseLabel): string {
   }
 }
 
-export function buildCyclePdfHtml(cycle: CycleSlice, includeIntercourse: boolean): string {
+export function buildCyclePdfHtml(
+  cycle: CycleSlice,
+  includeIntercourse: boolean,
+  options?: { headerSubtitle?: string },
+): string {
+  const headerSubtitle =
+    options?.headerSubtitle
+    ?? `${cycle.startDate} – ${cycle.endDate} · ${cycle.length} days`;
   const fertileStart = cycle.result.fertileStartIndex !== null
     ? `Day ${cycle.result.fertileStartIndex + 1}`
     : '--';
@@ -56,7 +67,7 @@ export function buildCyclePdfHtml(cycle: CycleSlice, includeIntercourse: boolean
         <td style="padding:6px 8px;">${entry.sensation ?? ''}</td>
         <td style="padding:6px 8px;">${appearanceList}</td>
         <td style="padding:6px 8px;text-align:center;">${freq}</td>
-        <td style="padding:6px 8px;text-align:center;">${rank ?? ''}</td>
+        <td style="padding:6px 8px;text-align:center;">${mucusChartStrengthLabel(rank, '')}</td>
         <td style="padding:6px 8px;">${code}</td>
         <td style="padding:6px 8px;">${PHASE_DISPLAY[phase] ?? phase}</td>
         ${ic}
@@ -85,7 +96,7 @@ export function buildCyclePdfHtml(cycle: CycleSlice, includeIntercourse: boolean
 </head>
 <body>
   <h1>Cycle ${cycle.cycleNumber}</h1>
-  <div class="subtitle">${cycle.startDate} – ${cycle.endDate} · ${cycle.length} days</div>
+  <div class="subtitle">${headerSubtitle}</div>
 
   <div class="stats">
     <div class="stat"><div class="stat-value">${cycle.length}d</div><div class="stat-label">Length</div></div>
@@ -104,7 +115,7 @@ export function buildCyclePdfHtml(cycle: CycleSlice, includeIntercourse: boolean
         <th style="padding:6px 8px;">Sensation</th>
         <th style="padding:6px 8px;">Appearance</th>
         <th style="padding:6px 8px;text-align:center;">Freq</th>
-        <th style="padding:6px 8px;text-align:center;">Rank</th>
+        <th style="padding:6px 8px;text-align:center;">${PDF_CHART_STRENGTH_HEADER}</th>
         <th style="padding:6px 8px;">Code</th>
         <th style="padding:6px 8px;">Phase</th>
         ${intercourseHeader}
