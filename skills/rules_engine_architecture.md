@@ -27,11 +27,12 @@ recalculateCycle(entries: DailyEntryInput[]): CycleResult
 The engine performs:
 
 1. mucus ranking
-2. fertile window start detection
-3. peak candidate detection
-4. peak confirmation
-5. fertile window end detection
-6. phase labeling
+2. fertile window start detection (flow-aware; `fertileStartReason` when uncertain)
+3. peak candidate detection and calendar-based P+3 confirmation (`peakCandidateIndex`, `peakConfirmed`)
+4. fertile window end detection (`fertileEndIndex` on the calendar day of P+3)
+5. per-day bleeding classification (`bleedingClassByDay`, `brownBleedingContextByDay`)
+6. interpretation warnings and `dataComplete`
+7. phase labeling (calendar-aligned to Peak Day and P+1–P+3)
 
 Multi-cycle layer (core/rulesEngine/src/multiCycle.ts):
 

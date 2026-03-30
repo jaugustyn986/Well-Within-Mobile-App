@@ -1,35 +1,83 @@
+﻿import { addDaysIso, entryDateOrSynthetic } from './calendar';
+import { DailyEntry } from './types';
+
 /**
  * RULES ENGINE SPEC: docs/RULES_ENGINE_SPEC.md
- * Peak confirmed after 3 lower-quality days. Missing days block confirmation.
- * Predictive behavior is forbidden.
+ * Peak confirmed using three consecutive calendar days after peak-type day.
  */
 export function detectPeak(
+  entries: DailyEntry[],
   ranks: Array<number | null>,
-  startIndex = 0
-): { peakIndex: number | null; fertileEndIndex: number | null } {
-  let candidate: number | null = null;
+  startIndex: number,
+): {
+  peakCandidateIndex: number | null;
+  peakIndex: number | null;
+  fertileEndIndex: number | null;
+} {
+  const n = entries.length;
+  const dateToIndex = new Map<string, number>();
+  for (let i = 0; i < n; i++) {
+    const d = entryDateOrSynthetic(entries[i]?.date, i);
+    dateToIndex.set(d, i);
+  }
 
-  for (let i = startIndex; i < ranks.length; i += 1) {
-    const rank = ranks[i];
-    if (rank === null) continue;
+  const peakTypeIndices: number[] = [];
+  for (let i = startIndex; i < n; i += 1) {
+    if (entries[i]?.missing) continue;
+    if (ranks[i] === 3) peakTypeIndices.push(i);
+  }
 
-    if (rank === 3) candidate = i;
+  peakTypeIndices.sort((a, b) =>
+    entryDateOrSynthetic(entries[a]?.date, a).localeCompare(
+      entryDateOrSynthetic(entries[b]?.date, b),
+    ),
+  );
 
-    if (candidate === null) continue;
+  let peakCandidateIndex: number | null =
+    peakTypeIndices.length > 0 ? peakTypeIndices[peakTypeIndices.length - 1] : null;
 
-    const candidateRank = ranks[candidate]!;
-
-    const c1 = ranks[candidate + 1];
-    const c2 = ranks[candidate + 2];
-    const c3 = ranks[candidate + 3];
-
-    if (c1 === undefined || c2 === undefined || c3 === undefined) continue;
-    if (c1 === null || c2 === null || c3 === null) continue;
-
-    if (c1 < candidateRank && c2 < candidateRank && c3 < candidateRank) {
-      return { peakIndex: candidate, fertileEndIndex: candidate + 3 };
+  for (const cand of peakTypeIndices) {
+    peakCandidateIndex = cand;
+    const D = entryDateOrSynthetic(entries[cand]?.date, cand);
+    const candRank = ranks[cand]!;
+    let ok = true;
+    for (let k = 1; k <= 3; k += 1) {
+      const nextD = addDaysIso(D, k);
+      const idx = dateToIndex.get(nextD);
+      if (idx === undefined) {
+        ok = false;
+        break;
+      }
+      if (entries[idx]?.missing) {
+        ok = false;
+        break;
+      }
+      const r = ranks[idx];
+      if (r === null || r === undefined) {
+        ok = false;
+        break;
+      }
+      if (r >= candRank) {
+        ok = false;
+        break;
+      }
+    }
+    if (ok) {
+      const endIdx = dateToIndex.get(addDaysIso(D, 3));
+      if (endIdx === undefined) {
+        return { peakCandidateIndex: cand, peakIndex: null, fertileEndIndex: null };
+      }
+      return {
+        peakCandidateIndex: cand,
+        peakIndex: cand,
+        fertileEndIndex: endIdx,
+      };
     }
   }
 
-  return { peakIndex: null, fertileEndIndex: null };
+  return {
+    peakCandidateIndex,
+    peakIndex: null,
+    fertileEndIndex: null,
+  };
 }

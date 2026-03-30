@@ -87,38 +87,97 @@ Derived from the base code:
 | 6, 8 | fertile |
 | 10, 10DL, 10SL, 10WL | peak_type |
 
-## Fertile Start
-- Fertile start is the first day after cycle start where `mucus_rank >= 1`.
-- If no such day exists, fertile start is `null`.
+## Scope: standard cycle only (MVP)
 
-## Peak Candidate & Confirmation (P+3 Rule)
-- Any day with rank `3` can be a peak candidate.
-- A candidate is confirmed only when `candidate+1`, `candidate+2`, `candidate+3` all exist and have ranks strictly lower than candidate rank.
-- If any confirmation day is missing (`null`, undefined, or `missing: true`), confirmation is blocked.
-- If during waiting period a day has rank `>= candidate rank`, candidate resets to that later day.
-- When confirmed: `peak_day = candidate`, `fertile_end = peak_day + 3` inclusive.
-- If never confirmed: `peak_day = null`, `fertile_end = null`.
+This specification describes the **standard Creighton-style cycle** (dry → mucus → peak → post-peak). **Basic infertile pattern (BIP)** and other alternate interpretations are **out of scope** until explicitly added.
 
-## Recalculation
-- Recompute ranks and cycle labels for all entries whenever any entry changes.
-- Same inputs must always return identical outputs.
-- No network calls and no randomness allowed.
+## Fertile start (standard cycle)
 
-## Missing-Day Behavior
-- Missing days do not get inferred values.
-- Missing days block peak confirmation where relevant.
+**Intent:** Fertile opening is tied to **observed mucus** after the menstrual flow phase, not to a raw rank threshold alone.
 
-## Bleeding Reset Rule
-- A new cycle begins on the first day of heavy or moderate bleeding that is not a continuation of an existing heavy/moderate bleeding sequence.
+**Blocking bleeding:** Days with `bleeding` in `heavy`, `moderate`, `light`, or `spotting` are treated as **flow** days for this rule. Fertile start is **not** assigned on a flow day even if mucus rank would otherwise be ≥ 1 (see verification case 7B).
+
+**Rule:** `fertileStartIndex` is the first index `i` at or after `cycleStartIndex` such that:
+
+1. `mucusRanks[i] >= 1` (observed mucus present for ranking), and  
+2. `entries[i].bleeding` is **not** one of `heavy` | `moderate` | `light` | `spotting` (treat `undefined` / `none` / `brown` as non-flow for opening).
+
+If no such day exists, `fertileStartIndex` is `null`.
+
+**`fertileStartReason`** (enum on `CycleResult`):
+
+- `first_mucus_after_dry` — default when the above rule applied without a blocking ambiguity from missing data.  
+- `uncertain_due_to_missing` — there is a **missing** row or **calendar gap** between `cycleStartIndex` and the first mucus day in the slice, so the “first mucus after flow” boundary is not fully observed.
+
+## Peak candidate and confirmation (calendar P+3, standard cycle)
+
+**Peak-type day:** `mucusRanks[i] === 3` (peak-type mucus per rank mapping above) and the row is not missing.
+
+**Calendar confirmation:** Peak is **not** confirmed by slice index adjacency alone. Let `D` be the calendar date (`YYYY-MM-DD`) of a peak-type day. Peak is **confirmed** at that day only if the **next three consecutive calendar days** `D+1`, `D+2`, `D+3` each:
+
+1. **Exist** as a stored row in the same recalculation array (no calendar gap).  
+2. Are **not** `missing: true` and have non-null rank.  
+3. Have ranks **strictly lower** than the candidate rank (for rank `3` followers, ranks must be `< 3`).  
+4. Contain **no** peak-type observation on those days (already enforced by rank &lt; 3 when candidate rank is 3).
+
+**Later peak-type overrides:** Process days in **chronological order** by date. The active **peak candidate** is the latest peak-type day encountered. If confirmation is not yet satisfied and a **new** peak-type day appears on a later calendar day, the candidate **resets** to that day (verification 1B).
+
+**Insufficient future days:** If `D+1`, `D+2`, or `D+3` are not all present in the chart, peak is **not** confirmed (verification 1D).
+
+**Missing in P+1–P+3:** Any missing row or gap in the confirmation window **blocks** confirmation (1C, 2A).
+
+**Synthetic dates:** If an entry has no `date`, the engine uses a deterministic synthetic anchor (`index` days after `2000-01-01`) so unit tests without dates remain deterministic; production entries should always include `date`.
+
+**Outputs:**
+
+- `peakCandidateIndex` — index of the **current** peak-type candidate (latest peak-type day in chronological order when unconfirmed); `null` if no peak-type day exists in the cycle.  
+- `peakIndex` — index of **confirmed** Peak Day, or `null`.  
+- `peakConfirmed` — `true` iff `peakIndex !== null`.  
+- `fertileEndIndex` — `peakIndex + 3` when confirmed, else `null`.
+
+## Missing data and interpretation warnings
+
+- Missing rows **block** peak confirmation when they fall in the P+1–P+3 **calendar** window for the active candidate.  
+- Calendar gaps (no row for a date) are treated like missing for confirmation.  
+- Missing **after** Peak is confirmed does **not** invalidate the confirmed peak; it may reduce certainty in the banner (see Current cycle summary).  
+- **`dataComplete`** — `false` if any `interpretationWarnings` are present **or** any completeness gap is detected for the slice (see implementation).  
+- **`interpretationWarnings`** — deterministic `InterpretationWarningId[]` (closed set), e.g. `missing_blocks_peak_confirmation`, `calendar_gap_blocks_peak_confirmation`, `uncertain_fertile_start`. The UI maps these to copy; the engine does not emit freeform prose.
+
+## Bleeding classification (per day)
+
+Each day in the slice has derived:
+
+- **`bleedingClass`:** `cycle_start_flow` | `continuing_menses` | `spotting` | `post_peak_spotting` | `brown_discharge` | `intermenstrual` | `none`  
+- **`brownBleedingContext`:** `pre_flow` | `post_peak` | `mid_cycle` | `null` if not brown-only context
+
+**Rules (summary):**
+
+- Only **heavy** or **moderate** starts a new cycle (see Bleeding reset).  
+- **Spotting** before a later heavy/moderate flow is preamble, not cycle start.  
+- **Brown** does **not** start a cycle; context is derived from position relative to flow and peak.  
+- **Post-peak spotting** is flagged when bleeding is spotting after confirmed fertile end.
+
+## Bleeding reset rule
+
+- A new cycle begins on the first day of heavy or moderate bleeding that is not a continuation of an existing heavy/moderate bleeding sequence.  
 - Days before the most recent cycle start are labeled `previous_cycle`.
 
-## Output Requirements
-`CycleResult` must include:
-- `peakIndex`
-- `fertileStartIndex`
-- `fertileEndIndex`
-- `phaseLabels[]`
-- `mucusRanks[]`
+## Recalculation
+
+- Recompute ranks, peak, fertile start, bleeding classes, warnings, and cycle labels for all entries whenever any entry changes.  
+- Same inputs must always return identical outputs.  
+- No network calls and no randomness allowed.
+
+## Output requirements (`CycleResult`)
+
+`CycleResult` includes at least:
+
+- `peakCandidateIndex`, `peakIndex`, `peakConfirmed`  
+- `fertileStartIndex`, `fertileStartReason` (`null` if no fertile start)  
+- `fertileEndIndex`  
+- `phaseLabels[]`, `mucusRanks[]`  
+- `bleedingClassByDay[]`, `brownBleedingContextByDay[]` (same length as entries)  
+- `dataComplete`, `interpretationWarnings[]`
 
 ## Current cycle summary (calendar banner)
 
@@ -187,6 +246,13 @@ Date arithmetic uses ISO `YYYY-MM-DD` strings as local calendar dates (same conv
 **Tone**
 
 - Engine emits `summaryTone`: `neutral` | `caution` | `positive` (no hex). UI maps to `BANNER_TONE_*` / `BG_CARD_GRADIENT_START` in `apps/mobile/src/theme/colors.ts`.
+
+**Messaging principles (human, not mechanical)**
+
+- Headlines and guidance should **name the user’s situation** (e.g. missing day blocking Peak confirmation) rather than abstract system nouns (“interpretation,” “validation”).  
+- Prefer **plain language** alongside any reliability line; avoid repeating identical sentence templates for every branch.  
+- **`interpretationWarnings`** drive specific, short explanations; copy is **deterministic** from a closed set of templates (see `InterpretationWarningId` in types).  
+- Iteration: expand the banner copy matrix as new `CycleResult` fields stabilize; UI remains layout-only.
 
 **Manual QA matrix**
 

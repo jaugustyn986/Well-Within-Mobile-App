@@ -1,17 +1,20 @@
-import { detectFertileStart } from './fertileWindow';
+﻿import { deriveBleedingMetadata } from './bleedingDerive';
+import { addDaysIso, compareIsoDate, entryDateOrSynthetic } from './calendar';
+import { detectFertileStartDetailed } from './fertileWindow';
 import { detectPeak } from './peak';
 import { computeMucusRank } from './rank';
-import { CycleResult, DailyEntry, PhaseLabel } from './types';
+import {
+  CycleResult,
+  DailyEntry,
+  InterpretationWarningId,
+  PhaseLabel,
+} from './types';
+import type { FertileStartReason } from './types';
 
 interface RecalcOptions {
   debug?: boolean;
 }
 
-/**
- * Find the start of the most recent cycle by locating the last occurrence
- * of heavy or moderate bleeding. Per Creighton rules, a new cycle begins
- * on the first day of menstruation (heavy/moderate bleeding).
- */
 function findCurrentCycleStart(entries: Array<DailyEntry | null>): number {
   let startIndex = 0;
   for (let i = 0; i < entries.length; i += 1) {
@@ -28,22 +31,89 @@ function findCurrentCycleStart(entries: Array<DailyEntry | null>): number {
   return startIndex;
 }
 
+function buildDateToIndex(entries: DailyEntry[]): Map<string, number> {
+  const m = new Map<string, number>();
+  for (let i = 0; i < entries.length; i += 1) {
+    m.set(entryDateOrSynthetic(entries[i]?.date, i), i);
+  }
+  return m;
+}
+
+function collectInterpretationWarnings(
+  entries: DailyEntry[],
+  ranks: Array<number | null>,
+  peakCandidateIndex: number | null,
+  peakIndex: number | null,
+  fertileStartReason: FertileStartReason | null,
+): InterpretationWarningId[] {
+  const w: InterpretationWarningId[] = [];
+  if (fertileStartReason === 'uncertain_due_to_missing') {
+    w.push('uncertain_fertile_start');
+  }
+  if (peakCandidateIndex !== null && peakIndex === null) {
+    const dateToIndex = buildDateToIndex(entries);
+    const D = entryDateOrSynthetic(entries[peakCandidateIndex]?.date, peakCandidateIndex);
+    for (let k = 1; k <= 3; k += 1) {
+      const nextD = addDaysIso(D, k);
+      const idx = dateToIndex.get(nextD);
+      if (idx === undefined) {
+        w.push('calendar_gap_blocks_peak_confirmation');
+        break;
+      }
+      if (entries[idx]?.missing || ranks[idx] === null) {
+        w.push('missing_blocks_peak_confirmation');
+        break;
+      }
+    }
+  }
+  return w;
+}
+
 /**
  * RULES ENGINE SPEC: docs/RULES_ENGINE_SPEC.md
- * Recompute whole cycle on every edit. Predictive behavior is forbidden.
  */
-export function recalculateCycle(entries: Array<DailyEntry | null>, options: RecalcOptions = {}): CycleResult {
-  const phaseLabels: PhaseLabel[] = new Array(entries.length).fill('dry');
-  const mucusRanks = entries.map((entry) => computeMucusRank(entry));
-  const cycleStartIndex = findCurrentCycleStart(entries);
+export function recalculateCycle(
+  entries: Array<DailyEntry | null>,
+  options: RecalcOptions = {},
+): CycleResult {
+  const safeEntries: DailyEntry[] = entries.map((e) => e ?? {});
+  const phaseLabels: PhaseLabel[] = new Array(safeEntries.length).fill('dry');
+  const mucusRanks = safeEntries.map((entry) => computeMucusRank(entry));
+  const cycleStartIndex = findCurrentCycleStart(safeEntries);
 
-  const fertileStartIndex = detectFertileStart(mucusRanks, cycleStartIndex);
-  const { peakIndex, fertileEndIndex } = detectPeak(mucusRanks, cycleStartIndex);
+  const { fertileStartIndex, fertileStartReason } = detectFertileStartDetailed(
+    safeEntries,
+    mucusRanks,
+    cycleStartIndex,
+  );
 
-  const hasFertileWindow = fertileStartIndex !== null;
+  const {
+    peakCandidateIndex,
+    peakIndex,
+    fertileEndIndex,
+  } = detectPeak(safeEntries, mucusRanks, cycleStartIndex);
+
   const peakConfirmed = peakIndex !== null && fertileEndIndex !== null;
+  const hasFertileWindow = fertileStartIndex !== null;
 
-  for (let i = 0; i < entries.length; i += 1) {
+  const interpretationWarnings = collectInterpretationWarnings(
+    safeEntries,
+    mucusRanks,
+    peakCandidateIndex,
+    peakIndex,
+    fertileStartReason,
+  );
+
+  const { bleedingClassByDay, brownBleedingContextByDay } = deriveBleedingMetadata(
+    safeEntries,
+    cycleStartIndex,
+    peakConfirmed,
+    fertileEndIndex,
+  );
+
+  const dataComplete = interpretationWarnings.length === 0;
+
+  for (let i = 0; i < safeEntries.length; i += 1) {
     const rank = mucusRanks[i];
 
     if (i < cycleStartIndex) {
@@ -51,29 +121,46 @@ export function recalculateCycle(entries: Array<DailyEntry | null>, options: Rec
       continue;
     }
 
-    if (entries[i]?.missing || entries[i] === null || rank === null) {
+    if (safeEntries[i]?.missing || entries[i] === null || rank === null) {
       phaseLabels[i] = 'missing';
       continue;
     }
 
-    if (peakConfirmed) {
-      if (i < fertileStartIndex!) {
+    const d = entryDateOrSynthetic(safeEntries[i]?.date, i);
+
+    if (peakConfirmed && peakIndex !== null && fertileStartIndex !== null) {
+      const peakDate = entryDateOrSynthetic(safeEntries[peakIndex]?.date, peakIndex);
+      const fertileStartDate = entryDateOrSynthetic(
+        safeEntries[fertileStartIndex]?.date,
+        fertileStartIndex,
+      );
+      if (compareIsoDate(d, fertileStartDate) < 0) {
         phaseLabels[i] = 'dry';
-      } else if (i < peakIndex!) {
+      } else if (compareIsoDate(d, peakDate) < 0) {
         phaseLabels[i] = 'fertile_open';
-      } else if (i === peakIndex) {
+      } else if (d === peakDate) {
         phaseLabels[i] = 'peak_confirmed';
-      } else if (i === peakIndex! + 1) {
+      } else if (d === addDaysIso(peakDate, 1)) {
         phaseLabels[i] = 'p_plus_1';
-      } else if (i === peakIndex! + 2) {
+      } else if (d === addDaysIso(peakDate, 2)) {
         phaseLabels[i] = 'p_plus_2';
-      } else if (i === peakIndex! + 3) {
+      } else if (d === addDaysIso(peakDate, 3)) {
         phaseLabels[i] = 'p_plus_3';
-      } else if (i > fertileEndIndex!) {
+      } else if (compareIsoDate(d, addDaysIso(peakDate, 3)) > 0) {
         phaseLabels[i] = 'post_peak';
+      } else {
+        phaseLabels[i] = 'dry';
       }
-    } else if (hasFertileWindow && i >= fertileStartIndex!) {
-      phaseLabels[i] = 'fertile_unconfirmed_peak';
+    } else if (hasFertileWindow && fertileStartIndex !== null) {
+      const fertileStartDate = entryDateOrSynthetic(
+        safeEntries[fertileStartIndex]?.date,
+        fertileStartIndex,
+      );
+      if (compareIsoDate(d, fertileStartDate) >= 0) {
+        phaseLabels[i] = 'fertile_unconfirmed_peak';
+      } else {
+        phaseLabels[i] = 'dry';
+      }
     } else {
       phaseLabels[i] = 'dry';
     }
@@ -81,8 +168,28 @@ export function recalculateCycle(entries: Array<DailyEntry | null>, options: Rec
 
   if (options.debug) {
     // eslint-disable-next-line no-console
-    console.debug({ cycleStartIndex, mucusRanks, fertileStartIndex, peakIndex, fertileEndIndex, phaseLabels });
+    console.debug({
+      cycleStartIndex,
+      mucusRanks,
+      fertileStartIndex,
+      peakIndex,
+      fertileEndIndex,
+      phaseLabels,
+    });
   }
 
-  return { peakIndex, fertileStartIndex, fertileEndIndex, phaseLabels, mucusRanks };
+  return {
+    peakCandidateIndex,
+    peakIndex,
+    peakConfirmed,
+    fertileStartIndex,
+    fertileStartReason,
+    fertileEndIndex,
+    phaseLabels,
+    mucusRanks,
+    bleedingClassByDay,
+    brownBleedingContextByDay,
+    dataComplete,
+    interpretationWarnings,
+  };
 }

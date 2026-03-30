@@ -1,20 +1,51 @@
+﻿import { syntheticDateForIndex } from '../src/calendar';
 import { detectPeak } from '../src/peak';
+import { DailyEntry } from '../src/types';
+
+function entriesForLength(n: number): DailyEntry[] {
+  return Array.from({ length: n }, (_, i) => ({ date: syntheticDateForIndex(i) }));
+}
 
 describe('detectPeak', () => {
   it('detects a valid peak with P+3 lower ranks', () => {
-    expect(detectPeak([0, 1, 3, 2, 1, 0])).toEqual({ peakIndex: 2, fertileEndIndex: 5 });
+    const ranks = [0, 1, 3, 2, 1, 0];
+    expect(detectPeak(entriesForLength(ranks.length), ranks, 0)).toEqual({
+      peakCandidateIndex: 2,
+      peakIndex: 2,
+      fertileEndIndex: 5,
+    });
   });
 
   it('resets candidate when equal/higher rank appears during waiting period', () => {
-    expect(detectPeak([0, 1, 3, 1, 3, 1, 0, 0])).toEqual({ peakIndex: 4, fertileEndIndex: 7 });
+    const ranks = [0, 1, 3, 1, 3, 1, 0, 0];
+    expect(detectPeak(entriesForLength(ranks.length), ranks, 0)).toEqual({
+      peakCandidateIndex: 4,
+      peakIndex: 4,
+      fertileEndIndex: 7,
+    });
   });
 
   it('does not confirm when P+1..P+3 missing', () => {
-    expect(detectPeak([0, 1, 3, null, 1, 0, 0])).toEqual({ peakIndex: null, fertileEndIndex: null });
-    expect(detectPeak([0, 1, 3, 2])).toEqual({ peakIndex: null, fertileEndIndex: null });
+    const ranks = [0, 1, 3, null, 1, 0, 0];
+    expect(detectPeak(entriesForLength(ranks.length), ranks, 0)).toEqual({
+      peakCandidateIndex: 2,
+      peakIndex: null,
+      fertileEndIndex: null,
+    });
+    const ranks2 = [0, 1, 3, 2];
+    expect(detectPeak(entriesForLength(ranks2.length), ranks2, 0)).toEqual({
+      peakCandidateIndex: 2,
+      peakIndex: null,
+      fertileEndIndex: null,
+    });
   });
 
   it('supports shifted cycle start', () => {
-    expect(detectPeak([3, 2, 1, 0, 1, 3, 1, 0, 0], 4)).toEqual({ peakIndex: 5, fertileEndIndex: 8 });
+    const ranks = [3, 2, 1, 0, 1, 3, 1, 0, 0];
+    expect(detectPeak(entriesForLength(ranks.length), ranks, 4)).toEqual({
+      peakCandidateIndex: 5,
+      peakIndex: 5,
+      fertileEndIndex: 8,
+    });
   });
 });

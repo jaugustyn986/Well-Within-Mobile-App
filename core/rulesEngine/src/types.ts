@@ -1,4 +1,4 @@
-export type BleedingType = 'heavy' | 'moderate' | 'light' | 'spotting' | 'none' | 'brown';
+﻿export type BleedingType = 'heavy' | 'moderate' | 'light' | 'spotting' | 'none' | 'brown';
 export type Sensation = 'dry' | 'damp' | 'wet' | 'shiny' | 'sticky' | 'tacky' | 'stretchy';
 export type Appearance = 'none' | 'brown' | 'cloudy' | 'cloudy_clear' | 'gummy' | 'clear' | 'lubricative' | 'pasty' | 'red' | 'yellow';
 export type Frequency = 1 | 2 | 3 | 'all_day';
@@ -43,10 +43,36 @@ export interface CreightonCode {
   fertilityClassification: FertilityClassification;
 }
 
+/** Deterministic warning ids for UI copy mapping (see RULES_ENGINE_SPEC). */
+export type InterpretationWarningId =
+  | 'missing_blocks_peak_confirmation'
+  | 'calendar_gap_blocks_peak_confirmation'
+  | 'uncertain_fertile_start';
+
+export type FertileStartReason = 'first_mucus_after_dry' | 'uncertain_due_to_missing';
+
+export type BleedingClass =
+  | 'none'
+  | 'cycle_start_flow'
+  | 'continuing_menses'
+  | 'spotting'
+  | 'post_peak_spotting'
+  | 'brown_discharge'
+  | 'intermenstrual';
+
+export type BrownBleedingContext = 'pre_flow' | 'post_peak' | 'mid_cycle';
+
 export interface CycleResult {
+  peakCandidateIndex: number | null;
   peakIndex: number | null;
+  peakConfirmed: boolean;
   fertileStartIndex: number | null;
+  fertileStartReason: FertileStartReason | null;
   fertileEndIndex: number | null;
   phaseLabels: PhaseLabel[];
   mucusRanks: Array<number | null>;
+  bleedingClassByDay: BleedingClass[];
+  brownBleedingContextByDay: (BrownBleedingContext | null)[];
+  dataComplete: boolean;
+  interpretationWarnings: InterpretationWarningId[];
 }

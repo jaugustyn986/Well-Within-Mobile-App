@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from 'react';
 import { recalculateCycle, CycleResult, DailyEntry } from 'core-rules-engine';
 import {
   getAllEntries,
@@ -69,3 +69,4 @@ export function useCycleData(): CycleData {
 
   return { entries, sortedEntries, result, loading, save, remove, refresh };
 }
+
