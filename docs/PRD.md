@@ -286,7 +286,7 @@ The entire cycle must be recalculated whenever:
 
 No incremental state may be stored.
 
-**Verification and tests:** Canonical verification examples and test-automation requirements (e.g. 100% coverage) are defined in [RULES_ENGINE_SPEC.md](RULES_ENGINE_SPEC.md#rules-engine-verification-examples). Each example must correspond to a unit test.
+**Verification and tests:** Canonical verification examples and test-automation requirements (coverage thresholds in `core/rulesEngine/jest.config.js`) are defined in [RULES_ENGINE_SPEC.md](RULES_ENGINE_SPEC.md#rules-engine-verification-examples). Each example must correspond to a unit test.
 
 ### Feature: Cycle Recalculation
 

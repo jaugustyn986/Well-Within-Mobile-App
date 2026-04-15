@@ -1,5 +1,9 @@
 import { recalculateCycle } from '../src/recalc';
-import { derivePrimaryDayClassFromEntry } from '../src/primaryDayClass';
+import {
+  derivePrimaryDayClassAtIndex,
+  derivePrimaryDayClassFromEntry,
+} from '../src/primaryDayClass';
+import { BleedingClass } from '../src/types';
 
 describe('primaryDayClassByDay', () => {
   it('classifies moderate bleeding with rank 3 as menstrual_flow, not peak candidate', () => {
@@ -36,5 +40,48 @@ describe('derivePrimaryDayClassFromEntry (draft / form preview)', () => {
         3,
       ),
     ).toBe('menstrual_flow');
+  });
+
+  it('spotting with rank 0 stays spotting; brown follows mucus tier', () => {
+    expect(derivePrimaryDayClassFromEntry({ bleeding: 'spotting' }, 0)).toBe('spotting');
+    expect(derivePrimaryDayClassFromEntry({ bleeding: 'brown' }, 3)).toBe('peak_type');
+  });
+
+  it('treats no bleeding like mucus-only for preview', () => {
+    expect(derivePrimaryDayClassFromEntry({ bleeding: 'none' }, 2)).toBe('mucus_observed');
+  });
+});
+
+describe('derivePrimaryDayClassAtIndex', () => {
+  it('uses mucus tier for brown_discharge and intermenstrual bleed classes', () => {
+    const entries = [{ bleeding: 'none' as const }];
+    expect(
+      derivePrimaryDayClassAtIndex(0, entries, [3], ['brown_discharge' as BleedingClass]),
+    ).toBe('peak_type');
+    expect(
+      derivePrimaryDayClassAtIndex(0, entries, [2], ['intermenstrual' as BleedingClass]),
+    ).toBe('mucus_observed');
+  });
+
+  it('post_peak_spotting with rank 0 stays spotting', () => {
+    expect(
+      derivePrimaryDayClassAtIndex(
+        0,
+        [{ bleeding: 'none' }],
+        [0],
+        ['post_peak_spotting' as BleedingClass],
+      ),
+    ).toBe('spotting');
+  });
+
+  it('classifies plain spotting with rank 0 as spotting', () => {
+    expect(
+      derivePrimaryDayClassAtIndex(
+        0,
+        [{ bleeding: 'none' }],
+        [0],
+        ['spotting' as BleedingClass],
+      ),
+    ).toBe('spotting');
   });
 });

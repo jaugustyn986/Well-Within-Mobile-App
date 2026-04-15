@@ -322,7 +322,7 @@ Each scenario describes:
 - computed mucus rank
 - expected interpretation
 
-These examples serve as canonical test cases. The engineering implementation must include automated tests that replicate each scenario; each example must correspond to a unit test. Rules engine must maintain 100% test coverage.
+These examples serve as canonical test cases. The engineering implementation must include automated tests that replicate each scenario; each example must correspond to a unit test. Rules engine coverage is enforced in CI via global thresholds in `core/rulesEngine/jest.config.js` (currently high line/statement coverage, 100% functions, lower branch floor).
 
 ### Example 1 — Always Dry Cycle
 

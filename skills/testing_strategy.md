@@ -1,6 +1,6 @@
 # Testing Strategy
 
-The rules engine must maintain 100% test coverage.
+The rules engine must meet the global Jest coverage thresholds in `core/rulesEngine/jest.config.js` (CI runs `npm run test:coverage`).
 
 Each verification example in the PRD and in `docs/RULES_ENGINE_SPEC.md` (including **Example 7B** — flow bleeding blocks fertile opening) must be implemented as a unit test.
 
