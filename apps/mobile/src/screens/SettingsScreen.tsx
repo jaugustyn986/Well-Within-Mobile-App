@@ -5,6 +5,8 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { shareAsync } from 'expo-sharing';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { FeedbackModal } from '../components/feedback/FeedbackModal';
+import { useCycleHistory } from '../hooks/useCycleHistory';
 import { getAllEntries, clearAllEntries } from '../services/storageV2';
 import { useAuth } from '../context/AuthProvider';
 import { useSync } from '../context/SyncProvider';
@@ -33,8 +35,10 @@ export function SettingsScreen(): JSX.Element {
   const auth = useAuth();
   const sync = useSync();
   const [showClearModal, setShowClearModal] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [exporting, setExporting] = useState(false);
   const showBackupSync = hasSupabaseEnv();
+  const { cycles: feedbackCycles } = useCycleHistory();
 
   const handleExportJson = useCallback(async () => {
     setExporting(true);
@@ -177,7 +181,31 @@ export function SettingsScreen(): JSX.Element {
         </Pressable>
       </View>
 
+      {showBackupSync ? (
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Feedback</Text>
+          <Pressable style={styles.actionRow} onPress={() => setShowFeedbackModal(true)}>
+            <View style={styles.actionLeft}>
+              <View style={styles.actionIconCircle}>
+                <Text style={styles.actionIconText}>{'✉'}</Text>
+              </View>
+              <View>
+                <Text style={styles.actionTitle}>Send Feedback</Text>
+              </View>
+            </View>
+            <Text style={styles.actionChevron}>{'›'}</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
       <Text style={styles.versionText}>Well Within  ·  v{APP_VERSION}</Text>
+
+      <FeedbackModal
+        visible={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        sourceScreen="Settings"
+        cycles={feedbackCycles}
+      />
 
       <Modal visible={showClearModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>

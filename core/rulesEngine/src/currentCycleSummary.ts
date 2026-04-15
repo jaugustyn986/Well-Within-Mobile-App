@@ -126,7 +126,8 @@ function countDaysWithoutEntry(
  * slice span (first→last logged date) with no row, plus trailing unlogged days through
  * `calendarAsOfDate` for in-progress cycles.
  */
-function countCompletenessMissing(params: {
+/** Exported for feedback context parity with calendar completeness UX. */
+export function countCompletenessMissing(params: {
   entries: DailyEntry[];
   status: CycleSliceStatus;
   calendarAsOfDate?: string;

@@ -1,18 +1,24 @@
 import * as QueryParams from 'expo-auth-session/build/QueryParams';
+import Constants from 'expo-constants';
 import type { Session } from '@supabase/supabase-js';
 import { hasSupabaseEnv } from '../config/env';
 import { supabase } from '../lib/supabase';
 
-/** Magic link must redirect to this URL so tapping the link opens the app (not localhost). */
-const AUTH_CALLBACK_URL = 'wellwithin://auth/callback';
+function getAuthScheme(): string {
+  const raw = Constants.expoConfig?.scheme;
+  if (Array.isArray(raw)) return raw[0] ?? 'wellwithin';
+  if (typeof raw === 'string' && raw.length > 0) return raw;
+  return 'wellwithin';
+}
 
+/** Magic link redirects here so the OS can open the app. Scheme matches app.config (production vs dev). */
 export function getRedirectUrl(): string {
-  return AUTH_CALLBACK_URL;
+  return `${getAuthScheme()}://auth/callback`;
 }
 
 /**
  * Parse callback URL from magic link and set session. No custom token exchange.
- * Call when app opens via wellwithin://auth/callback?access_token=...&refresh_token=...
+ * Call when app opens via {scheme}://auth/callback?access_token=...&refresh_token=...
  */
 export async function createSessionFromUrl(url: string): Promise<Session | null> {
   if (!hasSupabaseEnv() || !supabase) return null;

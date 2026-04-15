@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -10,6 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Appearance,
   BleedingType,
@@ -109,6 +111,23 @@ export function EntryForm({ initialEntry, previousDayEntry, date, onSave, onDele
 
   const [sameAsYesterday, setSameAsYesterday] = useState(false);
   const preToggleSnapshot = useRef<{ sensation: Sensation; appearances: Appearance[] } | null>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  const notesBlockY = useRef(0);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    const show = Keyboard.addListener('keyboardDidShow', (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hide = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
   const showSameAsYesterday =
     !missing &&
@@ -193,8 +212,18 @@ export function EntryForm({ initialEntry, previousDayEntry, date, onSave, onDele
   };
 
   return (
-    <KeyboardAvoidingView style={styles.keyboardAvoid} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView
+      style={styles.keyboardAvoid}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? insets.top + 48 : 0}
+    >
+    <ScrollView
+      ref={scrollRef}
+      style={styles.scroll}
+      contentContainerStyle={[styles.scrollContent, { paddingBottom: 120 + keyboardHeight }]}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+    >
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Daily Observation</Text>
         <View style={styles.dateBox}>
@@ -326,7 +355,12 @@ export function EntryForm({ initialEntry, previousDayEntry, date, onSave, onDele
             </Text>
           )}
 
-          <View style={styles.section}>
+          <View
+            style={styles.section}
+            onLayout={(e) => {
+              notesBlockY.current = e.nativeEvent.layout.y;
+            }}
+          >
             <View style={styles.labelRow}>
               <Text style={styles.fieldLabel}>Notes (Optional)</Text>
               <Pressable onPress={() => setShowNotesInfo(!showNotesInfo)} hitSlop={8}>
@@ -346,6 +380,17 @@ export function EntryForm({ initialEntry, previousDayEntry, date, onSave, onDele
               value={notes}
               onChangeText={setNotes}
               multiline
+              textAlignVertical="top"
+              onFocus={() => {
+                const scrollNotesIntoView = () => {
+                  scrollRef.current?.scrollTo({
+                    y: Math.max(0, notesBlockY.current - 16),
+                    animated: true,
+                  });
+                };
+                setTimeout(scrollNotesIntoView, Platform.OS === 'ios' ? 120 : 80);
+                setTimeout(scrollNotesIntoView, Platform.OS === 'ios' ? 320 : 250);
+              }}
             />
           </View>
 

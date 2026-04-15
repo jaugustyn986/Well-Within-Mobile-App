@@ -49,3 +49,35 @@ create trigger set_server_timestamp
   before insert or update on public.daily_entries
   for each row
   execute procedure update_server_timestamp();
+
+-- In-app product feedback (Phase 1). No read/update/delete for client roles.
+create table if not exists public.user_feedback (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  user_id uuid null references auth.users(id) on delete set null,
+  source_screen text not null,
+  feedback_type text not null,
+  category text not null,
+  confidence text null,
+  message text null,
+  include_cycle_context boolean not null default false,
+  cycle_context jsonb null,
+  app_version text null,
+  platform text null,
+  schema_version smallint not null default 1
+);
+
+create index if not exists user_feedback_created_at on public.user_feedback (created_at desc);
+create index if not exists user_feedback_type_cat on public.user_feedback (feedback_type, category);
+
+alter table public.user_feedback enable row level security;
+
+create policy "user_feedback_insert_auth" on public.user_feedback
+  for insert to authenticated
+  with check (user_id = auth.uid());
+
+create policy "user_feedback_insert_anon" on public.user_feedback
+  for insert to anon
+  with check (user_id is null);
+
+grant insert on table public.user_feedback to anon, authenticated;

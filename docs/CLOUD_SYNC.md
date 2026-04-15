@@ -24,8 +24,8 @@ The app uses this redirect after the user taps the magic link in email.
 ## Applying the schema
 
 1. Open Supabase Dashboard → **SQL Editor**.
-2. Run the contents of [infra/supabase-schema.sql](../infra/supabase-schema.sql) in order.
-3. This replaces any existing schema with the Phase 1 tables: `profiles` (id, created_at, updated_at) and `daily_entries` (with RLS and the `server_updated_at` trigger).
+2. Run the contents of [infra/supabase-schema.sql](../infra/supabase-schema.sql) in order (or apply new sections if you are incrementally updating an existing project).
+3. The schema includes: `profiles` (id, created_at, updated_at); `daily_entries` (with RLS and the `server_updated_at` trigger); and **`user_feedback`** for optional in-app product feedback (insert-only RLS for authenticated and anonymous clients). See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for table summaries.
 
 ## Manual validation checklist
 
@@ -34,6 +34,7 @@ The app uses this redirect after the user taps the magic link in email.
 - [ ] After sign-in: add or edit an entry → Settings → “Sync now” → last sync time updates (or error is shown).
 - [ ] Sign out: Settings → Sign out → local entries remain; sync section shows “Sign in with email” again.
 - [ ] New device: install app, sign in with same email → after pull, entries match the other device (or empty if first sync).
+- [ ] (Optional) Feedback: Settings → **Send Feedback** → submit a test row → confirm it appears in Supabase **Table Editor** → `user_feedback`.
 
 ## Deep-link callback path
 
