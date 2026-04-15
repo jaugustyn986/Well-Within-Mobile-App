@@ -15,8 +15,11 @@
     "mobile:doctor": "npm run doctor --workspace well-within-mobile",
     "mobile:config:check": "npm run config:check --workspace well-within-mobile",
     "mobile:preflight:release": "npm run preflight:release --workspace well-within-mobile",
+    "mobile:preflight:release:with-doctor": "npm run preflight:release:with-doctor --workspace well-within-mobile",
     "mobile:build:ios:testflight": "npm run build:ios:testflight --workspace well-within-mobile",
+    "mobile:build:ios:testflight:skip-fingerprint": "npm run build:ios:testflight:skip-fingerprint --workspace well-within-mobile",
     "mobile:submit:ios:production": "npm run submit:ios:production --workspace well-within-mobile",
+    "mobile:release:testflight": "npm run release:testflight --workspace well-within-mobile",
     "clean": "node -e \"const fs=require('fs');for(const p of ['node_modules','package-lock.json']){fs.rmSync(p,{recursive:true,force:true});}console.log('cleaned node_modules and package-lock.json');\"",
     "verify:core": "npm test --workspaces && npm run lint && npm run typecheck && npm run test:coverage && npm run build --workspace core-rules-engine && node ./core/rulesEngine/dist/bin/cli.js --fixture core/rulesEngine/fixtures/simple-peak.json",
     "verify:fixtures": "npm run build --workspace core-rules-engine && node -e \"const fs=require('fs'),path=require('path'),{execSync}=require('child_process');const dir='core/rulesEngine/fixtures';fs.readdirSync(dir).filter(f=>f.endsWith('.json')).forEach(f=>{const p=path.join(dir,f);execSync('node core/rulesEngine/dist/bin/cli.js --fixture '+p+' --verify',{stdio:'inherit'});});\""

@@ -34,20 +34,35 @@ For this project, use the **production build profile only** for TestFlight.
 
 Ensure the following tools are available:
 
-node
-npm or yarn
-Expo CLI via `npx expo`
-EAS CLI via `npx eas` (or global `eas-cli`)
+- Node.js and npm (workspace uses npm).
+- **Expo CLI:** `expo` from the `expo` package (`npx expo …` or scripts).
+- **EAS CLI:** pinned as **`eas-cli`** in `apps/mobile` devDependencies so `npm run` scripts use a consistent version (no global install required). After `npm install` at the repo root, `eas` resolves from `apps/mobile/node_modules/.bin`.
 
-Verify local commands:
+Verify local commands (from repo root or `apps/mobile`):
 
+```bash
 npx expo --version
-npx eas --version
+cd apps/mobile && npx eas --version
+```
 
-If EAS CLI is not available:
+Optional: install `eas-cli` globally if you prefer `eas` on your PATH outside npm scripts.
 
-npm install -g eas-cli
+---
 
+# 2a. Preflight and one-command TestFlight (npm scripts)
+
+From the **repository root**:
+
+| Script | Purpose |
+|--------|--------|
+| `npm run mobile:preflight:release` | **Fast gate:** `expo config --type public` only (~30 s). Use before every cloud build. |
+| `npm run mobile:preflight:release:with-doctor` | Runs config check, then **`expo-doctor`**. Failures from transient Expo API errors or Metro warnings are **advisory** — fix when practical; do not block release on flaky network checks alone. |
+| `npm run mobile:release:testflight` | **Chain:** preflight → `eas build` (production, non-interactive) → `eas submit --latest` (non-interactive). Build must finish successfully before submit runs. |
+| `npm run mobile:build:ios:testflight:skip-fingerprint` | Same as build but sets **`EAS_SKIP_AUTO_FINGERPRINT=1`** (via `cross-env`). Optional when fingerprint upload is slow; understand the tradeoff before using routinely. |
+
+`expo-doctor` is a **devDependency** so `npm install` does not re-download it on every `npx` invocation.
+
+**`app.config.js`:** With `eas.json` `appVersionSource: remote` and production **autoIncrement**, iOS **build numbers** are managed on EAS — a static `ios.buildNumber` in config is omitted to avoid redundant manifest noise.
 
 ---
 
@@ -381,9 +396,10 @@ When executing builds, agents must:
 1. audit repo readiness
 2. confirm versioning
 3. confirm privacy compliance
-4. run `eas build --platform ios --profile production`
-5. submit `eas submit --platform ios --profile production`
-6. report results
+4. run preflight (`npm run mobile:preflight:release`) or the full chain (`npm run mobile:release:testflight` from repo root when appropriate)
+5. report results (build URL, submission status, TestFlight processing)
+
+Prefer **`npm run mobile:release:testflight`** for a single guarded chain when a full TestFlight upload is intended and the machine can wait for the EAS build to complete.
 
 Agents must not modify product UX unless required for compliance or build success.
 

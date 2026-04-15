@@ -11,7 +11,7 @@ When preparing the application for TestFlight or App Store release:
 2. **Audit the repository** before making code changes. Check build config, assets, permissions, privacy, data controls, and stability.
 3. **Update** `docs/TESTFLIGHT_READINESS_CHECKLIST.md` with findings: fill in release blockers (§10), non-UX changes (§11), UX changes (§12), optional improvements (§13), and current release status (§14).
 4. **Reference the checklist** when implementing changes—tackle release blockers first, then compliance and required UX, then optional polish.
-5. For TestFlight builds, use `eas build --platform ios --profile production` (production profile only) and `eas submit --platform ios --profile production`.
+5. For TestFlight builds, use the **production** profile only. From the repo root, prefer **`npm run mobile:release:testflight`** (preflight + build + submit), or run **`npm run mobile:build:ios:testflight`** then **`npm run mobile:submit:ios:production`** (see `skills/expo_release_commands.md`).
 6. Do not require `eas device:create` unless direct internal/ad hoc device installs are explicitly requested.
 
 The checklist is the single source of truth for release readiness. Keep it current as the repo is audited and the build is prepared.

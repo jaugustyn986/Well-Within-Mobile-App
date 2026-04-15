@@ -41,7 +41,8 @@ module.exports = {
     ios: {
       supportsTablet: false,
       bundleIdentifier: variant.bundleIdentifier,
-      buildNumber: '1',
+      // Build number for store builds comes from EAS (eas.json appVersionSource: remote + autoIncrement).
+      // Omit static buildNumber to avoid conflicting manifest noise; local dev still works.
       config: {
         usesNonExemptEncryption: false,
       },

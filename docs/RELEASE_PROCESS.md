@@ -36,9 +36,12 @@ This document describes the end-to-end process for changing the app, testing it,
 
 | Step | Command / action | Time / notes |
 |------|-------------------|--------------|
-| Preflight (optional but recommended) | `npm run mobile:preflight:release` | 1–2 min; catches config issues. |
-| Build | `npm run mobile:build:ios:testflight` | **10–25 min** (runs on EAS; you can leave it). Uses `--non-interactive`. |
-| Submit | `npm run mobile:submit:ios:production` | **1–3 min**; uses `--latest --non-interactive`. Requires `.p8` in `apps/mobile/credentials/` and `eas.json` submit config. |
+| Preflight (recommended) | `npm run mobile:preflight:release` | **~30 s**; fast gate — `expo config --type public` only. |
+| Preflight + doctor (optional) | `npm run mobile:preflight:release:with-doctor` | Runs `expo-doctor` after config; may fail on flaky Expo API or Metro warnings — treat as advisory, not a blocker. |
+| **All-in-one** | `npm run mobile:release:testflight` | **Preflight → build → submit** in one chain. Build is **10–25 min** on EAS; submit runs only after build succeeds. |
+| Build (alone) | `npm run mobile:build:ios:testflight` | **10–25 min** (runs on EAS; you can leave it). Uses `--non-interactive`. |
+| Submit (alone) | `npm run mobile:submit:ios:production` | **1–3 min**; uses `--latest --non-interactive`. Requires `.p8` in `apps/mobile/credentials/` and `eas.json` submit config. |
+| Slow fingerprint (optional) | `npm run mobile:build:ios:testflight:skip-fingerprint` | Same as build but sets `EAS_SKIP_AUTO_FINGERPRINT=1`; only if you accept skipping that step. |
 | Apple processing | — | **5–10 min**; Apple emails when the build is ready. |
 | Add testers | [App Store Connect → TestFlight](https://appstoreconnect.apple.com/apps/6760519448/testflight/ios) | Add internal testers; they install via TestFlight app. |
 

@@ -43,20 +43,26 @@ npm run start:mobile
 - On Windows, use a physical iPhone with Expo Go (or a dev build). iOS Simulator is macOS-only.
 - Iterate on UI/logic locally before cloud build submission.
 
-2. Release preflight checks
+2. Release preflight (fast gate — validates Expo config)
 ```bash
 npm run mobile:preflight:release
 ```
-
-3. Build for TestFlight (production profile)
+Optional deeper check (runs `expo-doctor` after config; may fail on transient Expo API or Metro warnings — treat as advisory):
 ```bash
-npm run mobile:build:ios:testflight
+npm run mobile:preflight:release:with-doctor
 ```
 
-4. Submit to App Store Connect / TestFlight
+3. **One-shot TestFlight path** (preflight → EAS build → submit latest finished build; long-running)
 ```bash
-npm run mobile:submit:ios:production
+npm run mobile:release:testflight
 ```
+
+Or step-by-step (same as before):
+
+- Build for TestFlight (production profile): `npm run mobile:build:ios:testflight`
+- Submit to App Store Connect / TestFlight: `npm run mobile:submit:ios:production`
+
+Optional: if EAS upload fingerprinting is slow, you can use `npm run mobile:build:ios:testflight:skip-fingerprint` instead of the build step (skips auto fingerprint; use only when you accept that tradeoff).
 
 Notes:
 - This workflow targets TestFlight distribution only (App Store Connect path).

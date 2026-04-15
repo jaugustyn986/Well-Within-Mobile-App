@@ -201,10 +201,10 @@ Notes:
 
 # 11. Non-UX Changes Required (Populate During Audit)
 
-- First EAS build and submit to TestFlight completed successfully. For future releases: run `npm run mobile:build:ios:testflight` then `npm run mobile:submit:ios:production` (non-interactive when `.p8` is in `apps/mobile/credentials/` and `eas.json` has `ascAppId` + API key fields).
+- First EAS build and submit to TestFlight completed successfully. For future releases: **`npm run mobile:release:testflight`** (preflight + build + submit), or stepwise `mobile:build:ios:testflight` then `mobile:submit:ios:production` (non-interactive when `.p8` is in `apps/mobile/credentials/` and `eas.json` has `ascAppId` + API key fields).
 - Configure privacy policy URL and support URL values for App Store Connect metadata (before external TestFlight or App Store).
 - Complete App Store Connect privacy details and export compliance questionnaire.
-- Run `npm run mobile:preflight:release` and address any expo-doctor or config issues before building.
+- Run **`npm run mobile:preflight:release`** before building (fast `expo config` check). Optionally run **`npm run mobile:preflight:release:with-doctor`**; treat **expo-doctor** failures from flaky Expo API or Metro hints as **advisory** unless they indicate a real misconfiguration.
 
 ---
 
