@@ -224,18 +224,21 @@ Notes:
 
 # 14. Current Release Status (Update Every Audit)
 
-Build Status: SUBMITTED (build **10**, version **0.1.0**)  
-EAS Build ID: `27c3d895-ba3d-4109-8640-a3b3dff567a2` — [Expo build logs](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/builds/27c3d895-ba3d-4109-8640-a3b3dff567a2)  
-TestFlight Upload: COMPLETE (binary uploaded; Apple processing typically 5–10 min)  
-Internal Testing: NEXT (confirm build 10 appears in App Store Connect, then distribute to internal testers)  
-External Testing: PLANNED
+Build Status: EAS build **uploaded**; **submit** was started with `--id` for this build — **confirm** on the [submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/6a7b4250-d68c-4bb9-9db3-e91b54582af8) page that status is **Finished** (then check TestFlight for processing).  
+Version: **0.2.0** · iOS build number: **14** (remote auto-increment)  
+EAS Build ID: `4ed6b654-a1c5-49e1-93da-9bdda243d465` — [Expo build](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/builds/4ed6b654-a1c5-49e1-93da-9bdda243d465)  
+EAS Submission ID: `6a7b4250-d68c-4bb9-9db3-e91b54582af8` — [Submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/6a7b4250-d68c-4bb9-9db3-e91b54582af8)  
+TestFlight: After Apple processing (often 5–15 min), build **14** should appear in [App Store Connect → TestFlight](https://appstoreconnect.apple.com/apps/6760519448/testflight/ios).  
+Internal Testing: Add or confirm internal testers when the build shows as **Ready to Test**.
 
 TestFlight: https://appstoreconnect.apple.com/apps/6760519448/testflight/ios
 
-Last Audit Date: 2026-03-31  
+Last Audit Date: 2026-04-15  
 Audited By: Cursor Agent
 
-Build 10 pushed via `npm run mobile:build:ios:testflight` and `npm run mobile:submit:ios:production` from repo root (`--profile production`, `--non-interactive`, `--latest` on submit). Auto-increment in `eas.json` production profile. Includes help/onboarding copy alignment, rules-engine education strings, and related doc updates.
+Release notes (this push): in-app feedback (`user_feedback`), keyboard UX for multiline fields (feedback + daily notes), Feedback card in Settings, docs/skills for Supabase feedback table.
+
+Commands used (from `apps/mobile`): `npx eas build --platform ios --profile production --non-interactive --no-wait`, then `npx eas submit --platform ios --profile production --non-interactive --id <build-id>`. Preflight: `npm run mobile:preflight:release` hit **expo-doctor** failures (Expo API timeout + Metro warnings); **`npx expo config --type public`** was used as a successful config gate before building.
 
 ---
 
