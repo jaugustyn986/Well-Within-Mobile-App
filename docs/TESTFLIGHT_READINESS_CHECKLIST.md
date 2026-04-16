@@ -233,10 +233,10 @@ Internal Testing: Add or confirm internal testers when the build shows as **Read
 
 TestFlight: https://appstoreconnect.apple.com/apps/6760519448/testflight/ios
 
-Last Audit Date: 2026-04-15  
+Last Audit Date: 2026-04-16  
 Audited By: Cursor Agent
 
-Release notes (this push): in-app feedback (`user_feedback`), keyboard UX for multiline fields (feedback + daily notes), Feedback card in Settings, docs/skills for Supabase feedback table.
+Release notes (this push): magic-link auth callback hardening across query/fragment/code/token_hash callback formats; deep-link + Supabase setup docs clarified for dev/TestFlight/production redirect URLs.
 
 Commands used (from `apps/mobile`): `npx eas build --platform ios --profile production --non-interactive --no-wait`, then `npx eas submit --platform ios --profile production --non-interactive --id <build-id>`. Preflight: `npm run mobile:preflight:release` hit **expo-doctor** failures (Expo API timeout + Metro warnings); **`npx expo config --type public`** was used as a successful config gate before building.
 

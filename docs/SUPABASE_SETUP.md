@@ -21,12 +21,16 @@ This guide covers creating and configuring a Supabase project for Well Within au
 
 ---
 
-## 3. Add redirect URL
+## 3. Add redirect URLs
 
 1. Open **Authentication** → **URL Configuration**.
-2. Under **Redirect URLs**, add exactly:  
-   `wellwithin://auth/callback`
-3. Save. This URL is where Supabase sends the user after they tap the magic link in email; the app must register the `wellwithin` scheme so it opens and can complete sign-in.
+2. Under **Redirect URLs**, add all app variants you use:
+   - `wellwithin://auth/callback` (TestFlight / App Store)
+   - `wellwithin-dev://auth/callback` (development build)
+   - `wellwithin-preview://auth/callback` (preview build, if used)
+3. Save.
+4. Remove stale development redirects (for example `exp://...` or localhost callback URLs) from this list so email links do not route into Expo/dev tooling unexpectedly.
+5. Set **Site URL** to your production website (not an Expo dev URL). Redirect URLs above control app callbacks; keeping Site URL production-safe avoids confusing fallback links.
 
 ---
 
@@ -73,7 +77,7 @@ Never commit the real values or use the service role key in the app.
 
 ## 7. How to test magic link login
 
-1. Ensure redirect URL `wellwithin://auth/callback` is configured (step 3) and `.env` is set (step 4).
+1. Ensure the redirect URLs for the build(s) you test are configured (step 3) and `.env` is set (step 4).
 2. Run the app (development build or TestFlight; Expo Go cannot open the custom scheme).
 3. In the app: **Settings** → **Backup & Sync** → **Sign in with email**.
 4. Enter your email and tap **Send magic link**.

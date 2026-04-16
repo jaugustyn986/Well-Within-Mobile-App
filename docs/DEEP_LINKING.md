@@ -20,17 +20,22 @@ If both schemes used `wellwithin`, iOS could open the wrong app when both are in
 
 ## Callback URL
 
-Supabase sends the user to **`{scheme}://auth/callback`** (see table above) after they tap the magic link in email. The URL includes query parameters such as:
+Supabase sends the user to **`{scheme}://auth/callback`** (see table above) after they tap the magic link in email. Depending on auth flow and provider behavior, callback values can appear in either query params (`?`) or URL fragment (`#`). Common values are:
 
 - `access_token`
 - `refresh_token`
+- `code` (PKCE-style callback)
+- `token_hash` + `type` (OTP verification callback)
 - (and possibly `type`, `error`, etc.)
 
 The app must:
 
 1. Receive the URL (via the OS opening the app with this deep link).
 2. Parse the query parameters.
-3. Call `supabase.auth.setSession({ access_token, refresh_token })` to establish the session. No custom token exchange or extra API calls.
+3. Complete the session based on callback shape:
+   - `access_token` + `refresh_token` → `supabase.auth.setSession(...)`
+   - `code` → `supabase.auth.exchangeCodeForSession(code)`
+   - `token_hash` + `type` → `supabase.auth.verifyOtp(...)`
 
 ---
 
