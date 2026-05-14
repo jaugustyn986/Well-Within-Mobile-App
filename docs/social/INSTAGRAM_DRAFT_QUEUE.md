@@ -79,7 +79,7 @@ Keep the active queue short and distinct. Before adding or choosing a draft, che
 
 ## Draft: Words That Make Charting Easier
 
-- Status: idea
+- Status: published
 - Format: carousel
 - Primary variable: educational utility
 - Strategic bet: plain-language vocabulary can create saves and trust
@@ -187,6 +187,7 @@ Keep the active queue short and distinct. Before adding or choosing a draft, che
 - `Learning To Chart Starts With Noticing Not Knowing`: `https://www.instagram.com/p/DYFLoiYCemB/`
 - `Mother's Day — To Mothers And To Those Still On The Way`: `https://www.instagram.com/p/DYKU830ifIa/`
 - `Story — One Observation Is Enough To Start`: `https://www.instagram.com/stories/wellwithinapp/3895106361197426543`
+- `5 Words That Make Fertility Charting Click`: `https://www.instagram.com/p/DYUqH4slMcE/`
 
 Do not re-draft these exact concepts unless changing one clear variable and logging the reason in `INSTAGRAM_EXPERIMENT_LOG.md`.
 

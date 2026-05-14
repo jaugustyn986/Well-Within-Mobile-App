@@ -324,6 +324,48 @@ Use this file to track planned, posted, measured, and retired Instagram content 
 - Confidence: low
 - Next action: Review at 24h, 72h, and 7d when insights are available. If reach or engagement exceeds prior single-image posts, seasonal identity content is worth repeating on relevant future dates.
 
+## Experiment: 5 Words That Make Fertility Charting Click
+
+- Status: posted
+- Date planned: 2026-05-14
+- Date posted: 2026-05-14
+- Post URL: `https://www.instagram.com/p/DYUqH4slMcE/`
+- Media ID: `18081575183302584`
+- Format: carousel (6 slides, 1080 x 1350 JPEG)
+- Primary variable: format shift to practical utility / saveable glossary — first list-format post
+- Strategic bet: plain-language vocabulary education drives saves and repeat visits better than reassurance-only hooks; list format signals clear utility
+- Audience: beginners who feel lost in fertility charting terminology
+- Hook: "5 words that'll make fertility charting feel a lot less overwhelming."
+- Visual: fully typographic system — warm cream gradient background (#FAF4EC), warm olive green + terracotta botanical SVG corner clusters, large Georgia serif word as hero on each slide, two-tone leaf system cascaded from hook slide; no stock photography
+- Caption angle: charting has its own language; not knowing it makes everything harder; these 5 words are a starting point
+- CTA: save this for your first (or next) charting week
+- Target metric: saves first; shares and profile visits second
+- Baseline or comparison: first list/glossary format and first fully typographic carousel; compare saves to prior educational carousels when insights populate
+- Review checkpoints: 24h, 72h, 7d
+
+### Results
+
+- 24h snapshot:
+- 72h snapshot:
+- 7d snapshot:
+- Reach:
+- Views/plays:
+- Likes:
+- Comments:
+- Shares:
+- Saves:
+- Profile visits:
+- Follows:
+- Link taps:
+- App Store clicks:
+
+### Learning
+
+- What worked:
+- What did not:
+- Confidence: low
+- Next action: Review at 24h, 72h, and 7d. If saves outperform prior carousels, the glossary/utility format is worth repeating (e.g. "5 signs to observe this cycle", "what post-peak actually feels like").
+
 ## Experiment: Story — One Observation Is Enough To Start
 
 - Status: posted
