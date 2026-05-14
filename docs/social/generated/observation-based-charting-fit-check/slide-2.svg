@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1080" height="1350" viewBox="0 0 1080 1350" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1080" height="1350" fill="#F1F4EF"/>
+  <circle cx="48" cy="40" r="1" fill="#8FA894" opacity="0.028" />
+<circle cx="149" cy="183" r="2" fill="#8FA894" opacity="0.035" />
+<circle cx="250" cy="326" r="3" fill="#8FA894" opacity="0.042" />
+<circle cx="351" cy="469" r="1" fill="#8FA894" opacity="0.049" />
+<circle cx="452" cy="612" r="2" fill="#8FA894" opacity="0.056" />
+<circle cx="553" cy="755" r="3" fill="#8FA894" opacity="0.028" />
+<circle cx="654" cy="898" r="1" fill="#8FA894" opacity="0.035" />
+<circle cx="755" cy="1041" r="2" fill="#8FA894" opacity="0.042" />
+<circle cx="856" cy="1184" r="3" fill="#8FA894" opacity="0.049" />
+<circle cx="957" cy="57" r="1" fill="#8FA894" opacity="0.056" />
+<circle cx="74" cy="200" r="2" fill="#8FA894" opacity="0.028" />
+<circle cx="175" cy="343" r="3" fill="#8FA894" opacity="0.035" />
+<circle cx="276" cy="486" r="1" fill="#8FA894" opacity="0.042" />
+<circle cx="377" cy="629" r="2" fill="#8FA894" opacity="0.049" />
+<circle cx="478" cy="772" r="3" fill="#8FA894" opacity="0.056" />
+<circle cx="579" cy="915" r="1" fill="#8FA894" opacity="0.028" />
+<circle cx="680" cy="1058" r="2" fill="#8FA894" opacity="0.035" />
+<circle cx="781" cy="1201" r="3" fill="#8FA894" opacity="0.042" />
+<circle cx="882" cy="74" r="1" fill="#8FA894" opacity="0.049" />
+<circle cx="983" cy="217" r="2" fill="#8FA894" opacity="0.056" />
+<circle cx="100" cy="360" r="3" fill="#8FA894" opacity="0.028" />
+<circle cx="201" cy="503" r="1" fill="#8FA894" opacity="0.035" />
+<circle cx="302" cy="646" r="2" fill="#8FA894" opacity="0.042" />
+<circle cx="403" cy="789" r="3" fill="#8FA894" opacity="0.049" />
+<circle cx="504" cy="932" r="1" fill="#8FA894" opacity="0.056" />
+<circle cx="605" cy="1075" r="2" fill="#8FA894" opacity="0.028" />
+<circle cx="706" cy="1218" r="3" fill="#8FA894" opacity="0.035" />
+<circle cx="807" cy="91" r="1" fill="#8FA894" opacity="0.042" />
+<circle cx="908" cy="234" r="2" fill="#8FA894" opacity="0.049" />
+<circle cx="1009" cy="377" r="3" fill="#8FA894" opacity="0.056" />
+<circle cx="126" cy="520" r="1" fill="#8FA894" opacity="0.028" />
+<circle cx="227" cy="663" r="2" fill="#8FA894" opacity="0.035" />
+<circle cx="328" cy="806" r="3" fill="#8FA894" opacity="0.042" />
+<circle cx="429" cy="949" r="1" fill="#8FA894" opacity="0.049" />
+<circle cx="530" cy="1092" r="2" fill="#8FA894" opacity="0.056" />
+<circle cx="631" cy="1235" r="3" fill="#8FA894" opacity="0.028" />
+<circle cx="732" cy="108" r="1" fill="#8FA894" opacity="0.035" />
+<circle cx="833" cy="251" r="2" fill="#8FA894" opacity="0.042" />
+<circle cx="934" cy="394" r="3" fill="#8FA894" opacity="0.049" />
+<circle cx="51" cy="537" r="1" fill="#8FA894" opacity="0.056" />
+<circle cx="152" cy="680" r="2" fill="#8FA894" opacity="0.028" />
+<circle cx="253" cy="823" r="3" fill="#8FA894" opacity="0.035" />
+<circle cx="354" cy="966" r="1" fill="#8FA894" opacity="0.042" />
+<circle cx="455" cy="1109" r="2" fill="#8FA894" opacity="0.049" />
+<circle cx="556" cy="1252" r="3" fill="#8FA894" opacity="0.056" />
+<circle cx="657" cy="125" r="1" fill="#8FA894" opacity="0.028" />
+<circle cx="758" cy="268" r="2" fill="#8FA894" opacity="0.035" />
+<circle cx="859" cy="411" r="3" fill="#8FA894" opacity="0.042" />
+<circle cx="960" cy="554" r="1" fill="#8FA894" opacity="0.049" />
+<circle cx="77" cy="697" r="2" fill="#8FA894" opacity="0.056" />
+<circle cx="178" cy="840" r="3" fill="#8FA894" opacity="0.028" />
+<circle cx="279" cy="983" r="1" fill="#8FA894" opacity="0.035" />
+<circle cx="380" cy="1126" r="2" fill="#8FA894" opacity="0.042" />
+<circle cx="481" cy="1269" r="3" fill="#8FA894" opacity="0.049" />
+<circle cx="582" cy="142" r="1" fill="#8FA894" opacity="0.056" />
+<circle cx="683" cy="285" r="2" fill="#8FA894" opacity="0.028" />
+<circle cx="784" cy="428" r="3" fill="#8FA894" opacity="0.035" />
+<circle cx="885" cy="571" r="1" fill="#8FA894" opacity="0.042" />
+<circle cx="986" cy="714" r="2" fill="#8FA894" opacity="0.049" />
+<circle cx="103" cy="857" r="3" fill="#8FA894" opacity="0.056" />
+<circle cx="204" cy="1000" r="1" fill="#8FA894" opacity="0.028" />
+<circle cx="305" cy="1143" r="2" fill="#8FA894" opacity="0.035" />
+<circle cx="406" cy="1286" r="3" fill="#8FA894" opacity="0.042" />
+<circle cx="507" cy="159" r="1" fill="#8FA894" opacity="0.049" />
+<circle cx="608" cy="302" r="2" fill="#8FA894" opacity="0.056" />
+<circle cx="709" cy="445" r="3" fill="#8FA894" opacity="0.028" />
+<circle cx="810" cy="588" r="1" fill="#8FA894" opacity="0.035" />
+<circle cx="911" cy="731" r="2" fill="#8FA894" opacity="0.042" />
+<circle cx="1012" cy="874" r="3" fill="#8FA894" opacity="0.049" />
+<circle cx="129" cy="1017" r="1" fill="#8FA894" opacity="0.056" />
+<circle cx="230" cy="1160" r="2" fill="#8FA894" opacity="0.028" />
+<circle cx="331" cy="1303" r="3" fill="#8FA894" opacity="0.035" />
+  <rect x="72" y="78" width="936" height="1194" rx="42" fill="#FBFCFA" stroke="#DDE3D8" stroke-width="3"/>
+  <rect x="72" y="78" width="14" height="1194" rx="6" fill="#E4EDE6" opacity="0.85"/>
+  <path d="M146 182 H932" stroke="#DDE3D8" stroke-width="2"/>
+  <text x="146" y="154" font-family="Arial, sans-serif" font-size="22" letter-spacing="4" font-weight="600" fill="#8A9088">OBSERVATION-BASED CHARTING</text>
+  <text x="146" y="266" font-family="Georgia, serif" font-size="56" font-weight="500" fill="#353832">It may be a fit if you</text>
+<text x="146" y="330.4" font-family="Georgia, serif" font-size="56" font-weight="500" fill="#353832">want a calmer way to</text>
+<text x="146" y="394.79999999999995" font-family="Georgia, serif" font-size="56" font-weight="500" fill="#353832">notice your cycle—with</text>
+<text x="146" y="459.2" font-family="Georgia, serif" font-size="56" font-weight="500" fill="#353832">daily observations instead</text>
+<text x="146" y="523.5999999999999" font-family="Georgia, serif" font-size="56" font-weight="500" fill="#353832">of noise.</text>
+  
+  <g transform="translate(416.0 595.2799999999999)">
+      <g>
+        <rect x="0" y="18" width="248" height="230" rx="22" fill="#F5F7F3" stroke="#DDE3D8" stroke-width="3"/>
+        <rect x="18" y="0" width="188" height="44" rx="16" fill="#E4EDE6" stroke="#DDE3D8" stroke-width="2"/>
+        <line x1="32" y1="78" x2="216" y2="78" stroke="#DDE3D8" stroke-width="3"/>
+        <circle cx="42" cy="118" r="11" fill="none" stroke="#8FA894" stroke-width="3"/><line x1="68" y1="118" x2="214" y2="118" stroke="#DDE3D8" stroke-width="3"/><circle cx="42" cy="156" r="11" fill="#8FA894" stroke="#8FA894" stroke-width="3"/><line x1="68" y1="156" x2="214" y2="156" stroke="#DDE3D8" stroke-width="3"/><circle cx="42" cy="194" r="11" fill="none" stroke="#8FA894" stroke-width="3"/><line x1="68" y1="194" x2="214" y2="194" stroke="#DDE3D8" stroke-width="3"/>
+      </g></g>
+  <line x1="146" y1="998" x2="926" y2="998" stroke="#DDE3D8" stroke-width="2"/>
+  <text x="146" y="1030" font-family="Arial, sans-serif" font-size="26" fill="#4F544C">A soft checklist—not pressure, not predictions.</text>
+  <text x="926" y="980" text-anchor="end" font-family="Arial, sans-serif" font-size="22" fill="#8A9088">2/7</text>
+</svg>

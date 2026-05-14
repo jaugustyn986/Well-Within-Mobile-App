@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+  <defs>
+    <linearGradient id="topVeil" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#FDF9F6" stop-opacity="0.74"/>
+      <stop offset="28%"  stop-color="#FDF9F6" stop-opacity="0.42"/>
+      <stop offset="55%"  stop-color="#FDF9F6" stop-opacity="0.0"/>
+    </linearGradient>
+    <linearGradient id="bottomVeil" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#1A0F0A" stop-opacity="0.0"/>
+      <stop offset="100%" stop-color="#1A0F0A" stop-opacity="0.38"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Readability veils -->
+  <rect width="1080" height="1350" fill="url(#topVeil)"/>
+  <rect y="1170" width="1080" height="180" fill="url(#bottomVeil)"/>
+
+  <!-- Primary: Happy Mother's Day. -->
+  <text
+    x="540" y="148"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="70"
+    font-weight="400"
+    fill="#3A2316"
+    text-anchor="middle"
+    letter-spacing="-0.5"
+  >Happy Mother&#x2019;s Day.</text>
+
+  <!-- Accent line -->
+  <line
+    x1="488" y1="174"
+    x2="592" y2="174"
+    stroke="#C9A882" stroke-width="2.5" stroke-linecap="round"
+  />
+
+  <!-- Subline: two lines -->
+  <text
+    x="540" y="230"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="37"
+    font-weight="400"
+    fill="#5C3D26"
+    text-anchor="middle"
+    font-style="italic"
+  >To mothers and to those</text>
+  <text
+    x="540" y="278"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="37"
+    font-weight="400"
+    fill="#5C3D26"
+    text-anchor="middle"
+    font-style="italic"
+  >still on the way.</text>
+
+  <!-- Handle -->
+  <text
+    x="540" y="1298"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="21"
+    font-weight="400"
+    fill="#F5EDE6"
+    text-anchor="middle"
+    letter-spacing="2.5"
+  >@wellwithinapp</text>
+</svg>

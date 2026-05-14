@@ -2,6 +2,8 @@
 
 This file is the durable memory base for Well Within Instagram strategy. Update it after research runs, post-performance reviews, and meaningful changes in positioning.
 
+For full post creation, start with `docs/social/INSTAGRAM_POST_RUNBOOK.md`. Use this file as durable strategic memory, not as the operational checklist.
+
 ## Brand Context
 
 - Product: Well Within.
@@ -82,6 +84,21 @@ Show fast daily entry, exports, history, and clear visual interpretation.
 - Stories with link stickers should be used for direct App Store traffic.
 - Reels may be needed for broader discovery once we have a repeatable screen-recording or founder-style format.
 - "No guessing" is a strong differentiator, but it must stay warm rather than defensive.
+- As of 2026-05-06, the first three posts have extremely low Instagram reach via Graph API insights, so do not infer creative winners yet. The next tests should prioritize clearer beginner hooks, saves, shares, follows, and profile visits before optimizing for App Store traffic.
+
+## Visual North Star
+
+- Default organic posts should feel journal-led: warm natural light, paper, notebook, calendar, desk or bedside rituals, quiet human context, and generous negative space.
+- Copy can use clear beginner education, but the visual feel should stay lived-in and calm rather than becoming boxed templates, heavy vector explainers, or generic startup carousel design.
+- App-led posts are allowed when the content job is product demo, app utility, privacy proof, launch, or direct CTA. In those cases, use real app UI and preserve the app's warm neutrals, soft spacing, calm hierarchy, and restrained branding.
+
+### Complementary Visual Theme: Warm Botanical / Floral
+
+- First confirmed on the Mother's Day 2026 post (`DYKU830ifIa`): lush warm-pink floral photography with a cream gradient veil and Georgia serif text overlay.
+- Noted as on-brand by the creator — use as a second visual mode alongside the journal-led north star, not a replacement.
+- Best fit: seasonal or identity/trust moments, single-image posts where emotional resonance matters more than information density.
+- Tone: the florals should stay warm, soft, and natural — not decorative stock-art or generic bouquet photography. Pink, cream, peach, and dusty rose palettes work best against the brand's warm brown typography.
+- Avoid: overly styled flat-lay florals, overly saturated or "greeting card" arrangements, or anything that reads as generic Mother's Day imagery.
 
 ## Reusable Patterns
 
@@ -98,6 +115,13 @@ Show fast daily entry, exports, history, and clear visual interpretation.
 - Example use: "Cycle tracking and fertility charting are not the same thing."
 - Best metric: saves, shares, comments with substance.
 - Confidence: untested; supported by research patterns from `@clueapp`, `@read.your.body`, and wellness carousel/Reel guidance.
+
+### Charting Self-Identification
+
+- Pattern: help a charting-curious person recognize whether observation-based fertility charting fits their goals and daily routine before asking them to try the app.
+- Example use: "Observation-based charting may be a fit if..."
+- Best metric: saves, shares, profile visits, follows.
+- Confidence: untested for Well Within; reinforced by `@read.your.body` fit-prompt content and the 2026-05-06 research run.
 
 ### Text-Led Reframe
 
@@ -123,6 +147,15 @@ Show fast daily entry, exports, history, and clear visual interpretation.
 - Pattern: show that charting can be fast and structured.
 - Best metric: profile visits, clicks, app installs if CTA is strong.
 - Confidence: untested.
+
+## Workflow And Technical Learnings
+
+- **Staging route:** Use Imgur (`api.imgur.com/3/image`, base64 upload, anonymous Client-ID `546c25a59c58ad7`) as the first-choice staging route for all Instagram image publishes. Verify each URL returns `200 OK`, `Content-Type: image/jpeg`, and a non-zero `Content-Length` before creating any container.
+- **Composio session:** The Composio MCP session expires between conversations. Always call `mcp_auth` at the start of a publish sequence. The re-auth prompt can appear as a background popup — flag this to the user if it gets dismissed.
+- **SVG inline italic:** To render mixed-style text (e.g. italic word within a regular sentence) in a Sharp SVG overlay, use `<tspan font-style="italic">` inside a single `<text>` element. Never use two separate `<text>` elements at offset x positions — they will overlap because `text-anchor="middle"` is relative to each element's own anchor.
+- **Botanical opacity:** SVG botanical/leaf elements need 30–52% opacity with clearly contrasting colors (warm olive `#7A8B5C`, terracotta `#A67C52`) to read against a cream background. 9–18% opacity is too faint to register as intentional imagery.
+- **Hook-first carousel workflow:** Always build and approve slide 1 (the hook) before generating remaining slides. Feedback on visual system, imagery, and type is much cheaper to apply before the full deck is built.
+- **Stories cadence:** Simple typographic Stories (1080 × 1920, warm cream background, one line of Georgia serif) are low-cost, add account activity signal, and take under 5 minutes to produce. Target at least one per week.
 
 ## Weak Or Stale Ideas
 
@@ -188,6 +221,20 @@ Show fast daily entry, exports, history, and clear visual interpretation.
 - Well Within adaptation: create app utility posts around daily entry, chart history, exports, privacy, and observation flow. Keep demos calm and use real app UI only.
 - Risks: Natural Cycles is prediction/status and contraception oriented, including effectiveness claims. Well Within must not borrow fertility-status, prediction, birth-control, or effectiveness framing.
 - Status: active product-demo source with strict claim filter.
+
+## Research Update: 2026-05-06
+
+- Current Well Within insights checked: `You Do Not Need The Whole Cycle Today` had reach 1, views 7, and 0 saves/shares/likes/comments; `Text-Led Cycle Reframe` had reach 1, views 1, and 0 saves/shares/likes/comments; `App Clarity Carousel` had reach 1, views 3, and 0 saves/shares/likes/comments. Confidence remains low because distribution is too small.
+- Repeated source pattern: the strongest transferable pattern is beginner-friendly self-identification and simple distinctions, especially content that says "this is what charting is / this may be for you" without product pressure.
+- Account-growth implication: the next post should make the account easier to understand from a cold first impression. Use a clear fertility-charting keyword in the first slide and caption, and make the CTA save/follow first, link in bio second.
+- Pattern to avoid for now: giveaways and product-hype announcements. They may create comments for large accounts but are not a fit until Well Within has a real feature launch and compliance plan.
+
+## Research Update: 2026-05-07
+
+- Live public search reinforced three useful patterns: simple "how to start" routines, question-led education, and product proof through a real daily workflow.
+- The strongest visual fit came from analog/journal cycle-tracking contexts. This supports the journal-led north star as the default visual world for organic posts.
+- App-led posts should be saved for concrete product proof: daily entry, chart review, privacy behavior, or export. Avoid borrowing fertility-status, prediction, contraception, effectiveness, or pregnancy-outcome claims from larger competitors.
+- Queue hygiene is now part of the process: keep distinct draft jobs, and merge drafts that only reword the same beginner reassurance idea.
 
 ```markdown
 ## Observation: [Source or pattern]

@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "name": "well-within-social-generated",
+  "type": "module",
+  "devDependencies": {
+    "sharp": "^0.33.5"
+  }
+}

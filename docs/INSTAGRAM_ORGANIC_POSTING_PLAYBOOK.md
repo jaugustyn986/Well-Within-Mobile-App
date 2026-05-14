@@ -2,6 +2,8 @@
 
 This playbook documents the Well Within Instagram posting workflow after the first Composio-assisted publishing run.
 
+For a full post creation run, start with `docs/social/INSTAGRAM_POST_RUNBOOK.md`. Use this file for publishing, asset validation, staging, approval, and Composio details.
+
 For research, memory, and draft strategy, use:
 
 - `docs/social/INSTAGRAM_RESEARCH_PLAYBOOK.md`
@@ -9,6 +11,8 @@ For research, memory, and draft strategy, use:
 - `docs/social/INSTAGRAM_RESEARCH_LOG.md`
 - `docs/social/INSTAGRAM_EXPERIMENT_LOG.md`
 - `docs/social/INSTAGRAM_DRAFT_QUEUE.md`
+- `docs/social/INSTAGRAM_DECISION_RUBRIC.md`
+- `docs/social/templates/README.md`
 
 For visual quality and art direction, use `C:\Users\JimAugustyn\.cursor\skills\well-within-social-creative-direction\SKILL.md` before generating or exporting social assets.
 
@@ -110,7 +114,9 @@ If the post is not already chosen, run the research workflow first:
 6. Publish through Composio.
    - Confirm the account with `INSTAGRAM_GET_USER_INFO`.
    - Check quota with `INSTAGRAM_GET_IG_USER_CONTENT_PUBLISHING_LIMIT`.
-   - Create the media container.
+   - Stage local JPGs as Composio file-upload objects or direct public HTTPS URLs.
+   - Verify staged media URLs return `200 OK`, `Content-Type: image/jpeg`, and a stable `Content-Length`.
+   - Create the media container only after staging is verified.
    - Publish the container.
    - Fetch the permalink with `INSTAGRAM_GET_IG_MEDIA`.
 
@@ -128,8 +134,9 @@ Use this shorter path for future posts:
 3. **Separate direction approval from publish approval.** Direction approval means "make final assets"; publish approval means "post this exact version."
 4. **Generate background plates without text when useful.** Overlay final text deterministically so typography stays crisp and consistent.
 5. **Export once.** After direction approval, create exact `1080 x 1350` JPGs in a named folder and preview those final slides in chat.
-6. **Stage only approved JPGs.** Upload or host the final JPGs only after approval, then verify each staged URL or file object before creating the Instagram container.
-7. **Publish and log immediately.** After publishing, verify the permalink and update `INSTAGRAM_EXPERIMENT_LOG.md`.
+6. **Plan staging before approval.** Local paths cannot be passed to Instagram. Decide whether the final JPGs will be staged as Composio file-upload objects or direct public HTTPS URLs, and include that route in the approval checklist.
+7. **Stage only approved JPGs.** Upload or host the final JPGs only after approval, then verify each staged URL or file object before creating the Instagram container.
+8. **Publish and log immediately.** After publishing, verify the permalink and update `INSTAGRAM_EXPERIMENT_LOG.md`.
 
 Default folder pattern:
 
@@ -168,11 +175,46 @@ Next-time improvements:
 ## Composio Constraints
 
 - Composio cannot directly publish a local Windows file path.
-- Use a Composio file upload object or a direct public HTTPS image URL. Verify staged image URLs return `200 OK` and `image/jpeg` before container creation.
+- Instagram Graph API cannot ingest repo-relative or local paths such as `docs/social/generated/...` or `C:\Users\...\slide-1.jpg`. Every image must be staged before container creation.
+- Use a Composio file-upload object when available. If that is not available, use a direct public HTTPS image URL. Verify staged image URLs return `200 OK`, `Content-Type: image/jpeg`, and `Content-Length` before container creation.
+- For temporary hosts, use the direct download URL, not the browser/share page. A page that returns `200 OK` with `text/html` will still fail Instagram ingestion.
+- Treat temporary staging URLs as an ingestion bridge only. Once `INSTAGRAM_GET_IG_MEDIA` verifies the published permalink, Instagram has copied the media.
 - Container creation and publishing are separate steps.
 - Container IDs can expire; do not create them long before publishing.
 - Scheduling is not native in this workflow. If scheduling is needed, use Meta Business Suite manually or build a scheduler that creates/publishes near the target time.
 - Deleting published Instagram media may not be available through the current Composio tools. In our test, an API delete attempt failed with an unsupported delete request, so manual deletion in Instagram may be required.
+
+## Staging Preflight
+
+Run this before `INSTAGRAM_CREATE_CAROUSEL_CONTAINER` whenever assets were created locally:
+
+1. Export final publish assets as JPGs, not just PNG previews.
+2. Confirm local dimensions and format. Carousel defaults are `1080 x 1350`, JPEG, under 8 MB each.
+3. Stage the approved JPGs:
+   - Preferred: Composio file-upload objects.
+   - Fallback: temporary direct public HTTPS URLs.
+4. Verify every staged image with headers:
+
+```powershell
+$urls = @(
+  'https://example.com/direct/slide-1.jpg',
+  'https://example.com/direct/slide-2.jpg'
+)
+foreach ($u in $urls) {
+  Write-Output "URL: $u"
+  curl.exe -I -L -s $u | Select-String -Pattern 'HTTP/|content-type|content-length'
+}
+```
+
+Required result for every slide:
+
+```text
+HTTP/1.1 200 OK
+Content-Type: image/jpeg
+Content-Length: [non-empty value]
+```
+
+Only then create the carousel container. If any URL returns HTML, redirects to a share page, lacks a content length, or is not HTTPS, restage before publishing.
 
 ## Approval Template
 
@@ -181,6 +223,7 @@ Ready to publish to @wellwithinapp?
 
 Format:
 Image:
+Staging route:
 Logo source:
 Caption:
 Hashtags:

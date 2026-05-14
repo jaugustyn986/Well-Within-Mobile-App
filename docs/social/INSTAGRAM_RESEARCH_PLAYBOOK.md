@@ -30,6 +30,8 @@ Future automation target:
 
 ## Operating Loop
 
+For a full post creation and publishing pass, start with `docs/social/INSTAGRAM_POST_RUNBOOK.md`. This research playbook is the deeper guide for the research and memory portions of that run.
+
 Use this loop so the system stays strategic without wasting time or context:
 
 1. **Research inspiration:** check the target accounts or one focused source set for current hooks, formats, visible metrics, visual systems, comments, and CTAs.
@@ -87,7 +89,7 @@ For each useful reference, capture:
 - Hook:
 - First-frame structure:
 - Visual pattern:
-- Visual system: creator note, journal ritual, charting moment, editorial carousel, founder/voice post, soft explainer, privacy/trust visual, or other.
+- Visual system: journal-led north star, app-led product proof, or justified exception.
 - Caption structure:
 - CTA:
 - Emotional angle:
@@ -148,7 +150,7 @@ For visual posts, apply `well-within-social-creative-direction` before image gen
 
 - choose the content job
 - pull 3-5 visual references when possible
-- select one visual system
+- default to the journal-led visual north star unless the post is app-led for a clear product reason
 - reject generic decorative cards or random ornamentation
 - critique the preview before final assets are approved
 

@@ -1,0 +1,48 @@
+Stock sources used for final carousel:
+
+- Slide 1: `pexels-kaboompics-4207707.jpg`
+  Source: https://www.pexels.com/photo/blank-white-paper-sheet-on-wooden-table-4207707/
+  Photographer/source: Kaboompics.com
+  License: Pexels license, free to use
+
+- Slide 2: `pexels-messalaciulla-942872.jpg`
+  Source: https://www.pexels.com/photo/notebook-with-blank-pages-942872/
+  Photographer/source: Messala Ciulla
+  License: Pexels license, free to use
+
+- Slide 3: `pexels-dulce-espinoza-602900.jpg`
+  Source: https://www.pexels.com/photo/white-notepad-on-brown-surface-602900/
+  Photographer/source: Dulce Espinoza
+  License: Pexels license, free to use
+
+- Slide 4: `pexels-cup-of-couple-7657880.jpg`
+  Source: https://www.pexels.com/photo/a-cup-of-coffee-sticky-note-and-notebook-on-a-table-7657880/
+  Photographer/source: Cup of Couple
+  License: Pexels license, free to use
+
+- Slide 5: `pexels-eva-bronzini-8059957.jpg`
+  Source: https://www.pexels.com/photo/blank-white-paper-on-leafy-background-8059957/
+  Photographer/source: Eva Bronzini
+  License: Pexels license, free to use
+
+Rejected candidates:
+
+- `pexels-polina-kovaleva-5717418.jpg`
+  Source: https://www.pexels.com/photo/white-notebook-on-the-table-5717418/
+  Photographer: Polina Kovaleva
+  Reason: visible handwriting and darker stationery made it less suitable for a Well Within hook slide.
+
+- `pexels-torsten-dettlaff-195030.jpg`
+  Source: https://www.pexels.com/photo/white-calendar-on-white-surface-195030/
+  Photographer: Torsten Dettlaff
+  Reason: seasonal calendar imagery pulled the post away from daily charting.
+
+- `pexels-esra-nur-kalay-26647072.jpg`
+  Source: https://www.pexels.com/photo/cup-of-coffee-on-journal-by-flowers-and-flask-26647072/
+  Photographer: Esra Nur Kalay
+  Reason: visible magazine branding distracted from the charting message.
+
+- `pexels-bich-tran-1059383.jpg`
+  Source: https://www.pexels.com/photo/white-and-black-weekly-planner-on-gray-surface-1059383/
+  Photographer: Bich Tran
+  Reason: bold handwritten days and decorative borders competed with the overlay copy.

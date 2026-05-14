@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+    <defs>
+      <linearGradient id="readability" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#F6F3EF" stop-opacity="0.4"/>
+        <stop offset="52%" stop-color="#F6F3EF" stop-opacity="0.16"/>
+        <stop offset="100%" stop-color="#F6F3EF" stop-opacity="0.03"/>
+      </linearGradient>
+    </defs>
+    <rect width="1080" height="1350" fill="url(#readability)"/>
+    <text x="142" y="294" font-family="Georgia, serif" font-size="58" font-weight="500" fill="#3F3A36">Write it down before</text>
+<text x="142" y="359.53999999999996" font-family="Georgia, serif" font-size="58" font-weight="500" fill="#3F3A36">you interpret it.</text>
+    <line x1="142" y1="437.08" x2="234" y2="437.08" stroke="#B89A8B" stroke-width="4" stroke-linecap="round"/>
+    <text x="176" y="600" font-family="Arial, sans-serif" font-size="30" font-weight="400" fill="#5A5550">Observation first. Meaning can</text>
+<text x="176" y="640.8" font-family="Arial, sans-serif" font-size="30" font-weight="400" fill="#5A5550">come later.</text>
+    <text x="72" y="1242" font-family="Arial, sans-serif" font-size="24" fill="#6F6A65">03 / 05</text>
+  </svg>

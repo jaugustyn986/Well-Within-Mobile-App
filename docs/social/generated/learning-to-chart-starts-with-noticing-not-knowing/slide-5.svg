@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+    <defs>
+      <linearGradient id="readability" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#F6F3EF" stop-opacity="0.44"/>
+        <stop offset="52%" stop-color="#F6F3EF" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="#F6F3EF" stop-opacity="0.03"/>
+      </linearGradient>
+    </defs>
+    <rect width="1080" height="1350" fill="url(#readability)"/>
+    <text x="152" y="314" font-family="Georgia, serif" font-size="58" font-weight="500" fill="#3F3A36">Save this for your next</text>
+<text x="152" y="379.53999999999996" font-family="Georgia, serif" font-size="58" font-weight="500" fill="#3F3A36">charting day.</text>
+    <line x1="152" y1="457.08" x2="244" y2="457.08" stroke="#B89A8B" stroke-width="4" stroke-linecap="round"/>
+    <text x="172" y="640" font-family="Arial, sans-serif" font-size="30" font-weight="400" fill="#5A5550">Follow for calmer fertility charting</text>
+<text x="172" y="680.8" font-family="Arial, sans-serif" font-size="30" font-weight="400" fill="#5A5550">notes.</text>
+    <text x="72" y="1242" font-family="Arial, sans-serif" font-size="24" fill="#6F6A65">05 / 05</text>
+  </svg>

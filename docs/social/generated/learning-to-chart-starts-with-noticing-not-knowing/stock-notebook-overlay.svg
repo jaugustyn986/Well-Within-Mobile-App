@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350">
+    <defs>
+      <linearGradient id="readability" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#F6F3EF" stop-opacity="0.6599999999999999"/>
+        <stop offset="46%" stop-color="#F6F3EF" stop-opacity="0.42"/>
+        <stop offset="100%" stop-color="#F6F3EF" stop-opacity="0.04"/>
+      </linearGradient>
+    </defs>
+    <rect width="1080" height="1350" fill="url(#readability)"/>
+    <g transform="translate(94 168)">
+      <text x="0" y="0" font-family="Georgia, serif" font-size="66" font-weight="500" fill="#3F3A36">Learning to chart</text>
+<text x="0" y="74.58" font-family="Georgia, serif" font-size="66" font-weight="500" fill="#3F3A36">starts with noticing,</text>
+<text x="0" y="149.16" font-family="Georgia, serif" font-size="66" font-weight="500" fill="#3F3A36">not knowing.</text>
+      <line x1="0" y1="235.73999999999998" x2="92" y2="235.73999999999998" stroke="#B89A8B" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    <g transform="translate(94 562)">
+      <text x="0" y="0" font-family="Arial, sans-serif" font-size="30" font-weight="400" fill="#5A5550">Let the pattern build before you ask it to</text>
+<text x="0" y="40.800000000000004" font-family="Arial, sans-serif" font-size="30" font-weight="400" fill="#5A5550">explain everything.</text>
+    </g>
+    <text x="72" y="1242" font-family="Arial, sans-serif" font-size="24" fill="#6F6A65">01 / 05</text>
+  </svg>

@@ -1,0 +1,7 @@
+Slide 1 (hook) stock photograph
+- Source: Pexels
+- Photo: "Woman writing on a notebook while in front of a laptop" by Pavel Danilyuk
+- Page: https://www.pexels.com/photo/woman-writing-on-a-notebook-while-in-front-of-a-laptop-6763926/
+- License: https://www.pexels.com/license/ (free to use per Pexels terms)
+
+Replace assets/slide-1-stock.jpg only if you switch to a different image; update this file with photographer + link.
