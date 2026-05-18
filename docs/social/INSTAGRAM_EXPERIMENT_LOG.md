@@ -366,6 +366,48 @@ Use this file to track planned, posted, measured, and retired Instagram content 
 - Confidence: low
 - Next action: Review at 24h, 72h, and 7d. If saves outperform prior carousels, the glossary/utility format is worth repeating (e.g. "5 signs to observe this cycle", "what post-peak actually feels like").
 
+## Experiment: What Fertility Charting Can And Cannot Tell You
+
+- Status: posted
+- Date planned: 2026-05-17
+- Date posted: 2026-05-17
+- Post URL: `https://www.instagram.com/p/DYdB-zPgTMe/`
+- Media ID: `18439123240143196`
+- Format: carousel (5 slides, 1080 × 1350 JPEG)
+- Primary variable: trust-building boundary-setting — first explicit "can and cannot" contrast post
+- Strategic bet: naming honest limits in a space full of overpromising apps builds credibility and saves among users comparing cycle apps
+- Audience: fertility-charting-curious users skeptical of prediction-heavy apps; users actively comparing cycle apps
+- Hook: "Fertility Charting — What it can tell you. vs. what it can't."
+- Visual: botanical typographic system — warm golden cream gradient, Georgia serif, gold accent rules, olive/terracotta botanical corners (primary cluster top-right; opposite diagonal from five-words glossary); two-column comparison on slide 2; left-aligned editorial layout on slides 3–5
+- Caption angle: honest boundary-setting; charting is observation-based; limits are not gaps, they're the point
+- CTA: save this when comparing cycle apps
+- Target metric: saves first; profile visits and follows second
+- Baseline or comparison: compare saves to prior educational carousels when insights populate
+- Review checkpoints: 24h, 72h, 7d
+
+### Results
+
+- 24h snapshot:
+- 72h snapshot:
+- 7d snapshot:
+- Reach:
+- Views/plays:
+- Likes:
+- Comments:
+- Shares:
+- Saves:
+- Profile visits:
+- Follows:
+- Link taps:
+- App Store clicks:
+
+### Learning
+
+- What worked:
+- What did not:
+- Confidence: low
+- Next action: Review at 24h, 72h, and 7d when insights are available. If saves outperform prior carousels, the honest-boundary format is worth repeating.
+
 ## Experiment: Story — One Observation Is Enough To Start
 
 - Status: posted

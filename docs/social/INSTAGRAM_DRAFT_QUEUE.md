@@ -96,7 +96,7 @@ Keep the active queue short and distinct. Before adding or choosing a draft, che
 
 ## Draft: What Fertility Charting Can And Cannot Tell You
 
-- Status: idea
+- Status: published
 - Format: carousel
 - Primary variable: trust-building education
 - Strategic bet: clear boundaries can build credibility and reduce overclaim risk
@@ -181,6 +181,7 @@ Keep the active queue short and distinct. Before adding or choosing a draft, che
 
 ## Recently Published
 
+- `What Fertility Charting Can And Cannot Tell You`: `https://www.instagram.com/p/DYdB-zPgTMe/`
 - `You Do Not Need The Whole Cycle Today`: `https://www.instagram.com/p/DX9kmz9lG1a/`
 - `Cycle Tracking Is Not Always Fertility Charting`: `https://www.instagram.com/p/DYAgPLQFOVG/`
 - `Observation-Based Charting May Be A Fit If`: `https://www.instagram.com/p/DYDXPTpklG4/`
