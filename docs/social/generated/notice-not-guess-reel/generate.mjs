@@ -65,21 +65,21 @@ const slides = [
   {
     number: 2,
     // Paper + vase flat-lay. Vase shadow clears by y=350; text sits in the
-    // clear right side of the sheet rather than drifting through the vase shadow.
+    // main body of the sheet, away from both the vase shadow and paper edge.
     source: "pexels-kaboompics-4207707.jpg",
     position: "centre",
     brightness: 1.05,
     saturation: 0.76,
     veilOpacity: 0.20,
     title: "Prediction tells you what it thinks is happening.",
-    titleSize: 48,
-    titleX: 600,
-    titleY: 250,
-    titleMax: 370,
+    titleSize: 56,
+    titleX: 250,
+    titleY: 420,
+    titleMax: 600,
     support: "It fills the gaps with averages, not with what you actually noticed.",
-    supportX: 600,
-    supportY: 555,
-    supportMax: 360,
+    supportX: 250,
+    supportY: 720,
+    supportMax: 560,
     supportSize: 30,
   },
   {
