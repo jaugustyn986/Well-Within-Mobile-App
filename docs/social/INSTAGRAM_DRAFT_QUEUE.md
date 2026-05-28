@@ -147,7 +147,7 @@ Keep the active queue short and distinct. Before adding or choosing a draft, che
 
 ## Draft: A Charting App Should Help You Notice, Not Guess
 
-- Status: idea
+- Status: approved
 - Format: feed image or short carousel
 - Primary variable: hook
 - Strategic bet: no-guesswork positioning is a core differentiator
