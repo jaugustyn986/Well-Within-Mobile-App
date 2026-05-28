@@ -44,42 +44,42 @@ const colors = {
 const slides = [
   {
     number: 1,
-    // Paper + vase flat-lay. Vase casts a dark shadow at x=360–540 from y=100–520.
-    // Text placed below y=560 to land in the clean, uniformly bright paper zone.
-    source: "pexels-kaboompics-4207707.jpg",
-    position: "centre",
-    brightness: 1.05,
-    saturation: 0.76,
-    veilOpacity: 0.20,
-    title: "A charting app should help you notice, not guess.",
-    titleSize: 64,
-    titleX: 94,
-    titleY: 580,
-    titleMax: 720,
-    support: "Observations you record — not estimates an algorithm makes for you.",
-    supportX: 94,
-    supportY: 880,
-    supportMax: 700,
-    supportSize: 30,
-  },
-  {
-    number: 2,
-    // Open notebook — uniformly bright from y=100 onwards.
-    // Was too close to top binding edge (y=180 = only 80px margin).
-    // Moved to y=300 for natural breathing room on the page.
+    // Open notebook — uniformly bright across full width from y=100+.
+    // No dark zones to worry about; full-width hook title reads cleanly across both pages.
+    // Support text constrained to the left page (spine at x≈540).
     source: "pexels-messalaciulla-942872.jpg",
     position: "centre",
     brightness: 1.08,
     saturation: 0.62,
     veilOpacity: 0.14,
+    title: "A charting app should help you notice, not guess.",
+    titleSize: 64,
+    titleX: 94,
+    titleY: 180,
+    titleMax: 900,
+    support: "Observations you record — not estimates an algorithm makes for you.",
+    supportX: 94,
+    supportY: 490,
+    supportMax: 420,  // left-page only (spine at x≈540)
+    supportSize: 30,
+  },
+  {
+    number: 2,
+    // Paper + vase flat-lay. Vase shadow clears by y=350; text sits in the
+    // uniformly bright paper zone below it (avg brightness 196–204 at y=380+).
+    source: "pexels-kaboompics-4207707.jpg",
+    position: "centre",
+    brightness: 1.05,
+    saturation: 0.76,
+    veilOpacity: 0.20,
     title: "Prediction tells you what it thinks is happening.",
     titleSize: 56,
     titleX: 94,
-    titleY: 300,
-    titleMax: 680,
+    titleY: 380,
+    titleMax: 880,
     support: "It fills the gaps with averages, not with what you actually noticed.",
     supportX: 94,
-    supportY: 660,
+    supportY: 640,
     supportMax: 700,
     supportSize: 30,
   },
@@ -107,7 +107,8 @@ const slides = [
   {
     number: 4,
     // Coffee cup + notebook scene, left crop.
-    // Moved title from y=148 to y=280 for cleaner placement away from top elements.
+    // y=350–400 has the cleanest left zone (x94–360: brightness 213–216).
+    // Moved title from y=280 to y=400 to land clearly in that bright area.
     source: "pexels-cup-of-couple-7657880.jpg",
     position: "left",
     brightness: 1.05,
@@ -116,13 +117,13 @@ const slides = [
     title: "Your temperature.\nYour signs.\nYour pattern.",
     titleSize: 62,
     titleX: 94,
-    titleY: 280,
+    titleY: 400,
     titleMax: 760,
     preWrapped: true,
     support: "Nothing averaged across other people's cycles.",
     supportX: 94,
-    supportY: 740,
-    supportMax: 480,  // narrowed: keeps text in bright zone (x>660 has dark element ~124)
+    supportY: 760,
+    supportMax: 480,
     supportSize: 30,
   },
   {
