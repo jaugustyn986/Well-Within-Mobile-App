@@ -111,10 +111,16 @@ function hexToRgb(hex) {
   return { r, g, b };
 }
 
-function buildSvgText(lines, x, y, size, color, lineHeight = 1.25) {
+function buildSvgText(lines, x, y, size, color, lineHeight = 1.25, weight = 400) {
   const lh = size * lineHeight;
   return lines
-    .map((line, i) => `<text x="${x}" y="${y + i * lh}" font-size="${size}" fill="${color}">${line.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</text>`)
+    .map(
+      (line, i) =>
+        `<text x="${x}" y="${y + i * lh}" font-size="${size}" font-weight="${weight}" fill="${color}">${line
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")}</text>`,
+    )
     .join("\n");
 }
 
@@ -157,16 +163,15 @@ async function generateSlide(slide) {
     supportLines = wrapWords(slide.support, slide.supportSize ?? 34, slide.supportMax ?? 680);
   }
 
-  const titleSvg = buildSvgText(titleLines, slide.titleX, slide.titleY, slide.titleSize, colors.ink, 1.3);
+  const titleSvg = buildSvgText(titleLines, slide.titleX, slide.titleY, slide.titleSize, colors.ink, 1.3, 400);
   const supportSvg = slide.support
-    ? buildSvgText(supportLines, slide.supportX, slide.supportY, slide.supportSize ?? 34, colors.warm, 1.3)
+    ? buildSvgText(supportLines, slide.supportX, slide.supportY, slide.supportSize ?? 34, colors.warm, 1.3, 400)
     : "";
 
   const svgOverlay = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}">
   <style>
     text {
-      font-family: Georgia, 'Times New Roman', serif;
-      font-weight: normal;
+      font-family: 'Cormorant Garamond', 'Cormorant', Georgia, 'Times New Roman', serif;
       letter-spacing: -0.01em;
     }
   </style>
