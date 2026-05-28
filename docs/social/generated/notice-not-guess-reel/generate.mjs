@@ -45,42 +45,41 @@ const slides = [
   {
     number: 1,
     // Open notebook — uniformly bright across full width from y=100+.
-    // No dark zones to worry about; full-width hook title reads cleanly across both pages.
-    // Support text constrained to the left page (spine at x≈540).
+    // Keep all copy on the left page; spanning the fold makes the layout feel accidental.
     source: "pexels-messalaciulla-942872.jpg",
     position: "centre",
     brightness: 1.08,
     saturation: 0.62,
     veilOpacity: 0.14,
     title: "A charting app should help you notice, not guess.",
-    titleSize: 64,
+    titleSize: 52,
     titleX: 94,
-    titleY: 180,
-    titleMax: 900,
+    titleY: 185,
+    titleMax: 420,
     support: "Observations you record — not estimates an algorithm makes for you.",
     supportX: 94,
-    supportY: 490,
-    supportMax: 420,  // left-page only (spine at x≈540)
+    supportY: 590,
+    supportMax: 410,
     supportSize: 30,
   },
   {
     number: 2,
     // Paper + vase flat-lay. Vase shadow clears by y=350; text sits in the
-    // uniformly bright paper zone below it (avg brightness 196–204 at y=380+).
+    // clear right side of the sheet rather than drifting through the vase shadow.
     source: "pexels-kaboompics-4207707.jpg",
     position: "centre",
     brightness: 1.05,
     saturation: 0.76,
     veilOpacity: 0.20,
     title: "Prediction tells you what it thinks is happening.",
-    titleSize: 56,
-    titleX: 94,
-    titleY: 380,
-    titleMax: 880,
+    titleSize: 48,
+    titleX: 600,
+    titleY: 250,
+    titleMax: 370,
     support: "It fills the gaps with averages, not with what you actually noticed.",
-    supportX: 94,
-    supportY: 640,
-    supportMax: 700,
+    supportX: 600,
+    supportY: 555,
+    supportMax: 360,
     supportSize: 30,
   },
   {
@@ -107,8 +106,7 @@ const slides = [
   {
     number: 4,
     // Coffee cup + notebook scene, left crop.
-    // y=350–400 has the cleanest left zone (x94–360: brightness 213–216).
-    // Moved title from y=280 to y=400 to land clearly in that bright area.
+    // Place copy on the lower notebook page; the upper scene stays photographic.
     source: "pexels-cup-of-couple-7657880.jpg",
     position: "left",
     brightness: 1.05,
@@ -117,12 +115,12 @@ const slides = [
     title: "Your temperature.\nYour signs.\nYour pattern.",
     titleSize: 62,
     titleX: 94,
-    titleY: 400,
+    titleY: 850,
     titleMax: 760,
     preWrapped: true,
     support: "Nothing averaged across other people's cycles.",
     supportX: 94,
-    supportY: 760,
+    supportY: 1120,
     supportMax: 480,
     supportSize: 30,
   },
