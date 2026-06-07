@@ -47,6 +47,8 @@ export type FeedbackModalProps = {
   onClose: () => void;
   /** For analytics / review; default Settings. */
   sourceScreen?: string;
+  initialFeedbackType?: FeedbackType | null;
+  initialCategory?: FeedbackCategory | null;
   /** In-memory cycle slices from useCycleHistory (no raw storage reads in modal). */
   cycles: CycleSlice[];
 };
@@ -55,12 +57,15 @@ export function FeedbackModal({
   visible,
   onClose,
   sourceScreen = 'Settings',
+  initialFeedbackType = null,
+  initialCategory = null,
   cycles,
 }: FeedbackModalProps): JSX.Element {
-  const [feedbackType, setFeedbackType] = useState<FeedbackType | null>(null);
-  const [category, setCategory] = useState<FeedbackCategory | null>(null);
+  const [feedbackType, setFeedbackType] = useState<FeedbackType | null>(initialFeedbackType);
+  const [category, setCategory] = useState<FeedbackCategory | null>(initialCategory);
   const [confidence, setConfidence] = useState<FeedbackConfidence | null>(null);
   const [message, setMessage] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
   const [includeContext, setIncludeContext] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
@@ -94,14 +99,15 @@ export function FeedbackModal({
   );
 
   const resetForm = useCallback(() => {
-    setFeedbackType(null);
-    setCategory(null);
+    setFeedbackType(initialFeedbackType);
+    setCategory(initialCategory);
     setConfidence(null);
     setMessage('');
+    setContactEmail('');
     setIncludeContext(false);
     setErrorText(null);
     setSuccess(false);
-  }, []);
+  }, [initialFeedbackType, initialCategory]);
 
   useEffect(() => {
     if (visible) {
@@ -131,6 +137,8 @@ export function FeedbackModal({
         category,
         confidence,
         message: message.trim() || null,
+        contactEmail: contactEmail.trim() || null,
+        contactPermission: contactEmail.trim().length > 0,
         includeCycleContext: includeContext,
         cycleContext,
       });
@@ -151,6 +159,7 @@ export function FeedbackModal({
     category,
     confidence,
     message,
+    contactEmail,
     includeContext,
     cycles,
     calendarAsOfDate,
@@ -196,6 +205,35 @@ export function FeedbackModal({
                   { paddingBottom: 8 + keyboardHeight },
                 ]}
               >
+                <View
+                  onLayout={(e) => {
+                    messageBlockY.current = e.nativeEvent.layout.y;
+                  }}
+                >
+                  <Text style={styles.label}>What felt confusing, wrong, or missing?</Text>
+                  <TextInput
+                    style={styles.input}
+                    multiline
+                    maxLength={1000}
+                    value={message}
+                    onChangeText={setMessage}
+                    placeholder="A short note is enough."
+                    placeholderTextColor={TEXT_MUTED}
+                    textAlignVertical="top"
+                    onFocus={() => {
+                      const scroll = () => {
+                        scrollRef.current?.scrollTo({
+                          y: Math.max(0, messageBlockY.current - 12),
+                          animated: true,
+                        });
+                      };
+                      setTimeout(scroll, Platform.OS === 'ios' ? 120 : 80);
+                      setTimeout(scroll, Platform.OS === 'ios' ? 340 : 260);
+                    }}
+                  />
+                </View>
+                <Text style={styles.counter}>{message.length} / 1000</Text>
+
                 <Text style={styles.label}>Feedback type *</Text>
                 <View style={styles.typeRow}>
                   {FEEDBACK_TYPES.map((t) => (
@@ -257,34 +295,18 @@ export function FeedbackModal({
                   ))}
                 </View>
 
-                <View
-                  onLayout={(e) => {
-                    messageBlockY.current = e.nativeEvent.layout.y;
-                  }}
-                >
-                  <Text style={styles.label}>Message (optional)</Text>
-                  <TextInput
-                    style={styles.input}
-                    multiline
-                    maxLength={1000}
-                    value={message}
-                    onChangeText={setMessage}
-                    placeholder="Anything else you’d like to share…"
-                    placeholderTextColor={TEXT_MUTED}
-                    textAlignVertical="top"
-                    onFocus={() => {
-                      const scroll = () => {
-                        scrollRef.current?.scrollTo({
-                          y: Math.max(0, messageBlockY.current - 12),
-                          animated: true,
-                        });
-                      };
-                      setTimeout(scroll, Platform.OS === 'ios' ? 120 : 80);
-                      setTimeout(scroll, Platform.OS === 'ios' ? 340 : 260);
-                    }}
-                  />
-                </View>
-                <Text style={styles.counter}>{message.length} / 1000</Text>
+                <Text style={styles.label}>Email (optional)</Text>
+                <TextInput
+                  style={styles.emailInput}
+                  value={contactEmail}
+                  onChangeText={setContactEmail}
+                  placeholder="Only if you’re open to a follow-up"
+                  placeholderTextColor={TEXT_MUTED}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  textContentType="emailAddress"
+                />
 
                 <View style={styles.toggleBlock}>
                   <View style={styles.toggleTextWrap}>
@@ -430,6 +452,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: TEXT_PRIMARY,
     backgroundColor: BG_PAGE,
+  },
+  emailInput: {
+    minHeight: 46,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    borderRadius: 10,
+    padding: 12,
+    fontSize: 15,
+    color: TEXT_PRIMARY,
+    backgroundColor: BG_PAGE,
+    marginBottom: 14,
   },
   counter: { fontSize: 12, color: TEXT_MUTED, textAlign: 'right', marginTop: 4, marginBottom: 8 },
   toggleBlock: {

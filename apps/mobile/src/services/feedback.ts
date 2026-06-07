@@ -32,6 +32,8 @@ export type UserFeedbackRow = {
   category: FeedbackCategory;
   confidence: FeedbackConfidence | null;
   message: string | null;
+  contact_email: string | null;
+  contact_permission: boolean | null;
   include_cycle_context: boolean;
   cycle_context: FeedbackCycleContext | null;
   app_version: string | null;
@@ -45,6 +47,8 @@ export type SubmitFeedbackInput = {
   category: FeedbackCategory;
   confidence: FeedbackConfidence | null;
   message: string | null;
+  contactEmail: string | null;
+  contactPermission: boolean;
   includeCycleContext: boolean;
   cycleContext: FeedbackCycleContext | null;
 };
@@ -61,6 +65,16 @@ function isFeedbackCategory(v: string): v is FeedbackCategory {
 
 function isFeedbackConfidence(v: string): v is FeedbackConfidence {
   return (FEEDBACK_CONFIDENCE as readonly string[]).includes(v);
+}
+
+export function normalizeContactEmail(email: string | null | undefined): string | null {
+  const trimmed = email?.trim() ?? '';
+  if (!trimmed) return null;
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+  if (!valid || trimmed.length > 254) {
+    throw new Error('Invalid contact email.');
+  }
+  return trimmed.toLowerCase();
 }
 
 export function submitFeedback(input: SubmitFeedbackInput): Promise<void> {
@@ -83,6 +97,14 @@ export function submitFeedback(input: SubmitFeedbackInput): Promise<void> {
     return Promise.reject(new Error('Message too long.'));
   }
 
+  let contact_email: string | null = null;
+  try {
+    contact_email = normalizeContactEmail(input.contactEmail);
+  } catch (error) {
+    return Promise.reject(error);
+  }
+  const contact_permission = contact_email ? input.contactPermission : null;
+
   const cycle_context =
     input.includeCycleContext && input.cycleContext ? input.cycleContext : null;
 
@@ -97,6 +119,8 @@ export function submitFeedback(input: SubmitFeedbackInput): Promise<void> {
       category: input.category,
       confidence: input.confidence,
       message: msg.length > 0 ? msg : null,
+      contact_email: contact_permission ? contact_email : null,
+      contact_permission,
       include_cycle_context: input.includeCycleContext,
       cycle_context,
       app_version: APP_VERSION,
