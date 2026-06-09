@@ -60,12 +60,18 @@ create table if not exists public.user_feedback (
   category text not null,
   confidence text null,
   message text null,
+  contact_email text null,
+  contact_permission boolean null,
   include_cycle_context boolean not null default false,
   cycle_context jsonb null,
   app_version text null,
   platform text null,
   schema_version smallint not null default 1
 );
+
+alter table public.user_feedback
+  add column if not exists contact_email text null,
+  add column if not exists contact_permission boolean null;
 
 create index if not exists user_feedback_created_at on public.user_feedback (created_at desc);
 create index if not exists user_feedback_type_cat on public.user_feedback (feedback_type, category);

@@ -13,7 +13,9 @@ import {
   HELP_WHAT_IS_PEAK_DAY_TITLE,
 } from 'core-rules-engine';
 import { useResetOnboarding } from '../navigation/AppNavigator';
+import { FeedbackModal } from '../components/feedback/FeedbackModal';
 import { LineIcon, type IconName } from '../components/LineIcon';
+import { useCycleHistory } from '../hooks/useCycleHistory';
 import {
   BG_BLEEDING, BG_DRY, BG_NO_ENTRY, BG_PEAK_TYPE, BG_POST_PEAK, BG_PAGE, BG_CARD,
   FERTILE_ACCENT, PEAK_BORDER, BORDER_CARD, BORDER_TODAY, INTERCOURSE_ICON,
@@ -163,6 +165,8 @@ function AccordionItem({ item }: { item: AccordionItemData }): JSX.Element {
 
 export function HelpScreen(): JSX.Element {
   const resetOnboarding = useResetOnboarding();
+  const { cycles } = useCycleHistory();
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
@@ -170,11 +174,26 @@ export function HelpScreen(): JSX.Element {
       {SECTIONS.map((section, idx) => (
         <AccordionItem key={idx} item={section} />
       ))}
+      <Pressable
+        style={styles.feedbackFooter}
+        onPress={() => setShowFeedbackModal(true)}
+      >
+        <Text style={styles.feedbackTitle}>Still confused?</Text>
+        <Text style={styles.feedbackText}>Tell us what felt unclear</Text>
+      </Pressable>
       {resetOnboarding && (
         <Pressable style={styles.showOnboarding} onPress={resetOnboarding.resetOnboarding}>
           <Text style={styles.showOnboardingText}>Show onboarding again</Text>
         </Pressable>
       )}
+      <FeedbackModal
+        visible={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        sourceScreen="Help"
+        initialFeedbackType="Suggestion"
+        initialCategory="Other"
+        cycles={cycles}
+      />
     </ScrollView>
   );
 }
@@ -195,6 +214,16 @@ const styles = StyleSheet.create({
   chevron: { fontSize: 16, color: TEXT_MUTED },
   accordionBody: { paddingHorizontal: 16, paddingBottom: 16 },
   accordionContent: { fontSize: 15, fontWeight: '400', color: TEXT_SECONDARY, lineHeight: 22 },
+  feedbackFooter: {
+    backgroundColor: BG_CARD,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+  },
+  feedbackTitle: { fontSize: 15, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 4 },
+  feedbackText: { fontSize: 14, color: TEXT_MUTED },
   showOnboarding: {
     marginTop: 24, padding: 14, backgroundColor: BORDER_CARD, borderRadius: 10, alignItems: 'center',
   },
