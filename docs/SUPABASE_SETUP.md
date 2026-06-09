@@ -61,7 +61,7 @@ Never commit the real values or use the service role key in the app.
 3. Run the script. It creates:
    - **profiles** (id, created_at, updated_at) linked to `auth.users`
    - **daily_entries** (id, user_id, entry_date, entry_payload jsonb, client_updated_at, server_updated_at, deleted_at) with unique (user_id, entry_date)
-   - **user_feedback** (in-app feedback rows: optional user_id, structured fields, optional `cycle_context` jsonb). Inserts allowed for signed-in users (`user_id = auth.uid()`) and signed-out users (`user_id` null). No client read/update/delete; review in the Dashboard.
+   - **user_feedback** (in-app feedback rows: optional user_id, structured fields, optional follow-up email, optional `cycle_context` jsonb). Inserts allowed for signed-in users (`user_id = auth.uid()`) and signed-out users (`user_id` null). No client read/update/delete; review in the Dashboard.
    - RLS policies so users can only access their own rows on `profiles` and `daily_entries`
    - A trigger so `server_updated_at` is set by the database on INSERT/UPDATE on `daily_entries` (client never writes it)
 
@@ -71,7 +71,7 @@ Never commit the real values or use the service role key in the app.
 
 - **profiles**: select/insert/update where `auth.uid() = id`. No DELETE policy (cascade from auth.users).
 - **daily_entries**: select/insert/update where `auth.uid() = user_id`. **No DELETE policy**; the client never issues DELETE. Deletion is done by setting `deleted_at` (soft delete).
-- **user_feedback**: INSERT only. Authenticated clients: insert with `user_id = auth.uid()`. Anonymous (anon key): insert with `user_id` null. No SELECT/UPDATE/DELETE for normal client roles; use the Table Editor or SQL (service role) to review feedback.
+- **user_feedback**: INSERT only. Authenticated clients: insert with `user_id = auth.uid()`. Anonymous (anon key): insert with `user_id` null. Optional `contact_email` is user-entered only when they are open to a follow-up. No SELECT/UPDATE/DELETE for normal client roles; use the Table Editor or SQL (service role) to review feedback.
 
 ---
 

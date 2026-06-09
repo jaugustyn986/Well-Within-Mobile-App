@@ -7,6 +7,7 @@ import { useCycleData } from '../hooks/useCycleData';
 import { useCycleHistory } from '../hooks/useCycleHistory';
 import { useCurrentCycleSummaryFromCycles } from '../hooks/useCurrentCycleSummary';
 import { StatusBanner } from '../components/StatusBanner';
+import { FeedbackModal } from '../components/feedback/FeedbackModal';
 import { CalendarGrid } from '../components/CalendarGrid';
 import { TodayEntryCard } from '../components/TodayEntryCard';
 import { SegmentedToggle, TabKey } from '../components/SegmentedToggle';
@@ -37,6 +38,7 @@ export function CalendarScreen(): JSX.Element {
   const { entries, sortedEntries, result, loading, refresh } = useCycleData();
   const cycleHistory = useCycleHistory();
   const [activeTab, setActiveTab] = useState<TabKey>('calendar');
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
   useFocusEffect(useCallback(() => {
     refresh();
@@ -164,6 +166,12 @@ export function CalendarScreen(): JSX.Element {
         {activeTab === 'calendar' ? (
           <>
             <StatusBanner summary={cycleSummary} />
+            <Pressable
+              style={styles.feedbackLink}
+              onPress={() => setShowFeedbackModal(true)}
+            >
+              <Text style={styles.feedbackText}>Something looks off? Send feedback</Text>
+            </Pressable>
 
             <CalendarGrid
               year={viewMonth.year}
@@ -226,6 +234,15 @@ export function CalendarScreen(): JSX.Element {
           </>
         )}
       </ScrollView>
+
+      <FeedbackModal
+        visible={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        sourceScreen="CalendarStatus"
+        initialFeedbackType="Something feels off"
+        initialCategory="Cycle summary"
+        cycles={cycleHistory.cycles}
+      />
     </SafeAreaView>
   );
 }
@@ -242,6 +259,15 @@ const styles = StyleSheet.create({
   topBarLogo: { width: 32, height: 32, backgroundColor: 'transparent' },
   appName: { fontSize: 28, fontWeight: '600', color: BRAND_NAME, letterSpacing: -0.2 },
   gearBtn: { padding: 8 },
+  feedbackLink: {
+    alignSelf: 'flex-start',
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 2,
+    paddingVertical: 8,
+    paddingHorizontal: 2,
+  },
+  feedbackText: { fontSize: 13, fontWeight: '500', color: TEXT_MUTED },
   helpLink: {
     backgroundColor: BG_CARD, borderRadius: 12, padding: 16,
     marginHorizontal: 16, marginTop: 16, marginBottom: 32,
