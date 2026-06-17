@@ -33,6 +33,9 @@ When working in this repo, read and follow the guidance in the `skills/` folder.
 - **UX visual composition (premium / art direction)** — `skills/ux_visual_composition_premium.md`  
   **Reference when hierarchy, restraint, imagery, motion, or landing-style composition matter more than component count.** Complements tone and charting skills; includes Apps + utility-copy defaults for product surfaces and Expo/RN scope notes.
 
+- **Anti-slop visual defaults** — `skills/anti_slop_visual_defaults.md`  
+  **Reference as the last filter before shipping any AI-touched onboarding, App Store, social, or marketing surface — and for in-app microcopy.** Catalog of AI tells (copy, visual, structural), em-dash ban, consistency locks (color / shape / theme), generic-name and fake-precise-number bans, Well Within brand overrides (warm clay/cream palette, rose marker, system sans), and a pre-flight check. Adapted from the upstream `taste-skill` project; web-only sections are pointers, not authoritative for the Expo app.
+
 - **Privacy** — `skills/privacy_and_health_data.md`  
   No ad/tracking/analytics SDKs; local-only storage for MVP; user-owned data.
 
