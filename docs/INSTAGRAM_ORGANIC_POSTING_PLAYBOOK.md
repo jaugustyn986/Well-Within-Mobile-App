@@ -184,6 +184,34 @@ Next-time improvements:
 - Scheduling is not native in this workflow. If scheduling is needed, use Meta Business Suite manually or build a scheduler that creates/publishes near the target time.
 - Deleting published Instagram media may not be available through the current Composio tools. In our test, an API delete attempt failed with an unsupported delete request, so manual deletion in Instagram may be required.
 
+## Terminal Fallback: Publish a Reel Without Cursor MCP
+
+If Cursor cannot discover the Composio MCP server, use the repo-local Composio SDK publisher instead. It bypasses Cursor MCP and calls the current Composio Instagram tools directly.
+
+From the repo root:
+
+```bash
+cd docs/social/generated
+npm install
+COMPOSIO_API_KEY="current-composio-api-key" \
+COMPOSIO_USER_ID="composio-user-id-that-owns-instagram-connection" \
+npm run publish:notice-not-guess-reel
+```
+
+Optional:
+
+```bash
+IG_USER_ID="35505027615807331"
+```
+
+Notes:
+
+- The script validates the MP4 and caption before publishing.
+- It uses `INSTAGRAM_GET_USER_INFO`, `INSTAGRAM_GET_IG_USER_CONTENT_PUBLISHING_LIMIT`, `INSTAGRAM_POST_IG_USER_MEDIA`, `INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH`, and `INSTAGRAM_GET_IG_MEDIA`.
+- It uploads the local MP4 through Composio's file handling, so no separate public video hosting is needed.
+- If `COMPOSIO_USER_ID` is omitted, the script attempts to discover the first connected Instagram account. Set it explicitly if discovery fails.
+- The Composio API key must be current. A stale key fails with `401 Invalid API key`.
+
 ## Staging Preflight
 
 Run this before `INSTAGRAM_CREATE_CAROUSEL_CONTAINER` whenever assets were created locally:

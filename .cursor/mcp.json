@@ -1,11 +1,8 @@
 {
   "mcpServers": {
     "composio": {
-      "command": "npx",
-      "args": ["-y", "composio-core@latest", "mcp", "start", "--apps", "INSTAGRAM"],
-      "env": {
-        "COMPOSIO_API_KEY": "${COMPOSIO_API_KEY}"
-      }
+      "type": "http",
+      "url": "https://connect.composio.dev/mcp"
     }
   }
 }

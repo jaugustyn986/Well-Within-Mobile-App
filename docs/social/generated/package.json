@@ -2,7 +2,13 @@
   "private": true,
   "name": "well-within-social-generated",
   "type": "module",
+  "scripts": {
+    "publish:notice-not-guess-reel": "node publish-instagram-reel.mjs notice-not-guess-reel/reel.mp4 notice-not-guess-reel/caption.txt"
+  },
   "devDependencies": {
     "sharp": "^0.33.5"
+  },
+  "dependencies": {
+    "@composio/core": "^0.10.0"
   }
 }

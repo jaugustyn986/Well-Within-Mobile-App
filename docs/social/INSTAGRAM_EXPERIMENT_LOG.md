@@ -440,3 +440,45 @@ Use this file to track planned, posted, measured, and retired Instagram content 
 - What did not:
 - Confidence: low
 - Next action: Check Story views at 24h. If Story views exceed feed reach, Stories are worth repeating weekly as a low-cost activity signal.
+
+## Experiment: A Charting App Should Help You Notice, Not Guess
+
+- Status: planned
+- Date planned: 2026-05-28
+- Date posted:
+- Post URL:
+- Media ID:
+- Format: Reel (5-slide text-on-screen, 1080×1350, ~19s, silent — user adds audio)
+- Primary variable: hook — no-guesswork positioning
+- Strategic bet: direct "notice not guess" contrast with prediction-heavy apps can drive profile visits and follows from skeptical tracker users
+- Audience: users skeptical of prediction-heavy cycle apps; existing charting users who want clearer reasoning
+- Hook: "A charting app should help you notice, not guess."
+- Visual: journal-led, warm paper/notebook backgrounds; Georgia serif; ink on veil; 5 slides; reel.mp4 + slide-1.jpg–slide-5.jpg in docs/social/generated/notice-not-guess-reel/
+- Caption angle: prediction vs observation — Well Within records what you write down, not what an algorithm estimates
+- CTA: download from link in bio
+- Target metric: reach, profile visits, follows
+- Baseline or comparison: last published carousel (5 Words — DYUqH4slMcE)
+- Review checkpoints: 24h, 72h, 7d
+
+### Results
+
+- 24h snapshot:
+- 72h snapshot:
+- 7d snapshot:
+- Reach:
+- Views/plays:
+- Likes:
+- Comments:
+- Shares:
+- Saves:
+- Profile visits:
+- Follows:
+- Link taps:
+- App Store clicks:
+
+### Learning
+
+- What worked:
+- What did not:
+- Confidence: low
+- Next action: Review at 24h. If reach or follows beat last carousel, the Reel format and notice-not-guess positioning are worth repeating.
