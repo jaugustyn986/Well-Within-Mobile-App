@@ -152,6 +152,28 @@ export function SettingsScreen(): JSX.Element {
       </View>
 
       <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Care</Text>
+        <Text style={styles.sectionSubtitle}>Outside resources</Text>
+        <Pressable
+          style={styles.actionRow}
+          onPress={() => navigation.navigate('FindCare')}
+          accessibilityRole="button"
+          accessibilityLabel="Find care resources"
+        >
+          <View style={styles.actionLeft}>
+            <View style={styles.actionIconCircle}>
+              <Text style={styles.actionIconText}>{'+'}</Text>
+            </View>
+            <View style={styles.actionText}>
+              <Text style={styles.actionTitle}>Find Care</Text>
+              <Text style={styles.actionSub}>NaPro, NFP, and restorative-care links</Text>
+            </View>
+          </View>
+          <Text style={styles.actionChevron}>{'›'}</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.card}>
         <Text style={styles.sectionTitle}>Data Management</Text>
 
         <Pressable style={styles.actionRow} onPress={handleExportJson} disabled={exporting}>
@@ -253,6 +275,7 @@ const styles = StyleSheet.create({
     borderTopColor: BORDER_CARD,
   },
   actionLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  actionText: { flex: 1 },
   actionIconCircle: {
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: ACCENT_WARM_TINT,

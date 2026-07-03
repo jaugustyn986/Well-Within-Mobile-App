@@ -130,6 +130,23 @@ export function CycleDetailScreen({ route, navigation }: Props): JSX.Element {
           <Text style={styles.comparisonText}>{comparisonNarrative}</Text>
         </View>
 
+        <Pressable
+          style={({ pressed }) => [styles.findCareCard, pressed && styles.findCareCardPressed]}
+          onPress={() => navigation.navigate('FindCare')}
+          accessibilityRole="button"
+          accessibilityLabel="Find care resources"
+        >
+          <View style={styles.findCareText}>
+            <Text style={styles.findCareTitle}>Find care</Text>
+            <Text style={styles.findCareBody}>
+              NaPro, NFP, and restorative care resources outside Well Within.
+            </Text>
+          </View>
+          <View style={styles.findCareButton}>
+            <Text style={styles.findCareButtonText}>Open</Text>
+          </View>
+        </Pressable>
+
         <MucusChart
           mucusRanks={cycle.result.mucusRanks}
           phaseLabels={cycle.result.phaseLabels}
@@ -234,6 +251,44 @@ const styles = StyleSheet.create({
     color: TEXT_SECONDARY,
     lineHeight: 22,
   },
+  findCareCard: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 8,
+    backgroundColor: BG_CARD,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 88,
+  },
+  findCareCardPressed: { opacity: 0.72 },
+  findCareText: { flex: 1 },
+  findCareTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: TEXT_PRIMARY,
+    marginBottom: 4,
+  },
+  findCareBody: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: TEXT_SECONDARY,
+    lineHeight: 20,
+  },
+  findCareButton: {
+    minHeight: 44,
+    minWidth: 64,
+    paddingHorizontal: 14,
+    borderRadius: 22,
+    backgroundColor: ACCENT_WARM,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  findCareButtonText: { color: BG_CARD, fontWeight: '600', fontSize: 14 },
   statsRow: {
     flexDirection: 'row',
     gap: 8,

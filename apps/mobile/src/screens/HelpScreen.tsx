@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   HELP_COLOR_GUIDE_NON_PEAK_MUCUS,
   HELP_COLOR_GUIDE_PEAK_TYPE_MUCUS,
@@ -16,6 +18,7 @@ import { useResetOnboarding } from '../navigation/AppNavigator';
 import { FeedbackModal } from '../components/feedback/FeedbackModal';
 import { LineIcon, type IconName } from '../components/LineIcon';
 import { useCycleHistory } from '../hooks/useCycleHistory';
+import type { RootStackParamList } from '../navigation/AppNavigator';
 import {
   BG_BLEEDING, BG_DRY, BG_NO_ENTRY, BG_PEAK_TYPE, BG_POST_PEAK, BG_PAGE, BG_CARD,
   FERTILE_ACCENT, PEAK_BORDER, BORDER_CARD, BORDER_TODAY, INTERCOURSE_ICON,
@@ -61,6 +64,8 @@ const SECTIONS: AccordionItemData[] = [
     renderContent: () => <ColorGuideSwatches />,
   },
 ];
+
+type HelpNav = NativeStackNavigationProp<RootStackParamList, 'Help'>;
 
 function SwatchRow({ bg, dotColor, borderColor, label }: {
   bg: string; dotColor?: string; borderColor?: string; label: string;
@@ -164,6 +169,7 @@ function AccordionItem({ item }: { item: AccordionItemData }): JSX.Element {
 }
 
 export function HelpScreen(): JSX.Element {
+  const navigation = useNavigation<HelpNav>();
   const resetOnboarding = useResetOnboarding();
   const { cycles } = useCycleHistory();
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -174,6 +180,15 @@ export function HelpScreen(): JSX.Element {
       {SECTIONS.map((section, idx) => (
         <AccordionItem key={idx} item={section} />
       ))}
+      <Pressable
+        style={styles.findCareFooter}
+        onPress={() => navigation.navigate('FindCare')}
+        accessibilityRole="button"
+        accessibilityLabel="Find care and instruction"
+      >
+        <Text style={styles.findCareTitle}>Find care and instruction</Text>
+        <Text style={styles.findCareText}>External NaPro, NFP, and restorative-care resources</Text>
+      </Pressable>
       <Pressable
         style={styles.feedbackFooter}
         onPress={() => setShowFeedbackModal(true)}
@@ -224,6 +239,17 @@ const styles = StyleSheet.create({
   },
   feedbackTitle: { fontSize: 15, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 4 },
   feedbackText: { fontSize: 14, color: TEXT_MUTED },
+  findCareFooter: {
+    backgroundColor: BG_CARD,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    minHeight: 72,
+  },
+  findCareTitle: { fontSize: 15, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 4 },
+  findCareText: { fontSize: 14, color: TEXT_MUTED, lineHeight: 20 },
   showOnboarding: {
     marginTop: 24, padding: 14, backgroundColor: BORDER_CARD, borderRadius: 10, alignItems: 'center',
   },
