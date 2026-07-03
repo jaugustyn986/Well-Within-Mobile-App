@@ -17,10 +17,11 @@ import { PeakAlignedOverlay } from '../components/PeakAlignedOverlay';
 import { CycleCard } from '../components/CycleCard';
 import { PhaseLabel, PrimaryDayClass } from 'core-rules-engine';
 import { LineIcon } from '../components/LineIcon';
+import { buildCurrentCycleCatchUpDates, formatCatchUpCount } from '../utils/catchUpDays';
 import {
   BG_PAGE, BG_CARD, BORDER_CARD,
   TEXT_PRIMARY, TEXT_MUTED, TEXT_SUBTLE, TEXT_SECONDARY,
-  BRAND_NAME,
+  BRAND_NAME, ACCENT_WARM, ACCENT_WARM_TINT,
 } from '../theme/colors';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -66,6 +67,11 @@ export function CalendarScreen(): JSX.Element {
   }, []);
 
   const todayEntry = entries[today] ?? null;
+  const catchUpDates = useMemo(
+    () => buildCurrentCycleCatchUpDates(sortedEntries, entries, today),
+    [sortedEntries, entries, today],
+  );
+  const showCatchUpPrompt = catchUpDates.length > 1;
 
   const currentCycleSlice = cycleHistory.cycles.length > 0
     ? cycleHistory.cycles[cycleHistory.cycles.length - 1]
@@ -166,6 +172,25 @@ export function CalendarScreen(): JSX.Element {
         {activeTab === 'calendar' ? (
           <>
             <StatusBanner summary={cycleSummary} />
+            {showCatchUpPrompt ? (
+              <Pressable
+                style={styles.catchUpCard}
+                onPress={() => navigation.navigate('CatchUpMissingDays')}
+              >
+                <View style={styles.catchUpIconWrap}>
+                  <LineIcon name="calendar" size={18} />
+                </View>
+                <View style={styles.catchUpBody}>
+                  <Text style={styles.catchUpTitle}>
+                    {formatCatchUpCount(catchUpDates.length)} still open in this cycle
+                  </Text>
+                  <Text style={styles.catchUpText}>
+                    Add what you remember, or mark a day as not observed.
+                  </Text>
+                </View>
+                <Text style={styles.catchUpAction}>Catch up</Text>
+              </Pressable>
+            ) : null}
             <Pressable
               style={styles.feedbackLink}
               onPress={() => setShowFeedbackModal(true)}
@@ -259,6 +284,31 @@ const styles = StyleSheet.create({
   topBarLogo: { width: 32, height: 32, backgroundColor: 'transparent' },
   appName: { fontSize: 28, fontWeight: '600', color: BRAND_NAME, letterSpacing: -0.2 },
   gearBtn: { padding: 8 },
+  catchUpCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: BG_CARD,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 14,
+  },
+  catchUpIconWrap: { marginRight: 12 },
+  catchUpBody: { flex: 1, paddingRight: 10 },
+  catchUpTitle: { fontSize: 15, fontWeight: '600', color: TEXT_PRIMARY },
+  catchUpText: { fontSize: 13, color: TEXT_SUBTLE, lineHeight: 19, marginTop: 3 },
+  catchUpAction: {
+    overflow: 'hidden',
+    borderRadius: 999,
+    backgroundColor: ACCENT_WARM_TINT,
+    color: ACCENT_WARM,
+    fontSize: 13,
+    fontWeight: '600',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
   feedbackLink: {
     alignSelf: 'flex-start',
     marginHorizontal: 16,

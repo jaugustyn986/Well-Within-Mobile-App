@@ -15,6 +15,7 @@ import { EngineDemoScreen } from '../screens/EngineDemoScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { AuthScreen } from '../screens/AuthScreen';
+import { CatchUpMissingDaysScreen } from '../screens/CatchUpMissingDaysScreen';
 
 export type RootStackParamList = {
   Calendar: undefined;
@@ -22,6 +23,7 @@ export type RootStackParamList = {
   CycleHistory: undefined;
   CycleDetail: { cycleNumber: number };
   DailyEntry: { date: string; existingEntry?: boolean };
+  CatchUpMissingDays: undefined;
   Help: undefined;
   Settings: undefined;
   Auth: undefined;
@@ -108,6 +110,14 @@ export function AppNavigator(): JSX.Element {
           component={DailyEntryScreen}
           options={{
             title: 'New Entry',
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
+          name="CatchUpMissingDays"
+          component={CatchUpMissingDaysScreen}
+          options={{
+            title: 'Catch Up',
             presentation: 'modal',
           }}
         />

@@ -32,8 +32,10 @@ interface Props {
   initialEntry?: DailyEntry | null;
   previousDayEntry?: DailyEntry | null;
   date: string;
-  onSave: (entry: DailyEntry) => void;
+  onSave: (entry: DailyEntry) => void | Promise<void>;
   onDelete?: () => void;
+  saveLabel?: string;
+  showMarkMissingButton?: boolean;
 }
 
 const BLEEDING_OPTIONS: { value: BleedingType; label: string }[] = [
@@ -98,7 +100,15 @@ const CLASSIFICATION_LABELS: Record<string, { title: string; desc: string; hint:
   },
 };
 
-export function EntryForm({ initialEntry, previousDayEntry, date, onSave, onDelete }: Props): JSX.Element {
+export function EntryForm({
+  initialEntry,
+  previousDayEntry,
+  date,
+  onSave,
+  onDelete,
+  saveLabel = 'Save Entry',
+  showMarkMissingButton = false,
+}: Props): JSX.Element {
   const [missing, setMissing] = useState(initialEntry?.missing ?? false);
   const [bleeding, setBleeding] = useState<BleedingType>(initialEntry?.bleeding ?? 'none');
   const [sensation, setSensation] = useState<Sensation>(initialEntry?.sensation ?? 'dry');
@@ -108,6 +118,7 @@ export function EntryForm({ initialEntry, previousDayEntry, date, onSave, onDele
   const [showNotesInfo, setShowNotesInfo] = useState(false);
   const [intercourse, setIntercourse] = useState(initialEntry?.intercourse ?? false);
   const [notes, setNotes] = useState(initialEntry?.notes ?? '');
+  const [saving, setSaving] = useState(false);
 
   const [sameAsYesterday, setSameAsYesterday] = useState(false);
   const preToggleSnapshot = useRef<{ sensation: Sensation; appearances: Appearance[] } | null>(null);
@@ -195,12 +206,22 @@ export function EntryForm({ initialEntry, previousDayEntry, date, onSave, onDele
     });
   };
 
+  const saveEntry = useCallback(async (entry: DailyEntry) => {
+    if (saving) return;
+    setSaving(true);
+    try {
+      await onSave(entry);
+    } finally {
+      setSaving(false);
+    }
+  }, [onSave, saving]);
+
   const handleSave = () => {
     if (missing) {
-      onSave({ date, missing: true });
+      void saveEntry({ date, missing: true });
       return;
     }
-    onSave({
+    void saveEntry({
       date,
       bleeding,
       sensation,
@@ -209,6 +230,10 @@ export function EntryForm({ initialEntry, previousDayEntry, date, onSave, onDele
       intercourse,
       notes: notes.trim() || undefined,
     });
+  };
+
+  const handleMarkMissing = () => {
+    void saveEntry({ date, missing: true });
   };
 
   return (
@@ -411,8 +436,13 @@ export function EntryForm({ initialEntry, previousDayEntry, date, onSave, onDele
       )}
     </ScrollView>
     <View style={styles.stickyFooter}>
-      <Pressable style={styles.saveBtnSticky} onPress={handleSave}>
-        <Text style={styles.saveText}>Save Entry</Text>
+      {showMarkMissingButton && !missing ? (
+        <Pressable style={styles.markMissingBtn} onPress={handleMarkMissing} disabled={saving}>
+          <Text style={styles.markMissingText}>I do not remember this day</Text>
+        </Pressable>
+      ) : null}
+      <Pressable style={[styles.saveBtnSticky, saving && styles.saveBtnDisabled]} onPress={handleSave} disabled={saving}>
+        <Text style={styles.saveText}>{saving ? 'Saving...' : saveLabel}</Text>
       </Pressable>
     </View>
     </KeyboardAvoidingView>
@@ -486,7 +516,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: ACCENT_WARM,
   },
+  saveBtnDisabled: { opacity: 0.65 },
   saveText: { fontSize: 15, color: BG_CARD, fontWeight: '600' },
+  markMissingBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    marginBottom: 8,
+  },
+  markMissingText: { fontSize: 14, color: TEXT_SUBTLE, fontWeight: '500' },
   deleteBtn: { alignItems: 'center', marginTop: 24 },
   deleteText: { fontSize: 14, color: ACCENT_RED, fontWeight: '500' },
   missingRow: {
