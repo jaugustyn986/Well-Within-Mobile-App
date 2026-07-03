@@ -1,4 +1,5 @@
 node_modules
+.local/
 dist
 .expo
 coverage
@@ -9,6 +10,9 @@ coverage
 
 # App Store Connect API key — never commit
 apps/mobile/credentials/*.p8
+
+# Google Play service account key — never commit
+apps/mobile/credentials/*.json
 
 # Supabase (local only; do not commit URL or key)
 apps/mobile/.env

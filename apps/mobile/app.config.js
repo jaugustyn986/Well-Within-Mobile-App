@@ -6,17 +6,20 @@ const variant = {
   development: {
     name: 'Well Within Dev',
     bundleIdentifier: 'com.wellwithin.app.dev',
+    packageName: 'com.wellwithin.app.dev',
     /** Distinct from production so iOS opens the correct app when both dev + TestFlight are installed. */
     scheme: 'wellwithin-dev',
   },
   preview: {
     name: 'Well Within Preview',
     bundleIdentifier: 'com.wellwithin.app.preview',
+    packageName: 'com.wellwithin.app.preview',
     scheme: 'wellwithin-preview',
   },
   production: {
     name: 'Well Within',
     bundleIdentifier: 'com.wellwithin.app',
+    packageName: 'com.wellwithin.app',
     scheme: 'wellwithin',
   },
 }[buildProfile];
@@ -28,7 +31,7 @@ module.exports = {
     version: '0.2.0',
     icon: './assets/icon-1024.png',
     orientation: 'portrait',
-    platforms: ['ios', 'web'],
+    platforms: ['ios', 'android', 'web'],
     web: {
       bundler: 'metro',
       output: 'single',
@@ -45,6 +48,13 @@ module.exports = {
       // Omit static buildNumber to avoid conflicting manifest noise; local dev still works.
       config: {
         usesNonExemptEncryption: false,
+      },
+    },
+    android: {
+      package: variant.packageName,
+      adaptiveIcon: {
+        foregroundImage: './assets/icon-1024.png',
+        backgroundColor: '#F6F3EF',
       },
     },
     scheme: variant.scheme,

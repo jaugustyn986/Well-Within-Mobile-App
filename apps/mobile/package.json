@@ -15,7 +15,11 @@
     "build:ios:testflight": "eas build --platform ios --profile production --non-interactive",
     "build:ios:testflight:skip-fingerprint": "cross-env EAS_SKIP_AUTO_FINGERPRINT=1 eas build --platform ios --profile production --non-interactive",
     "submit:ios:production": "eas submit --platform ios --profile production --latest --non-interactive",
-    "release:testflight": "npm run preflight:release && npm run build:ios:testflight && npm run submit:ios:production"
+    "release:testflight": "npm run preflight:release && npm run build:ios:testflight && npm run submit:ios:production",
+    "build:android:preview": "eas build --platform android --profile preview --non-interactive",
+    "build:android:production": "eas build --platform android --profile production --non-interactive",
+    "submit:android:production": "eas submit --platform android --profile production --latest --non-interactive",
+    "release:android": "npm run preflight:release && npm run build:android:production && npm run submit:android:production"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
