@@ -11,6 +11,7 @@ import { CycleHistoryScreen } from '../screens/CycleHistoryScreen';
 import { CycleDetailScreen } from '../screens/CycleDetailScreen';
 import { DailyEntryScreen } from '../screens/DailyEntryScreen';
 import { HelpScreen } from '../screens/HelpScreen';
+import { FindCareScreen } from '../screens/FindCareScreen';
 import { EngineDemoScreen } from '../screens/EngineDemoScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
@@ -23,6 +24,7 @@ export type RootStackParamList = {
   CycleDetail: { cycleNumber: number };
   DailyEntry: { date: string; existingEntry?: boolean };
   Help: undefined;
+  FindCare: undefined;
   Settings: undefined;
   Auth: undefined;
   EngineDemo: undefined;
@@ -115,6 +117,11 @@ export function AppNavigator(): JSX.Element {
           name="Help"
           component={HelpScreen}
           options={{ title: 'Understanding Your Chart' }}
+        />
+        <Stack.Screen
+          name="FindCare"
+          component={FindCareScreen}
+          options={{ title: 'Find Care' }}
         />
         <Stack.Screen
           name="Settings"
