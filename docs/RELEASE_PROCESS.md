@@ -1,6 +1,6 @@
-# Release Process: Cursor → Local Test → TestFlight → App Store
+# Release Process: Cursor -> Local Test -> TestFlight/App Store and Google Play
 
-This document describes the end-to-end process for changing the app, testing it, shipping to TestFlight, and eventually releasing to the App Store. Use it to understand what’s quick and what needs extra steps or time.
+This document describes the end-to-end process for changing the app, testing it, shipping to TestFlight, and eventually releasing to the App Store. For Android/Google Play, use [ANDROID_RELEASE_PROCESS.md](ANDROID_RELEASE_PROCESS.md) alongside this document.
 
 **Manual, on-demand only.** None of these steps run automatically. Making a change locally does **not** trigger a build or push to TestFlight. You (or an agent, when you ask) run each step when you decide to — e.g. “test locally,” “push to TestFlight,” “submit for App Review.” Treat this as the rules to follow and reference when you’re ready to do a step, not an automatic pipeline.
 
@@ -95,5 +95,6 @@ This document describes the end-to-end process for changing the app, testing it,
 |-----|----------|
 | [README.md](../README.md) | Setup, local Expo, TestFlight commands. |
 | [docs/TESTFLIGHT_READINESS_CHECKLIST.md](TESTFLIGHT_READINESS_CHECKLIST.md) | Auditing before TestFlight/App Store; what’s done vs blocked. |
+| [docs/ANDROID_RELEASE_PROCESS.md](ANDROID_RELEASE_PROCESS.md) | Android EAS builds, Google Play setup, testing tracks, and submit blockers. |
 | [skills/expo_release_commands.md](../skills/expo_release_commands.md) | Exact EAS build/submit steps and this project’s config. |
 | [skills/app_store_release_best_practices.md](../skills/app_store_release_best_practices.md) | Apple’s expectations; metadata, privacy, health claims. |

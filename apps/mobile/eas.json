@@ -10,11 +10,33 @@
       "env": {
         "EAS_BUILD_PROFILE": "development"
       },
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": false
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EAS_BUILD_PROFILE": "preview"
+      },
+      "android": {
+        "buildType": "apk"
+      },
       "ios": {
         "simulator": false
       }
     },
     "production": {
+      "env": {
+        "EAS_BUILD_PROFILE": "production"
+      },
+      "android": {
+        "autoIncrement": true,
+        "buildType": "app-bundle"
+      },
       "ios": {
         "autoIncrement": true
       }
@@ -22,6 +44,9 @@
   },
   "submit": {
     "production": {
+      "android": {
+        "serviceAccountKeyPath": "credentials/google-play-service-account.json"
+      },
       "ios": {
         "ascAppId": "6760519448",
         "ascApiKeyPath": "credentials/AuthKey_V39393U3TH.p8",
