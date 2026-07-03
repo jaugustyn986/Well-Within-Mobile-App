@@ -25,7 +25,7 @@ module.exports = {
   expo: {
     name: variant.name,
     slug: 'modern-creighton',
-    version: '0.2.0',
+    version: '0.2.1',
     icon: './assets/icon-1024.png',
     orientation: 'portrait',
     platforms: ['ios', 'web'],
