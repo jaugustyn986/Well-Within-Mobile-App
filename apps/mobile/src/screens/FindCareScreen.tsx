@@ -1,6 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
+import { Alert, InteractionManager, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
   ACCENT_WARM,
   ACCENT_WARM_TINT,
@@ -54,7 +53,7 @@ export function FindCareScreen(): JSX.Element {
 
   const openResource = useCallback(async (resource: CareResource) => {
     try {
-      await WebBrowser.openBrowserAsync(resource.url);
+      await Linking.openURL(resource.url);
     } catch (e: unknown) {
       Alert.alert(
         'Link did not open',
@@ -78,7 +77,9 @@ export function FindCareScreen(): JSX.Element {
     const resource = pendingResource;
     setExternalOpenConfirmed(true);
     setPendingResource(null);
-    void openResource(resource);
+    InteractionManager.runAfterInteractions(() => {
+      void openResource(resource);
+    });
   }, [openResource, pendingResource]);
 
   return (
@@ -125,7 +126,12 @@ export function FindCareScreen(): JSX.Element {
         and fit directly with the provider or organization.
       </Text>
 
-      <Modal visible={pendingResource !== null} transparent animationType="fade">
+      <Modal
+        visible={pendingResource !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPendingResource(null)}
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Open outside Well Within?</Text>
