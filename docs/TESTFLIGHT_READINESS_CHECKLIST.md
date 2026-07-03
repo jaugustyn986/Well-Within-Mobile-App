@@ -18,17 +18,18 @@ Use these requirement tags:
 
 ## Build Configuration
 
-- [ ] `[INT-BLOCKER]` iOS build succeeds in release mode
+- [x] `[INT-BLOCKER]` iOS build succeeds in release mode
 - [x] `[INT-BLOCKER]` Expo / EAS build configuration verified
 - [x] `[INT-BLOCKER]` `eas.json` includes `production` profile with auto-increment
 - [x] `[INT-BLOCKER]` bundle identifier is configured
 - [x] `[INT-BLOCKER]` version number exists
 - [x] `[INT-BLOCKER]` build number strategy is configured (manual or auto-increment)
+- [x] `[INT-BLOCKER]` `npm run mobile:preflight:release` validates Expo config, unmerged non-Android app feature branches, and iOS/TestFlight version-train sanity
 
 Expected baseline:
 
-Version: 1.0.0
-Build: 1
+Version: 0.2.1
+Build: remote auto-increment
 
 ## Project Configuration
 
@@ -161,8 +162,9 @@ Apple expects users to have a support path.
 Recommended location: `Settings -> Support`
 
 - [ ] `[EXT-REQ]` support email exists
-- [ ] `[EXT-REQ]` support screen or support link exists
+- [x] `[EXT-REQ]` support screen or support link exists (`Settings -> Care -> Find Care`)
 - [ ] `[STORE-REQ]` support URL exists for App Store metadata
+- [x] `[INT-BLOCKER]` support resource links were simulator-tested for external-open and return-to-app responsiveness
 
 ---
 
@@ -204,13 +206,15 @@ Notes:
 - First EAS build and submit to TestFlight completed successfully. For future releases: **`npm run mobile:release:testflight`** (preflight + build + submit), or stepwise `mobile:build:ios:testflight` then `mobile:submit:ios:production` (non-interactive when `.p8` is in `apps/mobile/credentials/` and `eas.json` has `ascAppId` + API key fields).
 - Configure privacy policy URL and support URL values for App Store Connect metadata (before external TestFlight or App Store).
 - Complete App Store Connect privacy details and export compliance questionnaire.
-- Run **`npm run mobile:preflight:release`** before building (fast `expo config` check). Optionally run **`npm run mobile:preflight:release:with-doctor`**; treat **expo-doctor** failures from flaky Expo API or Metro hints as **advisory** unless they indicate a real misconfiguration.
+- Run **`git fetch --all --prune`** and **`npm run mobile:preflight:release`** before building. Preflight now checks Expo config, intended feature-branch coverage, and App Store Connect/TestFlight version-train state.
+- Use **`npm run version:ios:bump --workspace well-within-mobile`** when opening a new TestFlight/App Store marketing-version train.
+- Optionally run **`npm run mobile:preflight:release:with-doctor`**; treat **expo-doctor** failures from flaky Expo API or Metro hints as **advisory** unless they indicate a real misconfiguration.
 
 ---
 
 # 12. UX Changes Required (Populate During Audit)
 
-- Add a support contact surface in-app (`Settings -> Support`) before external TestFlight/App Store submission.
+- Add a support email/contact surface before external TestFlight/App Store submission.
 
 ---
 
@@ -224,23 +228,25 @@ Notes:
 
 # 14. Current Release Status (Update Every Audit)
 
-Build Status: EAS build **uploaded**; **submit** was started with `--id` for this build — **confirm** on the [submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/6a7b4250-d68c-4bb9-9db3-e91b54582af8) page that status is **Finished** (then check TestFlight for processing).  
-Version: **0.2.0** · iOS build number: **14** (remote auto-increment)  
-EAS Build ID: `4ed6b654-a1c5-49e1-93da-9bdda243d465` — [Expo build](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/builds/4ed6b654-a1c5-49e1-93da-9bdda243d465)  
-EAS Submission ID: `6a7b4250-d68c-4bb9-9db3-e91b54582af8` — [Submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/6a7b4250-d68c-4bb9-9db3-e91b54582af8)  
-TestFlight: After Apple processing (often 5–15 min), build **14** should appear in [App Store Connect → TestFlight](https://appstoreconnect.apple.com/apps/6760519448/testflight/ios).  
+Build Status: EAS build **uploaded and submitted**; Apple accepted the binary and is processing it.  
+Version: **0.2.1** · iOS build number: **20** (remote auto-increment)  
+EAS Build ID: `1e849556-1aa7-4f92-a8bb-ef385eb6ad55` — [Expo build](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/builds/1e849556-1aa7-4f92-a8bb-ef385eb6ad55)  
+EAS Submission ID: `23981b9a-df5e-49ee-86d1-f4d83bf2e4bd` — [Submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/23981b9a-df5e-49ee-86d1-f4d83bf2e4bd)  
+TestFlight: After Apple processing (often 5–15 min), build **20** should appear in [App Store Connect -> TestFlight](https://appstoreconnect.apple.com/apps/6760519448/testflight/ios).  
 Internal Testing: Add or confirm internal testers when the build shows as **Ready to Test**.
 
 TestFlight: https://appstoreconnect.apple.com/apps/6760519448/testflight/ios
 
-Last Audit Date: 2026-04-16  
-Audited By: Cursor Agent
+Last Audit Date: 2026-07-03  
+Audited By: Codex
+
+Release notes (latest push): support/resource links now open through native Safari handoff after the confirmation modal is dismissed, fixing the Find Care freeze/unresponsive state observed in simulator. Build also includes catch-up missing days, Find Care resources, and feedback collection improvements.
 
 Release notes (this push): magic-link auth callback hardening across query/fragment/code/token_hash callback formats; deep-link + Supabase setup docs clarified for dev/TestFlight/production redirect URLs.
 
 Release notes (next push — magic-link session landing): switched Supabase client session storage from the `expo-sqlite/localStorage` shim to `AsyncStorage` (Supabase's official React Native recommendation) so magic-link sessions persist reliably across app relaunches. Moved deep-link URL handling into `AuthProvider` (fixes a race where the callback fired before `onAuthStateChange` was subscribed). Surfaced any auth-callback failure as a calm banner on the sign-in screen instead of failing silently. Diagnostics before this change: Supabase auth logs confirm magic-link verify returns 303 and server-side `login (implicit)` succeeds — the gap was entirely in app-side session application/persistence.
 
-Commands used (from `apps/mobile`): `npx eas build --platform ios --profile production --non-interactive --no-wait`, then `npx eas submit --platform ios --profile production --non-interactive --id <build-id>`. Preflight: `npm run mobile:preflight:release` hit **expo-doctor** failures (Expo API timeout + Metro warnings); **`npx expo config --type public`** was used as a successful config gate before building.
+Commands used: `npm run mobile:preflight:release`, `npm test --workspace well-within-mobile`, iPhone 17 simulator smoke test of `Settings -> Care -> Find Care`, then `npm run mobile:release:testflight`.
 
 ---
 
