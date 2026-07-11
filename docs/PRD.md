@@ -87,12 +87,12 @@ The header card above the grid is driven by **`buildCurrentCycleSummary`** from 
 Days may display the following visual states (colors from shared theme):
 
 - **No entry** — white background
-- **Dry day** — light green background
-- **Bleeding day** — light red background
-- **Non-peak mucus day** — light green background with green indicator dot
-- **Peak-type mucus day** — white background with blue indicator dot
-- **Peak day** — blue border around the cell, blue indicator dot
-- **Post-peak day (P+1 – P+3)** — yellow background
+- **Dry day** — soft sage background
+- **Bleeding day** — dusty magenta/pink background
+- **Non-peak mucus day** — soft sage background with a muted green indicator dot
+- **Peak-type mucus day** — warm-grey background
+- **Peak day** — warm-grey background with a charcoal border
+- **Post-peak day (P+1 – P+3)** — warm butter background
 - **Today** — black border around the cell
 - **Intercourse** — rose emoji (🌹) in the bottom-right corner of the cell
 
@@ -119,6 +119,9 @@ The data entry interface must contain the following fields.
 
 - **Bleeding type**  
   - Allowed values: none, spotting, light, moderate, heavy, brown
+  - The selected value shows its Creighton-aligned code and observational definition inline.
+  - An accessible information control expands the complete None / VL / L / M / H / B guide.
+  - The same shared guide appears in **Understanding Your Chart**; it describes what was observed, not why bleeding is happening.
 
 - **Sensation**  
   - Allowed values: dry, damp, wet, slippery
@@ -167,8 +170,8 @@ The chart must show:
 
 **Visual indicators**
 
-- Peak day should be visually highlighted (blue bar, matching `PEAK_ACCENT` from shared theme).
-- Non-peak mucus bars use green (`FERTILE_ACCENT`). Dry bars use light green. Post-peak bars use yellow.
+- Peak day should be visually highlighted with the warm-grey peak treatment and charcoal border.
+- Non-peak mucus bars use muted green (`FERTILE_ACCENT`). Dry bars use soft sage. Post-peak bars use warm butter.
 - Rose emoji (🌹) appears above bars for days where intercourse was recorded.
 
 ### Feature: Deterministic Fertility Rules Engine
@@ -380,14 +383,14 @@ All UI colors are defined in a single file: `apps/mobile/src/theme/colors.ts`. E
 
 Semantic color constants:
 
-- `BG_DRY` (#dcfce7) — light green for dry days
-- `BG_BLEEDING` (#fca5a5) — light red for bleeding
-- `BG_POST_PEAK` (#fef08a) — yellow for P+1 through P+3
+- `BG_DRY` (#E3ECE1) — soft sage for dry days
+- `BG_BLEEDING` (#D09AAF) — dusty magenta/pink for bleeding
+- `BG_POST_PEAK` (#F2E6B5) — warm butter for P+1 through P+3
 - `BG_NO_ENTRY` (#ffffff) — white for unlogged days
-- `BG_PEAK_TYPE` (#ffffff) — white for peak-type mucus (distinguished by indicator dot)
-- `BG_MISSING` (#f1f5f9) — light gray for no data
-- `PEAK_ACCENT` (#0369a1) — blue for peak dots, borders, and bars
-- `FERTILE_ACCENT` (#16a34a) — green for non-peak mucus dots and fertile bars
+- `BG_PEAK_TYPE` (#D6D3CF) — warm grey for peak-type mucus
+- `BG_MISSING` (#F5F3F1) — warm light grey for no data
+- `PEAK_BORDER` (#4A4541) — charcoal for confirmed Peak borders
+- `FERTILE_ACCENT` (#65815F) — muted green for non-peak mucus dots and fertile bars
 - `BORDER_TODAY` (#000000) — black border for today
 - `INTERCOURSE_ICON` (🌹) — rose emoji for intercourse
 
@@ -508,7 +511,7 @@ Log of implemented features and doc updates for traceability.
 | 2025-03-05 | Data migration v2 | Automatic migration on app load: `appearance:'stretchy'` → `stretch:'stretchy'`, `timesObserved` → `frequency`, `quantity` removed. Runs once then flags completion. |
 | 2025-03-05 | Calendar coloring update | Peak-type boxes now use light grey (#D6D3CF) background instead of white+teal dot. Confirmed peak day has dark charcoal border (#4A4541). |
 | 2025-03-05 | Entry modal refinements | Removed "Vulva" from "Sensation at Vulva" → now just "Sensation". Added info bubble next to "Notes (Optional)" with PMS/symptom guidance text. |
-| 2026-03-05 | Entry Modal Creighton Refactor | Full Creighton alignment: Sensation expanded to 7 options (dry/damp/wet/shiny/sticky/tacky/stretchy), removed slippery. Appearance changed to multi-select array with 10 Creighton-aligned options. Stretch section removed entirely. Lubricative promotion rule: damp/shiny/wet + lubricative → base codes 10DL/10SL/10WL (peak_type). New base code `4` for shiny sensation. No Creighton codes shown in UI — human-readable labels only; codes stored in backend for future consultant/grid views. |
+| 2026-03-05 | Entry Modal Creighton Refactor | Full Creighton alignment: Sensation expanded to 7 options (dry/damp/wet/shiny/sticky/tacky/stretchy), removed slippery. Appearance changed to multi-select array with 10 Creighton-aligned options. Stretch section removed entirely. Lubricative promotion rule: damp/shiny/wet + lubricative → base codes 10DL/10SL/10WL (peak_type). New base code `4` for shiny sensation. Mucus codes remain hidden behind human-readable labels; bleeding education now shows H/M/L/VL/B for category clarity. |
 | 2026-03-05 | Rules engine v3 | Rewrote rank.ts with new sensation ranks, multi-select appearance boost, and lubricative promotion logic. Rewrote creightonCode.ts with full base code table and multi-select appearance suffix concatenation in Creighton order. |
 | 2026-03-05 | Data migration v3 | Migrates: `slippery` → `wet` + `lubricative`; `stretch` values merged into `sensation`; single `appearance` → `appearances` array. |
 | 2026-03-05 | PDF export update | Replaced Stretch column with Appearance column showing all selected appearances. Updated to use `appearances` array field. |
@@ -522,6 +525,7 @@ Log of implemented features and doc updates for traceability.
 | 2026-03-11 | PDF: remove Daily Mucus Pattern chart | Removed the Daily Mucus Pattern chart from the cycle PDF export. The HTML-to-PDF engine (expo-print) did not render the chart reliably (sparse/wrong layout in PDF). PDF now contains cycle stats and day-by-day table only; chart strength is preserved in the day-by-day table. Chart remains in-app on Cycle Detail. `apps/mobile/src/utils/exportCyclePdf.ts`. |
 | 2026-03-11 | Magic link auth screen dismiss | When the user opens the app via the magic link while still on the Auth (email) screen, the Auth screen now automatically dismisses (goBack) so they see Settings with signed-in state. AuthScreen.tsx: useEffect navigates back when auth.user is set. |
 | 2026-03-11 | Entry modal layout | Daily Entry modal: sticky bottom primary action "Save Entry"; Cancel moved to header (top right, secondary). Scrollable form has bottom padding so the sticky button does not overlap the last fields. EntryForm.tsx + DailyEntryScreen.tsx. |
+| 2026-07-11 | Bleeding education and softened chart palette | Daily Entry shows the selected Creighton-aligned bleeding definition and an accessible full None/VL/L/M/H/B guide; Understanding Your Chart reuses the same typed education source. Shared chart tokens changed to dusty magenta (`#D09AAF`), soft sage (`#E3ECE1`), warm butter (`#F2E6B5`), and muted green (`#65815F`) across calendar, chart, history, onboarding previews, and Help. Stored values and interpretation rules are unchanged. |
 | 2026-03-11 | App image update — single rose-on-cream asset | Replaced app icon and in-app logo with one asset: `apps/mobile/assets/icon-1024.png` (stylized rose on cream #F6F3EF). Used for home screen/App Store icon, splash, onboarding slide 1, and Calendar header. Docs: `README.md`, `skills/ux_tone_well_within.md`, `docs/APP_ASSETS.md`, TestFlight checklist. |
 | 2026-03-11 | Privacy copy update | Settings Privacy card first bullet updated to describe local storage and optional cloud backup (sign in to back up; data securely sent and stored to restore on a new device). |
 | 2026-03-05 | Codebase cleanup | Removed unused color constants (PEAK_ACCENT, ACCENT_RED_DARK, BG_CARD_GRADIENT_END). Fixed `catch (e: any)` to `catch (e: unknown)` with proper type guards. Updated always-dry.json fixture to new `appearances` schema. Expanded index.test.ts to cover all 9 exported functions. |

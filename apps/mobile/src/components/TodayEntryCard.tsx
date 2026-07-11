@@ -33,10 +33,10 @@ function getFertilityHint(
     return 'Spotting noted; mucus signs show when present.';
   }
   switch (rank) {
-    case 0: return 'Non-fertile day.';
-    case 1: return 'Early fertile signs.';
-    case 2: return 'Fertile day.';
-    case 3: return 'Peak fertility!';
+    case 0: return 'Dry observation recorded.';
+    case 1: return 'A mucus sign was recorded.';
+    case 2: return 'A wetter mucus sign was recorded.';
+    case 3: return 'A Peak-type sign was recorded.';
     default: return '';
   }
 }

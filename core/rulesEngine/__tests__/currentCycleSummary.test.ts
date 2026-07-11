@@ -36,7 +36,7 @@ describe('buildCurrentCycleSummary', () => {
     });
     expect(s.cycleDay).toBeNull();
     expect(s.headline).toContain('appear');
-    expect(s.confidence).toMatch(/^Moderate confidence/);
+    expect(s.confidence).toBe('Not enough data yet');
     expect(s.supportingContext).toBe('');
     expect(s.completeness).toContain('Nothing charted');
     expect(s.focusQualification).toBeNull();

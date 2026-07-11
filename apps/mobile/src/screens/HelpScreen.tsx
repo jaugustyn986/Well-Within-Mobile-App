@@ -3,8 +3,11 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
+  BLEEDING_EDUCATION,
+  BLEEDING_EDUCATION_NOTE,
   HELP_COLOR_GUIDE_NON_PEAK_MUCUS,
   HELP_COLOR_GUIDE_PEAK_TYPE_MUCUS,
+  HELP_BLEEDING_TYPES_TITLE,
   HELP_HOW_TO_OBSERVE_BODY,
   HELP_HOW_TO_OBSERVE_TITLE,
   HELP_SENSATION_APPEARANCE_BODY,
@@ -42,6 +45,11 @@ const SECTIONS: AccordionItemData[] = [
     title: HELP_SENSATION_APPEARANCE_TITLE,
     icon: 'droplet',
     content: HELP_SENSATION_APPEARANCE_BODY,
+  },
+  {
+    title: HELP_BLEEDING_TYPES_TITLE,
+    icon: 'droplet',
+    renderContent: () => <BleedingGuide />,
   },
   {
     title: HELP_WHAT_IS_PEAK_DAY_TITLE,
@@ -96,6 +104,38 @@ function StatusMessageSections(): JSX.Element {
     </View>
   );
 }
+
+function BleedingGuide(): JSX.Element {
+  return (
+    <View style={bleedingHelpStyles.container}>
+      {BLEEDING_EDUCATION.map((item) => (
+        <View key={item.value} style={bleedingHelpStyles.block}>
+          <Text style={bleedingHelpStyles.title}>
+            {item.label}{item.code ? ` (${item.code})` : ''}
+          </Text>
+          <Text style={bleedingHelpStyles.body}>{item.description}</Text>
+        </View>
+      ))}
+      <Text style={bleedingHelpStyles.note}>{BLEEDING_EDUCATION_NOTE}</Text>
+    </View>
+  );
+}
+
+const bleedingHelpStyles = StyleSheet.create({
+  container: { gap: 14 },
+  block: { gap: 3 },
+  title: { fontSize: 15, fontWeight: '600', color: TEXT_PRIMARY, lineHeight: 20 },
+  body: { fontSize: 14, color: TEXT_SECONDARY, lineHeight: 21 },
+  note: {
+    fontSize: 13,
+    color: TEXT_MUTED,
+    lineHeight: 20,
+    fontStyle: 'italic',
+    borderTopWidth: 1,
+    borderTopColor: BORDER_CARD,
+    paddingTop: 12,
+  },
+});
 
 const statusHelpStyles = StyleSheet.create({
   container: { gap: 18 },

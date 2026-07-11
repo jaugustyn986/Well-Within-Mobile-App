@@ -53,7 +53,7 @@ const SLIDES: Slide[] = [
   {
     id: '1',
     headline: 'well within',
-    body: 'Understand your cycle with clear, structured charting.',
+    body: 'Observation-based fertility charting. Private by design.',
     isIdentity: true,
   },
   {

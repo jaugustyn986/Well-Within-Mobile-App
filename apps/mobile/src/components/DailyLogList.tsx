@@ -13,6 +13,7 @@ interface Props {
 }
 
 function getDayCircleColor(phase: PhaseLabel, rank: number | null, bleeding: boolean): string {
+  if (phase === 'missing' || rank === null) return BG_MISSING;
   if (bleeding) return BG_BLEEDING;
   if (phase === 'p_plus_1' || phase === 'p_plus_2' || phase === 'p_plus_3') return BG_POST_PEAK;
   if (phase === 'peak_confirmed') return BG_PEAK_TYPE;

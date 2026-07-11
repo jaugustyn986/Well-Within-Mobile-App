@@ -7,6 +7,7 @@ import type { RootStackParamList } from '../navigation/AppNavigator';
 import { EntryForm } from '../components/EntryForm';
 import { DailyEntry } from 'core-rules-engine';
 import { getDailyEntry, saveDailyEntry, deleteEntry } from '../services/storageV2';
+import { useSync } from '../context/SyncProvider';
 import { TEXT_SECONDARY } from '../theme/colors';
 
 type ScreenRoute = RouteProp<RootStackParamList, 'DailyEntry'>;
@@ -21,6 +22,7 @@ function previousDateString(isoDate: string): string {
 export function DailyEntryScreen(): JSX.Element {
   const route = useRoute<ScreenRoute>();
   const navigation = useNavigation<Nav>();
+  const sync = useSync();
   const { date } = route.params;
 
   const [existing, setExisting] = useState<DailyEntry | null>(null);
@@ -50,13 +52,15 @@ export function DailyEntryScreen(): JSX.Element {
 
   const handleSave = useCallback(async (entry: DailyEntry) => {
     await saveDailyEntry(date, entry);
+    void sync?.syncNow();
     navigation.goBack();
-  }, [date, navigation]);
+  }, [date, navigation, sync]);
 
   const handleDelete = useCallback(async () => {
     await deleteEntry(date);
+    void sync?.syncNow();
     navigation.goBack();
-  }, [date, navigation]);
+  }, [date, navigation, sync]);
 
   if (!loaded) return <></>;
 

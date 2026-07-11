@@ -2,7 +2,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { PhaseLabel } from 'core-rules-engine';
 import {
-  BG_CARD, BG_DRY, BG_POST_PEAK, BG_PEAK_TYPE,
+  BG_CARD, BG_DRY, BG_MISSING, BG_POST_PEAK, BG_PEAK_TYPE,
   FERTILE_ACCENT, PEAK_BORDER,
   TEXT_PRIMARY, TEXT_MUTED, TEXT_SUBTLE,
   BORDER_CARD, INTERCOURSE_ICON,
@@ -17,7 +17,7 @@ interface Props {
 }
 
 function getBarColor(rank: number | null, phase: PhaseLabel): string {
-  if (rank === null) return BG_DRY;
+  if (rank === null || phase === 'missing') return BG_MISSING;
   if (phase === 'p_plus_1' || phase === 'p_plus_2' || phase === 'p_plus_3') return BG_POST_PEAK;
   if (rank >= 3) return BG_PEAK_TYPE;
   if (rank >= 1) return FERTILE_ACCENT;
@@ -33,10 +33,10 @@ export function MucusChart({ mucusRanks, phaseLabels, peakIndex, intercourseFlag
       <Text style={styles.title}>{title ?? 'Mucus Pattern'}</Text>
 
       <View style={styles.yAxis}>
-        <Text style={styles.yLabel}>3 Peak</Text>
-        <Text style={styles.yLabel}>2 Wet</Text>
-        <Text style={styles.yLabel}>1 Damp</Text>
-        <Text style={styles.yLabel}>0 Dry</Text>
+        <Text style={styles.yLabel}>Peak-type</Text>
+        <Text style={styles.yLabel}>Wet</Text>
+        <Text style={styles.yLabel}>Damp</Text>
+        <Text style={styles.yLabel}>Dry</Text>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollArea}>
@@ -74,9 +74,10 @@ export function MucusChart({ mucusRanks, phaseLabels, peakIndex, intercourseFlag
       </ScrollView>
 
       <View style={styles.legend}>
+        <LegendDot color={BG_MISSING} label="Missing" />
         <LegendDot color={BG_DRY} label="Dry" />
         <LegendDot color={FERTILE_ACCENT} label="Mucus" />
-        <LegendDot color={BG_PEAK_TYPE} label="Peak" />
+        <LegendDot color={BG_PEAK_TYPE} label="Peak-type" />
         <LegendDot color={BG_POST_PEAK} label="Post-peak" />
       </View>
     </View>

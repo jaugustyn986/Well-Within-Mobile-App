@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Keyboard,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -14,6 +15,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Appearance,
+  BLEEDING_EDUCATION,
+  BLEEDING_EDUCATION_NOTE,
   BleedingType,
   classifyFertility,
   computeMucusRank,
@@ -27,25 +30,24 @@ import {
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_SUBTLE,
   BORDER_CARD, ACCENT_WARM, ACCENT_WARM_TINT, BRAND_NAME, ACCENT_RED,
 } from '../theme/colors';
+import {
+  canSaveObservationEntry,
+  initialSensationForEntry,
+} from './entryObservationConfirmation';
+import {
+  applyEntryDeleteChoice,
+  type EntryDeleteChoice,
+} from './entryDeleteConfirmation';
 
 interface Props {
   initialEntry?: DailyEntry | null;
   previousDayEntry?: DailyEntry | null;
   date: string;
   onSave: (entry: DailyEntry) => void | Promise<void>;
-  onDelete?: () => void;
+  onDelete?: () => void | Promise<void>;
   saveLabel?: string;
   showMarkMissingButton?: boolean;
 }
-
-const BLEEDING_OPTIONS: { value: BleedingType; label: string }[] = [
-  { value: 'none', label: 'None' },
-  { value: 'spotting', label: 'Spotting' },
-  { value: 'light', label: 'Light' },
-  { value: 'moderate', label: 'Moderate' },
-  { value: 'heavy', label: 'Heavy' },
-  { value: 'brown', label: 'Brown' },
-];
 
 const SENSATION_OPTIONS: { value: Sensation; label: string; desc: string }[] = [
   { value: 'dry', label: 'Dry', desc: 'No sensation' },
@@ -84,19 +86,19 @@ const CLASSIFICATION_LABELS: Record<string, { title: string; desc: string; hint:
     hint: 'Dry day. Record as no mucus.',
   },
   early_fertile: {
-    title: 'Early Fertile Observation',
-    desc: 'Early mucus signs are present.',
-    hint: 'Early fertility signs detected. Continue daily observations.',
+    title: 'Mucus Observation',
+    desc: 'A mucus sign was recorded.',
+    hint: 'Continue recording what you observe each day.',
   },
   fertile: {
-    title: 'Fertile Observation',
-    desc: 'Fertile-type mucus is present.',
-    hint: 'Fertile day. Cervical mucus indicates fertility.',
+    title: 'Wetter Observation',
+    desc: 'A wetter mucus sign was recorded.',
+    hint: 'The chart places this sign in context with surrounding days.',
   },
   peak_type: {
     title: 'Peak-Type Observation',
     desc: 'Stretchy or lubricative mucus is present.',
-    hint: 'Peak fertility! This is your most fertile mucus sign.',
+    hint: 'Peak-type describes the observation; Peak Day is confirmed from the pattern over time.',
   },
 };
 
@@ -111,17 +113,25 @@ export function EntryForm({
 }: Props): JSX.Element {
   const [missing, setMissing] = useState(initialEntry?.missing ?? false);
   const [bleeding, setBleeding] = useState<BleedingType>(initialEntry?.bleeding ?? 'none');
-  const [sensation, setSensation] = useState<Sensation>(initialEntry?.sensation ?? 'dry');
+  const [sensation, setSensation] = useState<Sensation | null>(
+    initialSensationForEntry(initialEntry),
+  );
   const [appearances, setAppearances] = useState<Appearance[]>(initialEntry?.appearances ?? []);
   const [frequency, setFrequency] = useState<Frequency | undefined>(initialEntry?.frequency);
+  const [showBleedingInfo, setShowBleedingInfo] = useState(false);
   const [showFreqInfo, setShowFreqInfo] = useState(false);
   const [showNotesInfo, setShowNotesInfo] = useState(false);
   const [intercourse, setIntercourse] = useState(initialEntry?.intercourse ?? false);
   const [notes, setNotes] = useState(initialEntry?.notes ?? '');
   const [saving, setSaving] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [sameAsYesterday, setSameAsYesterday] = useState(false);
-  const preToggleSnapshot = useRef<{ sensation: Sensation; appearances: Appearance[] } | null>(null);
+  const preToggleSnapshot = useRef<{
+    sensation: Sensation | null;
+    appearances: Appearance[];
+  } | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const notesBlockY = useRef(0);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -160,12 +170,21 @@ export function EntryForm({
   }, [previousDayEntry, sensation, appearances]);
 
   const rank = useMemo(
-    () => (missing ? null : computeMucusRank({ sensation, appearances })),
+    () => (
+      missing || sensation === null
+        ? null
+        : computeMucusRank({ sensation, appearances })
+    ),
     [sensation, appearances, missing],
   );
 
+  const selectedBleedingEducation = useMemo(
+    () => BLEEDING_EDUCATION.find((item) => item.value === bleeding) ?? BLEEDING_EDUCATION[0],
+    [bleeding],
+  );
+
   const classInfo = useMemo(() => {
-    if (missing || rank === null) return null;
+    if (missing || sensation === null || rank === null) return null;
     const draft: DailyEntry = { bleeding, sensation, appearances };
     const primary = derivePrimaryDayClassFromEntry(draft, rank);
     if (primary === 'menstrual_flow') {
@@ -221,6 +240,7 @@ export function EntryForm({
       void saveEntry({ date, missing: true });
       return;
     }
+    if (sensation === null) return;
     void saveEntry({
       date,
       bleeding,
@@ -235,6 +255,19 @@ export function EntryForm({
   const handleMarkMissing = () => {
     void saveEntry({ date, missing: true });
   };
+
+  const handleDeleteChoice = useCallback(async (choice: EntryDeleteChoice) => {
+    if (!onDelete || deleting) return;
+    if (choice === 'confirm') setDeleting(true);
+    try {
+      await applyEntryDeleteChoice(choice, onDelete);
+      setShowDeleteConfirmation(false);
+    } finally {
+      if (choice === 'confirm') setDeleting(false);
+    }
+  }, [deleting, onDelete]);
+
+  const canSave = canSaveObservationEntry(missing, sensation);
 
   return (
     <KeyboardAvoidingView
@@ -277,13 +310,30 @@ export function EntryForm({
       ) : (
         <>
           <View style={styles.section}>
-            <Text style={styles.fieldLabel}>Bleeding</Text>
+            <View style={styles.labelRow}>
+              <Text style={styles.fieldLabel}>Bleeding</Text>
+              <Pressable
+                onPress={() => setShowBleedingInfo(!showBleedingInfo)}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={`${showBleedingInfo ? 'Hide' : 'Show'} bleeding type guide`}
+                accessibilityHint="Explains the Creighton-aligned bleeding categories"
+                accessibilityState={{ expanded: showBleedingInfo }}
+              >
+                <View style={styles.infoBubble}>
+                  <Text style={styles.infoBubbleText}>i</Text>
+                </View>
+              </Pressable>
+            </View>
             <View style={styles.pillRow}>
-              {BLEEDING_OPTIONS.map((opt) => (
+              {BLEEDING_EDUCATION.map((opt) => (
                 <Pressable
                   key={opt.value}
                   style={[styles.pill, bleeding === opt.value && styles.pillSelected]}
                   onPress={() => setBleeding(opt.value)}
+                  accessibilityRole="radio"
+                  accessibilityLabel={opt.code ? `${opt.label}, ${opt.code}` : opt.label}
+                  accessibilityState={{ selected: bleeding === opt.value }}
                 >
                   <Text style={[styles.pillText, bleeding === opt.value && styles.pillTextSelected]}>
                     {opt.label}
@@ -291,6 +341,28 @@ export function EntryForm({
                 </Pressable>
               ))}
             </View>
+            <View style={styles.bleedingSelectionHelp} accessibilityLiveRegion="polite">
+              <Text style={styles.bleedingSelectionTitle}>
+                {selectedBleedingEducation.label}
+                {selectedBleedingEducation.code ? ` (${selectedBleedingEducation.code})` : ''}
+              </Text>
+              <Text style={styles.bleedingSelectionDescription}>
+                {selectedBleedingEducation.description}
+              </Text>
+            </View>
+            {showBleedingInfo && (
+              <View style={styles.bleedingGuide}>
+                {BLEEDING_EDUCATION.map((item) => (
+                  <View key={item.value} style={styles.bleedingGuideItem}>
+                    <Text style={styles.bleedingGuideTitle}>
+                      {item.label}{item.code ? ` (${item.code})` : ''}
+                    </Text>
+                    <Text style={styles.bleedingGuideDescription}>{item.description}</Text>
+                  </View>
+                ))}
+                <Text style={styles.bleedingGuideNote}>{BLEEDING_EDUCATION_NOTE}</Text>
+              </View>
+            )}
           </View>
 
           <View style={styles.mostFertileNote}>
@@ -307,6 +379,8 @@ export function EntryForm({
                   key={opt.value}
                   style={[styles.card, sensation === opt.value && styles.cardSelected]}
                   onPress={() => setSensation(opt.value)}
+                  accessibilityRole="radio"
+                  accessibilityState={{ selected: sensation === opt.value }}
                 >
                   <Text style={[styles.cardTitle, sensation === opt.value && styles.cardTitleSelected]}>
                     {opt.label}
@@ -430,21 +504,80 @@ export function EntryForm({
       )}
 
       {onDelete && (
-        <Pressable style={styles.deleteBtn} onPress={onDelete}>
+        <Pressable
+          style={styles.deleteBtn}
+          onPress={() => setShowDeleteConfirmation(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Delete entry"
+          accessibilityHint="Opens a confirmation before deleting this observation"
+        >
           <Text style={styles.deleteText}>Delete Entry</Text>
         </Pressable>
       )}
     </ScrollView>
     <View style={styles.stickyFooter}>
+      {!missing && sensation === null ? (
+        <Text style={styles.observationConfirmationPrompt} accessibilityLiveRegion="polite">
+          Choose a sensation — including Dry — to confirm today&apos;s observation.
+        </Text>
+      ) : null}
       {showMarkMissingButton && !missing ? (
         <Pressable style={styles.markMissingBtn} onPress={handleMarkMissing} disabled={saving}>
           <Text style={styles.markMissingText}>I do not remember this day</Text>
         </Pressable>
       ) : null}
-      <Pressable style={[styles.saveBtnSticky, saving && styles.saveBtnDisabled]} onPress={handleSave} disabled={saving}>
+      <Pressable
+        style={[styles.saveBtnSticky, (!canSave || saving) && styles.saveBtnDisabled]}
+        onPress={handleSave}
+        disabled={!canSave || saving}
+        accessibilityState={{ disabled: !canSave || saving }}
+      >
         <Text style={styles.saveText}>{saving ? 'Saving...' : saveLabel}</Text>
       </Pressable>
     </View>
+    <Modal
+      visible={showDeleteConfirmation}
+      transparent
+      animationType="fade"
+      onRequestClose={() => {
+        if (!deleting) void handleDeleteChoice('cancel');
+      }}
+    >
+      <View
+        style={styles.modalOverlay}
+        accessibilityViewIsModal
+        onAccessibilityEscape={() => {
+          if (!deleting) void handleDeleteChoice('cancel');
+        }}
+      >
+        <View style={styles.modalCard}>
+          <Text style={styles.modalTitle}>Delete this entry?</Text>
+          <Text style={styles.modalBody}>
+            This removes the observation for {displayDate} from your chart. This action cannot be undone.
+          </Text>
+          <View style={styles.modalButtons}>
+            <Pressable
+              style={[styles.modalBtnOutline, deleting && styles.modalBtnDisabled]}
+              onPress={() => void handleDeleteChoice('cancel')}
+              disabled={deleting}
+              accessibilityRole="button"
+            >
+              <Text style={styles.modalBtnOutlineText}>Cancel</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.modalBtnDanger, deleting && styles.modalBtnDisabled]}
+              onPress={() => void handleDeleteChoice('confirm')}
+              disabled={deleting}
+              accessibilityRole="button"
+            >
+              <Text style={styles.modalBtnDangerText}>
+                {deleting ? 'Deleting...' : 'Delete Entry'}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -469,6 +602,35 @@ const styles = StyleSheet.create({
   pillSelected: { backgroundColor: ACCENT_WARM_TINT, borderColor: ACCENT_WARM },
   pillText: { fontSize: 14, fontWeight: '400', color: TEXT_SECONDARY },
   pillTextSelected: { color: BRAND_NAME, fontWeight: '600' },
+  bleedingSelectionHelp: {
+    backgroundColor: BG_PAGE,
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 10,
+  },
+  bleedingSelectionTitle: { fontSize: 13, fontWeight: '600', color: TEXT_PRIMARY },
+  bleedingSelectionDescription: { fontSize: 12, color: TEXT_SUBTLE, lineHeight: 18, marginTop: 2 },
+  bleedingGuide: {
+    backgroundColor: BG_CARD,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 8,
+    gap: 10,
+  },
+  bleedingGuideItem: { gap: 2 },
+  bleedingGuideTitle: { fontSize: 13, fontWeight: '600', color: TEXT_PRIMARY },
+  bleedingGuideDescription: { fontSize: 12, color: TEXT_SECONDARY, lineHeight: 18 },
+  bleedingGuideNote: {
+    fontSize: 12,
+    color: TEXT_SUBTLE,
+    lineHeight: 18,
+    fontStyle: 'italic',
+    borderTopWidth: 1,
+    borderTopColor: BORDER_CARD,
+    paddingTop: 10,
+  },
   cardGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   card: {
     width: '47%',
@@ -518,6 +680,13 @@ const styles = StyleSheet.create({
   },
   saveBtnDisabled: { opacity: 0.65 },
   saveText: { fontSize: 15, color: BG_CARD, fontWeight: '600' },
+  observationConfirmationPrompt: {
+    fontSize: 13,
+    color: TEXT_SECONDARY,
+    lineHeight: 18,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
   markMissingBtn: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -527,6 +696,47 @@ const styles = StyleSheet.create({
   markMissingText: { fontSize: 14, color: TEXT_SUBTLE, fontWeight: '500' },
   deleteBtn: { alignItems: 'center', marginTop: 24 },
   deleteText: { fontSize: 14, color: ACCENT_RED, fontWeight: '500' },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  modalCard: {
+    backgroundColor: BG_CARD,
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 340,
+  },
+  modalTitle: { fontSize: 18, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 10 },
+  modalBody: {
+    fontSize: 15,
+    fontWeight: '400',
+    color: TEXT_SECONDARY,
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  modalButtons: { flexDirection: 'row', gap: 12 },
+  modalBtnOutline: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: BORDER_CARD,
+    alignItems: 'center',
+  },
+  modalBtnOutlineText: { fontSize: 14, color: TEXT_SECONDARY, fontWeight: '600' },
+  modalBtnDanger: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: ACCENT_RED,
+    alignItems: 'center',
+  },
+  modalBtnDangerText: { fontSize: 14, color: BG_CARD, fontWeight: '600' },
+  modalBtnDisabled: { opacity: 0.6 },
   missingRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     padding: 16, backgroundColor: BG_MISSING, borderRadius: 10, marginTop: 16,

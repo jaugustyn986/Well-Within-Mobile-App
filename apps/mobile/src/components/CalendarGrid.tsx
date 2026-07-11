@@ -133,6 +133,7 @@ export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNex
             const textColor = getDayTextColor(cell);
             const indicatorColor = getIndicatorColor(cell);
             const isPeakConfirmed = cell.phaseLabel === 'peak_confirmed';
+            const isFuture = cell.date > today;
             return (
               <Pressable
                 key={ci}
@@ -141,8 +142,13 @@ export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNex
                   { backgroundColor: bg },
                   cell.isToday && !isPeakConfirmed && styles.todayBorder,
                   isPeakConfirmed && styles.peakBorder,
+                  isFuture && styles.futureCell,
                 ]}
                 onPress={() => onDayPress(cell.date)}
+                disabled={isFuture}
+                accessibilityRole="button"
+                accessibilityLabel={`${MONTHS[month]} ${dayNum}, ${year}`}
+                accessibilityState={{ disabled: isFuture }}
               >
                 <Text style={[styles.dayText, { color: textColor }]}>{dayNum}</Text>
                 {indicatorColor && (
@@ -198,6 +204,7 @@ const styles = StyleSheet.create({
   },
   todayBorder: { borderWidth: 2, borderColor: BORDER_TODAY },
   peakBorder: { borderWidth: 2, borderColor: PEAK_BORDER },
+  futureCell: { opacity: 0.4 },
   dayText: { fontSize: 14, fontWeight: '500' },
   babyDot: {
     width: 7, height: 7, borderRadius: 4,

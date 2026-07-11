@@ -195,8 +195,14 @@ export function SettingsScreen(): JSX.Element {
               <Text style={styles.dangerIconText}>{'×'}</Text>
             </View>
             <View>
-              <Text style={[styles.actionTitle, styles.dangerText]}>Clear All Data</Text>
-              <Text style={styles.actionSub}>Remove all observations and cycle history</Text>
+              <Text style={[styles.actionTitle, styles.dangerText]}>
+                {auth?.user ? 'Clear Data From This Device' : 'Clear All Data'}
+              </Text>
+              <Text style={styles.actionSub}>
+                {auth?.user
+                  ? 'Remove local observations; backed-up data is not deleted'
+                  : 'Remove all observations and cycle history'}
+              </Text>
             </View>
           </View>
           <Text style={styles.actionChevron}>{'›'}</Text>
@@ -232,9 +238,13 @@ export function SettingsScreen(): JSX.Element {
       <Modal visible={showClearModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Clear All Data?</Text>
+            <Text style={styles.modalTitle}>
+              {auth?.user ? 'Clear Data From This Device?' : 'Clear All Data?'}
+            </Text>
             <Text style={styles.modalBody}>
-              This will permanently remove all your observations and cycle history. This action cannot be undone.
+              {auth?.user
+                ? 'This removes observations and cycle history from this device only. Backed-up data remains in your account and may return after the next sync.'
+                : 'This will permanently remove all your observations and cycle history. This action cannot be undone.'}
             </Text>
             <View style={styles.modalButtons}>
               <Pressable style={styles.modalBtnOutline} onPress={() => setShowClearModal(false)}>

@@ -312,7 +312,7 @@ export function buildCurrentCycleSummary(
     return {
       cycleDay: null,
       headline: 'Your cycle will appear here',
-      confidence: 'Moderate confidence — pattern still forming',
+      confidence: 'Not enough data yet',
       supportingContext: '',
       completeness: 'Nothing charted in this cycle yet.',
       guidance: 'Log today’s observation when you’re ready to begin.',

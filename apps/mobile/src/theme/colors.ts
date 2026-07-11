@@ -1,9 +1,9 @@
 // Backgrounds
 export const BG_PAGE = '#F6F3EF';
 export const BG_CARD = '#FDFCFB';
-export const BG_DRY = '#dcfce7';        // calendar -- do not change
-export const BG_BLEEDING = '#fca5a5';    // calendar -- do not change
-export const BG_POST_PEAK = '#fef08a';   // calendar -- do not change
+export const BG_DRY = '#E3ECE1';         // soft sage; Creighton green family
+export const BG_BLEEDING = '#D09AAF';    // dusty magenta; Creighton red family
+export const BG_POST_PEAK = '#F2E6B5';   // warm butter; Creighton yellow family
 export const BG_NO_ENTRY = '#ffffff';    // calendar -- do not change
 export const BG_MISSING = '#F5F3F1';
 export const BG_PEAK_TYPE = '#D6D3CF';   // light warm grey for peak-type mucus
@@ -13,8 +13,8 @@ export const BG_CARD_GRADIENT_START = '#F1EFEA';
 export const BANNER_TONE_CAUTION_BG = '#F7F0E8';
 export const BANNER_TONE_POSITIVE_BG = '#EDF4F0';
 
-// Indicator dots / accents (calendar -- do not change)
-export const FERTILE_ACCENT = '#16a34a';
+// Indicator dots / accents
+export const FERTILE_ACCENT = '#65815F';
 
 // Text
 export const TEXT_PRIMARY = '#3F3A36';

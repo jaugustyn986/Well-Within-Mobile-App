@@ -21,7 +21,7 @@ function getStatusStyle(status: CycleSlice['status']): { bg: string; text: strin
     case 'in_progress':
       return { bg: BG_POST_PEAK, text: '#92400e', label: 'In Progress' };
     case 'no_peak':
-      return { bg: BG_MISSING, text: TEXT_MUTED, label: 'No Peak' };
+      return { bg: BG_MISSING, text: TEXT_MUTED, label: 'Peak not confirmed' };
   }
 }
 
