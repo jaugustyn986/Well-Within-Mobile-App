@@ -14,6 +14,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Appearance,
+  BLEEDING_EDUCATION,
+  BLEEDING_EDUCATION_NOTE,
   BleedingType,
   classifyFertility,
   computeMucusRank,
@@ -35,15 +37,6 @@ interface Props {
   onSave: (entry: DailyEntry) => void;
   onDelete?: () => void;
 }
-
-const BLEEDING_OPTIONS: { value: BleedingType; label: string }[] = [
-  { value: 'none', label: 'None' },
-  { value: 'spotting', label: 'Spotting' },
-  { value: 'light', label: 'Light' },
-  { value: 'moderate', label: 'Moderate' },
-  { value: 'heavy', label: 'Heavy' },
-  { value: 'brown', label: 'Brown' },
-];
 
 const SENSATION_OPTIONS: { value: Sensation; label: string; desc: string }[] = [
   { value: 'dry', label: 'Dry', desc: 'No sensation' },
@@ -104,6 +97,7 @@ export function EntryForm({ initialEntry, previousDayEntry, date, onSave, onDele
   const [sensation, setSensation] = useState<Sensation>(initialEntry?.sensation ?? 'dry');
   const [appearances, setAppearances] = useState<Appearance[]>(initialEntry?.appearances ?? []);
   const [frequency, setFrequency] = useState<Frequency | undefined>(initialEntry?.frequency);
+  const [showBleedingInfo, setShowBleedingInfo] = useState(false);
   const [showFreqInfo, setShowFreqInfo] = useState(false);
   const [showNotesInfo, setShowNotesInfo] = useState(false);
   const [intercourse, setIntercourse] = useState(initialEntry?.intercourse ?? false);
@@ -151,6 +145,11 @@ export function EntryForm({ initialEntry, previousDayEntry, date, onSave, onDele
   const rank = useMemo(
     () => (missing ? null : computeMucusRank({ sensation, appearances })),
     [sensation, appearances, missing],
+  );
+
+  const selectedBleedingEducation = useMemo(
+    () => BLEEDING_EDUCATION.find((item) => item.value === bleeding) ?? BLEEDING_EDUCATION[0],
+    [bleeding],
   );
 
   const classInfo = useMemo(() => {
@@ -252,13 +251,30 @@ export function EntryForm({ initialEntry, previousDayEntry, date, onSave, onDele
       ) : (
         <>
           <View style={styles.section}>
-            <Text style={styles.fieldLabel}>Bleeding</Text>
+            <View style={styles.labelRow}>
+              <Text style={styles.fieldLabel}>Bleeding</Text>
+              <Pressable
+                onPress={() => setShowBleedingInfo(!showBleedingInfo)}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={`${showBleedingInfo ? 'Hide' : 'Show'} bleeding type guide`}
+                accessibilityHint="Explains the Creighton-aligned bleeding categories"
+                accessibilityState={{ expanded: showBleedingInfo }}
+              >
+                <View style={styles.infoBubble}>
+                  <Text style={styles.infoBubbleText}>i</Text>
+                </View>
+              </Pressable>
+            </View>
             <View style={styles.pillRow}>
-              {BLEEDING_OPTIONS.map((opt) => (
+              {BLEEDING_EDUCATION.map((opt) => (
                 <Pressable
                   key={opt.value}
                   style={[styles.pill, bleeding === opt.value && styles.pillSelected]}
                   onPress={() => setBleeding(opt.value)}
+                  accessibilityRole="radio"
+                  accessibilityLabel={opt.code ? `${opt.label}, ${opt.code}` : opt.label}
+                  accessibilityState={{ selected: bleeding === opt.value }}
                 >
                   <Text style={[styles.pillText, bleeding === opt.value && styles.pillTextSelected]}>
                     {opt.label}
@@ -266,6 +282,28 @@ export function EntryForm({ initialEntry, previousDayEntry, date, onSave, onDele
                 </Pressable>
               ))}
             </View>
+            <View style={styles.bleedingSelectionHelp} accessibilityLiveRegion="polite">
+              <Text style={styles.bleedingSelectionTitle}>
+                {selectedBleedingEducation.label}
+                {selectedBleedingEducation.code ? ` (${selectedBleedingEducation.code})` : ''}
+              </Text>
+              <Text style={styles.bleedingSelectionDescription}>
+                {selectedBleedingEducation.description}
+              </Text>
+            </View>
+            {showBleedingInfo && (
+              <View style={styles.bleedingGuide}>
+                {BLEEDING_EDUCATION.map((item) => (
+                  <View key={item.value} style={styles.bleedingGuideItem}>
+                    <Text style={styles.bleedingGuideTitle}>
+                      {item.label}{item.code ? ` (${item.code})` : ''}
+                    </Text>
+                    <Text style={styles.bleedingGuideDescription}>{item.description}</Text>
+                  </View>
+                ))}
+                <Text style={styles.bleedingGuideNote}>{BLEEDING_EDUCATION_NOTE}</Text>
+              </View>
+            )}
           </View>
 
           <View style={styles.mostFertileNote}>
@@ -439,6 +477,35 @@ const styles = StyleSheet.create({
   pillSelected: { backgroundColor: ACCENT_WARM_TINT, borderColor: ACCENT_WARM },
   pillText: { fontSize: 14, fontWeight: '400', color: TEXT_SECONDARY },
   pillTextSelected: { color: BRAND_NAME, fontWeight: '600' },
+  bleedingSelectionHelp: {
+    backgroundColor: BG_PAGE,
+    borderRadius: 8,
+    padding: 10,
+    marginTop: 10,
+  },
+  bleedingSelectionTitle: { fontSize: 13, fontWeight: '600', color: TEXT_PRIMARY },
+  bleedingSelectionDescription: { fontSize: 12, color: TEXT_SUBTLE, lineHeight: 18, marginTop: 2 },
+  bleedingGuide: {
+    backgroundColor: BG_CARD,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 8,
+    gap: 10,
+  },
+  bleedingGuideItem: { gap: 2 },
+  bleedingGuideTitle: { fontSize: 13, fontWeight: '600', color: TEXT_PRIMARY },
+  bleedingGuideDescription: { fontSize: 12, color: TEXT_SECONDARY, lineHeight: 18 },
+  bleedingGuideNote: {
+    fontSize: 12,
+    color: TEXT_SUBTLE,
+    lineHeight: 18,
+    fontStyle: 'italic',
+    borderTopWidth: 1,
+    borderTopColor: BORDER_CARD,
+    paddingTop: 10,
+  },
   cardGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   card: {
     width: '47%',
