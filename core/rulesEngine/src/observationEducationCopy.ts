@@ -3,6 +3,60 @@
  * Keep aligned with docs/RULES_ENGINE_SPEC.md, rank.ts, and creightonCode.ts.
  */
 
+import type { BleedingType } from './types';
+
+export interface BleedingEducationItem {
+  value: BleedingType;
+  label: string;
+  code: 'H' | 'M' | 'L' | 'VL' | 'B' | null;
+  description: string;
+}
+
+/** Creighton-aligned recording labels. These describe observations, not their cause. */
+export const BLEEDING_EDUCATION: readonly BleedingEducationItem[] = [
+  {
+    value: 'none',
+    label: 'None',
+    code: null,
+    description: 'No red, brown, or black bleeding observed.',
+  },
+  {
+    value: 'spotting',
+    label: 'Spotting',
+    code: 'VL',
+    description: 'Very light red bleeding. Also record any mucus you observe.',
+  },
+  {
+    value: 'light',
+    label: 'Light',
+    code: 'L',
+    description: 'Light red flow. Also record any mucus you observe.',
+  },
+  {
+    value: 'moderate',
+    label: 'Moderate',
+    code: 'M',
+    description: 'Moderate red flow.',
+  },
+  {
+    value: 'heavy',
+    label: 'Heavy',
+    code: 'H',
+    description: 'Heavy red flow.',
+  },
+  {
+    value: 'brown',
+    label: 'Brown',
+    code: 'B',
+    description: 'Brown or black bleeding or discharge.',
+  },
+];
+
+export const HELP_BLEEDING_TYPES_TITLE = 'What do the bleeding types mean?';
+
+export const BLEEDING_EDUCATION_NOTE =
+  'These categories describe what you observe, not why bleeding is happening. If you are unsure which category to use, review your chart with a trained practitioner.';
+
 /** Column header for PDF / tables: chart strength from mucusRank (not numeric rank). */
 export const PDF_CHART_STRENGTH_HEADER = 'Chart';
 

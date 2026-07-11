@@ -195,7 +195,7 @@ Each day in the slice has derived:
 - **Menstrual flow days** (`bleedingClassByDay` = `cycle_start_flow` or `continuing_menses`) map to **`menstrual_flow`**. Heavy/moderate/light during menses are not interpreted as Peak-type for candidacy or user-facing “peak fertility” copy on that day.  
 - **Peak-type candidacy** (`detectPeak`): indices with **flow bleeding** (`heavy` \| `moderate` \| `light` \| `spotting` per `blocksFertileOpening` in `flowBleeding.ts`) **cannot** be peak-type candidates, even if `mucusRanks[i] === 3`.  
 - **Phase labels**: if a flow day would otherwise carry a fertile/peak sticker phase (`fertile_open`, `fertile_unconfirmed_peak`, `peak_confirmed`, `p_plus_1`–`p_plus_3`), it is coerced to **`dry`** for sticker semantics (not applied to `post_peak`).  
-- **Post-peak spotting** (`post_peak_spotting`): if mucus rank ≥ 1, **`primaryDayClass`** follows mucus tier (`mucus_observed` or `peak_type`); calendar uses green/white/yellow per phase, **not** menstrual red.  
+- **Post-peak spotting** (`post_peak_spotting`): if mucus rank ≥ 1, **`primaryDayClass`** follows mucus tier (`mucus_observed` or `peak_type`); calendar uses the softened sage/warm-grey/butter phase colors, **not** the dusty-magenta menstrual color.
 - **Draft entry preview** (`derivePrimaryDayClassFromEntry`): uses bleeding + rank only; heavy/moderate/light → **`menstrual_flow`** for preview; spotting uses mucus tier when rank ≥ 1.
 
 ## Current cycle summary (calendar banner)
