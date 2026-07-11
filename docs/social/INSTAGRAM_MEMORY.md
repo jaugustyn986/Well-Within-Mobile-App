@@ -1,5 +1,7 @@
 # Instagram Memory
 
+> July 2026 reset: this file is historical/durable memory, not the top-level operating plan. Start with `README.md`, `SOCIAL_GROWTH_RESET_2026-07-04.md`, `SOCIAL_METRICS_DASHBOARD.md`, and `SOCIAL_HYPOTHESIS_BACKLOG.md` before applying any older recommendation here.
+
 This file is the durable memory base for Well Within Instagram strategy. Update it after research runs, post-performance reviews, and meaningful changes in positioning.
 
 For full post creation, start with `docs/social/INSTAGRAM_POST_RUNBOOK.md`. Use this file as durable strategic memory, not as the operational checklist.
@@ -235,6 +237,70 @@ Show fast daily entry, exports, history, and clear visual interpretation.
 - The strongest visual fit came from analog/journal cycle-tracking contexts. This supports the journal-led north star as the default visual world for organic posts.
 - App-led posts should be saved for concrete product proof: daily entry, chart review, privacy behavior, or export. Avoid borrowing fertility-status, prediction, contraception, effectiveness, or pregnancy-outcome claims from larger competitors.
 - Queue hygiene is now part of the process: keep distinct draft jobs, and merge drafts that only reword the same beginner reassurance idea.
+
+## Research Update: 2026-07-03
+
+- Public fallback research after the Chrome-profile access attempt reinforced a practical product-light direction: one observable sign or daily action should become visible chart context users can save, remember, or revisit.
+- Keep `Record One Observation. See It On Your Chart.` as the next design-ready test. The final beat should read as chart context, cycle history, or "a pattern begins to build" rather than interpretation, prediction, or fertile-window certainty.
+- Pinterest fertility-tracker surfaces reinforce that saveable references and chart objects are more aligned than abstract brand statements for this test, but many examples overpromise faster conception or timing certainty. Well Within should borrow the saveable-reference mechanic, not the claim language.
+- The dedicated Well Within Chrome-profile path remains unreliable for inspectable authenticated Instagram/Pinterest research as of this run; use it once per run if requested, then move to bounded public fallbacks unless the browser bridge behavior changes.
+
+## Research Update: 2026-07-04
+
+- Today’s bounded public fallback set reinforced, but did not materially change, the July 3 recommendation: keep `Record One Observation. See It On Your Chart.` as the next product-light utility test.
+- The strongest transferable pattern is a saveable routine/reference object: users appear to search for trackers, charts, and concrete sign-recording aids they can return to later.
+- The useful category contrast is observation over prediction. Phrase it as Well Within helping users record signs and build cycle context; do not turn it into "fertile window" certainty, pregnancy optimization, or anti-competitor copy.
+- The next asset pass should use real Well Within UI screenshots and make the final beat visibly read as cycle history or chart context. Avoid another broad "start with one observation" reassurance carousel unless the format/visual system is deliberately different.
+- The requested `docs/social/INSTAGRAM_AUTOMATION_RUNBOOK.md` path was missing in this checkout; the run used `INSTAGRAM_RESEARCH_PLAYBOOK.md`, the post runbook, and the required daily context files instead.
+
+## Research Update: 2026-07-05
+
+- Today's bounded source set used public app-store and product-review language rather than authenticated Instagram/TikTok inspection.
+- Durable audience language clustered around practical charting friction: paper charting gets messy, other apps feel clunky or confusing, users need to include the signs that matter to them, and extra save steps can double logging time or create errors.
+- The strongest Well Within implication is not another broad "one observation" reassurance. It is a friction-relief product proof: record the signs you actually need, see them in chart context, and avoid paper mess or prediction language.
+
+## Research Update: 2026-07-06
+
+- Today's bounded source set used public TTC/community language from Reddit communities rather than authenticated Instagram/TikTok inspection.
+- Durable audience language clustered around conflicting fertility signs: cervical mucus categories feel subjective, app timing can conflict with observed signs, BBT may not become clearly biphasic, and users ask whether they are doing something wrong.
+- Exact phrases to preserve for future hooks and research prompts: "CM tracking confusing at first," "hard to interpret," "I am just not sure anymore," "BBT chart still not biphasic," "Could I still ovulate," "am I just out this cycle," "What does CM really mean," "support body literacy, not replace it," and "way easier to read."
+- Strongest Well Within implication: H3 should shift from generic daily-entry proof toward readable chart context for conflicting signs. H1 can use anti-prediction language, but only as "support body literacy, not replace it"; H2 can ask what charting sign felt confusing first.
+- No draft should be promoted from this run alone. This is external audience language without fresh Well Within intent signals or reviewed product-claim proof.
+- Privacy trust remains useful when paired with concrete usability. Phrases like data not being for sale or feeling safe with data matter, but any Well Within privacy post must be checked against current product behavior before drafting.
+- Candidate hypotheses strengthened: H3 for daily-entry-to-chart-context product proof, H1 for human anti-prediction/trust language, H4 for privacy objection handling after product-claim review, and H5 for practitioner/user interviews about method-fit and charting-field needs.
+
+## Research Update: 2026-07-07
+
+- Today's bounded source set used public privacy-first cycle app discourse from Reddit community/privacy threads and public app-store review/listing pages. No authenticated Instagram/TikTok inspection was used.
+- Durable audience language clustered around a privacy-utility tradeoff: people distrust period/cycle apps, but paper fails when they need irregular-cycle support, symptom history, reminders, export, portability, and doctor/gynecologist context.
+- Exact phrases to preserve for future hooks and research prompts: "scared about my privacy," "sell my information," "an app would be so convenient," "not worth the risk," "required a zip code and date of birth," "paper gets lost or damaged," "I just forget to log information," "track symptoms over the course of months/years," "organize and study the data," "stores your data locally," "not sent to a server," and "only on your device."
+- Strongest Well Within implication: H4 should not be drafted as an abstract privacy carousel. It needs verified product proof around local-first storage, optional backup, export/delete behavior, identifiers not required, and reliable daily entry/history.
+- H1 can use a human anti-prediction/trust voice if it says what the app does not need or do with user data, but only after current product behavior is checked. H3 remains relevant because privacy-first users still need symptom and chart history to be stable and easy to enter.
+- No draft should be promoted from this run alone. This is external audience language without fresh Well Within intent signals or reviewed privacy/security/product-claim proof.
+- Candidate hypotheses strengthened: H4 strongest, H1 and H3 secondary, H5 for practitioner/user interviews about what privacy controls matter before recommendation.
+
+## Research Update: 2026-07-08
+
+- Today's bounded source set used public fertility-awareness educator content and educator-adjacent community/search snippets rather than authenticated Instagram/TikTok inspection.
+- Durable audience language clustered around learning friction: users feel stumped by cervical mucus, read in circles across methods, struggle when definitions do not click, and want baseline as "your normal" rather than generic app timing.
+- The strongest Well Within implication is a trust/product boundary: position the app as user-owned observation capture plus readable chart context, not as an auto-interpreter, method teacher, or algorithm that overrides today's signs.
+- Future H3/H1 language should favor "record observations in your own words," "see them in context," and "no auto-interpretation" only after verifying exact product behavior. Avoid method-affiliation, certification, or ovulation-advice claims.
+
+## Research Update: 2026-07-09
+
+- Today's bounded source set used public App Store / Google Play app-review and listing language for Fertility Friend, Kindara, Ovia, Premom, Tempdrop, and Read Your Body. No authenticated Instagram/TikTok inspection was used.
+- Durable audience language clustered around depth with restraint: users want many signs and custom factors, readable charts, irregular-cycle support, and loss-aware TTC context, but they also object when apps over-predict, slow daily entry, or tell them what the data means too aggressively.
+- Exact phrases to preserve for future hooks and research prompts: "track anything and everything," "hard time tracking my baseline temp," "completely haywire," "straightforward but detailed enough," "chart feature is easy to read," "does not tell you specifically what you can and can't do," "easy to use and understand format," "plans don't always go according to plan," "quick process to load the data," and "lack of predictive features."
+- Strongest Well Within implication: H3 should not be framed as "simple" in a shallow way. The better promise is fast daily entry plus enough depth to capture real life: irregular cycles, multiple signs, personal factors, and readable context without prediction pressure.
+- H1 also strengthens because users explicitly value apps that do not over-direct them. H2 remains useful for asking which signs or life context users wish they could chart. H5 should test whether educators/practitioners see "detailed enough without telling users what to do" as a referral wedge.
+- No draft should be promoted from this run alone. This is external audience language without fresh Well Within intent signals, no verified product behavior around custom fields/import/export, and no claim review.
+
+## Research Update: 2026-07-10
+
+- A bounded public `r/FAMnNFP` app-selection set reinforces a more concrete H3 job: users want to see the relevant observations together in one readable place, rather than work around separate views or a prescribed tracking structure.
+- Preserve these exact phrases for future research prompts only: "visually see everything in one place," "I don't like the structure," "track a whole bunch of biomarkers," "doesn't interpret or predict," "you’re doing all the work still," and "cannot see cervical mucus and temps on the same screen."
+- H3 remains the strongest candidate, but the proof point must be verified in-product: which observations can appear together, which categories are customizable, and what chart context users actually see after saving. H1's user-agency language remains conditional on confirming that Well Within does not auto-interpret observations.
+- This source set is public and mostly historical (2023–2025); it is not current social-performance evidence. No draft is justified without product verification and a measurable test plan.
 
 ```markdown
 ## Observation: [Source or pattern]

@@ -1,5 +1,7 @@
 # Instagram Experiment Log
 
+> July 2026 reset: use `SOCIAL_METRICS_DASHBOARD.md` for the current live metric read and decisions. This file remains historical detail and should not be treated as complete until reconciled against live Instagram data.
+
 Use this file to track planned, posted, measured, and retired Instagram content tests.
 
 ## Status Values
@@ -440,3 +442,46 @@ Use this file to track planned, posted, measured, and retired Instagram content 
 - What did not:
 - Confidence: low
 - Next action: Check Story views at 24h. If Story views exceed feed reach, Stories are worth repeating weekly as a low-cost activity signal.
+
+## Experiment: Record One Observation. See It On Your Chart.
+
+- Status: planned
+- Date planned: 2026-07-03
+- Date posted:
+- Post URL:
+- Media ID:
+- Format: short Reel or 3-slide carousel
+- Primary variable: product-light proof angle
+- Strategic bet: showing one real daily observation becoming chart context can earn saves and profile visits without relying on prediction or outcome claims
+- Audience: charting-curious users who want fertility charting to feel simple, concrete, and useful
+- Hook: "Record one observation. See it on your chart."
+- Visual: real Well Within UI only; warm app-led product proof, optionally with a quiet desk/phone context
+- Caption angle: one observation is enough to begin building cycle history; chart first, interpret only when there is enough observed context
+- CTA: save for your next charting day; follow for calmer charting notes; light link-in-bio mention
+- Target metric: saves and profile visits; secondary link taps
+- Baseline or comparison: compare against prior beginner education carousels once insights are available; current confidence remains low because recent post metrics are missing
+- Review checkpoints: 24h, 72h, 7d
+- Research reinforcement: 2026-07-04 public fallback research again supported the saveable one-action utility angle. Keep this planned test app-led and reference-like; do not convert it into a fertile-window explainer or another broad beginner reassurance post.
+
+### Results
+
+- 24h snapshot:
+- 72h snapshot:
+- 7d snapshot:
+- Reach:
+- Views/plays:
+- Likes:
+- Comments:
+- Shares:
+- Saves:
+- Profile visits:
+- Follows:
+- Link taps:
+- App Store clicks:
+
+### Learning
+
+- What worked:
+- What did not:
+- Confidence: low
+- Next action: approve or capture the real UI screenshots needed for the 3-slide package; after posting, collect saves, profile visits, reach, shares, and link taps at 24h, 72h, and 7d before deciding whether product-light utility should repeat.

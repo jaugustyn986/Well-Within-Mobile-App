@@ -1,5 +1,7 @@
 # Instagram Draft Queue
 
+> July 2026 reset: this is now a legacy idea inventory, not the primary source for choosing the next post. Start with `SOCIAL_HYPOTHESIS_BACKLOG.md`, `SOCIAL_METRICS_DASHBOARD.md`, and `INSTAGRAM_AUTOMATION_RUNBOOK.md`. Do not promote a draft from this queue unless the hypothesis gate passes.
+
 This queue holds Well Within Instagram post ideas before they are approved, published, measured, or retired.
 
 When choosing the next post, use `docs/social/INSTAGRAM_DECISION_RUBRIC.md`. When turning a draft into assets, choose a matching template from `docs/social/templates/`.
@@ -57,6 +59,23 @@ Keep the active queue short and distinct. Before adding or choosing a draft, che
 - Target metric: saves and shares first; follows and profile visits second.
 - CTA priority: save/share first, follow second, no heavy app CTA.
 - Suggested format: 5-slide `1080 x 1350` carousel.
+
+## Recommended Next Post: 2026-07-03
+
+- Draft: `Record One Observation. See It On Your Chart.`
+- Reason: the July 2 and July 3 research runs both point toward a concrete product-light utility test: one observable daily action becoming chart context. This is more distinct from the already-published beginner reassurance carousels than another broad "start charting" post.
+- Target metric: saves and profile visits first; link taps second if the CTA is light and natural.
+- CTA priority: save this as a one-entry routine; follow for calmer charting notes; light link-in-bio mention only after the value beat.
+- Suggested format: short app-led Reel using real UI, or a tight 3-slide carousel if screen recording is not ready.
+
+## Recommended Next Post: 2026-07-04
+
+- Draft: `Record One Observation. See It On Your Chart.`
+- Reason: today's bounded fallback set did not displace the current recommendation. It reinforced the same source pattern: a concrete, saveable charting routine/reference is stronger than another broad beginner reassurance post.
+- Target metric: saves and profile visits first; secondary link taps only if the app value is clear before the CTA.
+- CTA priority: save for your next charting day; follow for calmer charting notes; optional link-in-bio mention after the chart-context beat.
+- Suggested format: keep the existing review-ready 3-slide carousel package unless real screen recording is available; build from real Well Within UI screenshots only.
+- Tightening note: the final visual beat should show cycle history or chart context building over time, not interpretation, fertile-window certainty, or pregnancy optimization.
 
 ## Active Drafts
 
@@ -178,6 +197,23 @@ Keep the active queue short and distinct. Before adding or choosing a draft, che
 - Source pattern: routine-based product demo and step-by-step getting-started posts
 - Visual system: app-led product proof
 - Safety notes: use real app UI only; do not show private data
+
+## Draft: Record One Observation. See It On Your Chart.
+
+- Status: idea
+- Format: short Reel or 3-slide carousel
+- Primary variable: product-light proof angle
+- Strategic bet: a single concrete charting action can build more intent than another broad beginner reassurance post, while still staying calm and non-salesy
+- Target metric: saves and profile visits; secondary link taps
+- Audience: charting-curious users who want the routine to feel simple and useful before committing to an app
+- Hook: "Record one observation. See it on your chart."
+- Visual direction: app-led product proof with real Well Within UI, optionally framed by a warm desk or phone-in-hand routine; no fake data that looks private or medical
+- Caption angle: charting starts with one observed sign; the value is seeing that entry become part of your cycle history over time
+- CTA: save this for your next charting day; follow for calmer charting notes; light link-in-bio mention
+- Why now: July 2 and July 3 research both reinforced one-action utility and saveable chart context as the clearest next test
+- Source pattern: recent public fallback snippets from charting apps and Pinterest fertility-tracker idea surfaces: concrete signs, routine proof, and saveable chart references
+- Visual system: app-led product proof with warm Well Within restraint
+- Safety notes: do not imply interpretation, prediction, diagnosis, fertile-window certainty, or pregnancy outcomes; final beat should be chart context or cycle history only
 
 ## Recently Published
 

@@ -2,6 +2,17 @@
 
 Use this as the entry point for creating a Well Within Instagram post. Keep the run bounded: one post concept, one visual system, one target metric.
 
+## July 2026 Growth Reset Override
+
+Routine content-package generation is paused. First read:
+
+- `docs/social/SOCIAL_GROWTH_RESET_2026-07-04.md`
+- `docs/social/SOCIAL_METRICS_DASHBOARD.md`
+- `docs/social/SOCIAL_HYPOTHESIS_BACKLOG.md`
+- `docs/social/INSTAGRAM_AUTOMATION_RUNBOOK.md`
+
+Do not create a post package unless the selected hypothesis has an evidence level, primary metric, and decision rule. If metrics are missing for the prior post, repair measurement first.
+
 ## Hook-First Visuals, Shorter Decks, Image Judgment
 
 - **Hook slide anchors the system.** Finalize the **first slide’s** layout, type hierarchy, palette, and imagery (or illustration grammar) before polishing later slides. Slides 2+ should **inherit** that system—same margins, type scale, accent, and photo/vector treatment—so the carousel reads as one intentional piece, not mixed templates.
