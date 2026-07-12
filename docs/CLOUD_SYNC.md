@@ -25,7 +25,7 @@ The app uses this redirect after the user taps the magic link in email.
 
 1. Open Supabase Dashboard → **SQL Editor**.
 2. Run the contents of [infra/supabase-schema.sql](../infra/supabase-schema.sql) in order (or apply new sections if you are incrementally updating an existing project).
-3. The schema includes: `profiles` (id, created_at, updated_at); `daily_entries` (with RLS and the `server_updated_at` trigger); and **`user_feedback`** for optional in-app product feedback (insert-only RLS for authenticated and anonymous clients). See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for table summaries.
+3. The schema includes: `profiles` (including the cross-device chart-reset marker); `daily_entries` (with RLS and the `server_updated_at` trigger); and **`user_feedback`** for optional in-app product feedback. See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) and [ACCOUNT_AND_DATA_DELETION.md](ACCOUNT_AND_DATA_DELETION.md).
 
 ## Manual validation checklist
 
@@ -33,6 +33,8 @@ The app uses this redirect after the user taps the magic link in email.
 - [ ] Sign in: enter email → “Send magic link” → tap link in email → app opens and shows signed-in state in Settings.
 - [ ] After sign-in: add or edit an entry → Settings → “Sync now” → last sync time updates (or error is shown).
 - [ ] Sign out: Settings → Sign out → local entries remain; sync section shows “Sign in with email” again.
+- [ ] Throwaway account only: delete backed-up chart data → current chart clears → a stale second device clears before it can push → account remains usable.
+- [ ] Throwaway account only: delete account → local chart/session clear → the same account no longer signs in → associated cloud rows are absent.
 - [ ] New device: install app, sign in with same email → after pull, entries match the other device (or empty if first sync).
 - [ ] (Optional) Feedback: Settings → **Send Feedback** → submit a test row → confirm it appears in Supabase **Table Editor** → `user_feedback`.
 

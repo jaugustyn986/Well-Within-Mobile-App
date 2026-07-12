@@ -6,8 +6,13 @@ import { shareAsync } from 'expo-sharing';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FeedbackModal } from '../components/feedback/FeedbackModal';
+import {
+  getAccountDataConfirmation,
+  type AccountDataAction,
+} from '../components/accountDataConfirmation';
 import { useCycleHistory } from '../hooks/useCycleHistory';
 import { getAllEntries, clearAllEntries } from '../services/storageV2';
+import { deleteBackedUpChartData, deleteCurrentAccount } from '../services/accountData';
 import { useAuth } from '../context/AuthProvider';
 import { useSync } from '../context/SyncProvider';
 import { hasSupabaseEnv } from '../config/env';
@@ -34,7 +39,8 @@ export function SettingsScreen(): JSX.Element {
   const navigation = useNavigation<SettingsNav>();
   const auth = useAuth();
   const sync = useSync();
-  const [showClearModal, setShowClearModal] = useState(false);
+  const [pendingDataAction, setPendingDataAction] = useState<AccountDataAction | null>(null);
+  const [processingDataAction, setProcessingDataAction] = useState<AccountDataAction | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [exporting, setExporting] = useState(false);
   const showBackupSync = hasSupabaseEnv();
@@ -56,16 +62,36 @@ export function SettingsScreen(): JSX.Element {
     }
   }, []);
 
-  const handleClearAll = useCallback(async () => {
-    setShowClearModal(false);
+  const handleConfirmedDataAction = useCallback(async () => {
+    const action = pendingDataAction;
+    if (!action) return;
+    const confirmation = getAccountDataConfirmation(action, Boolean(auth?.user));
+    setPendingDataAction(null);
+    setProcessingDataAction(action);
     try {
-      await clearAllEntries();
-      Alert.alert('Data Cleared', 'All observations and cycle history have been removed.');
+      if (action === 'local') {
+        await clearAllEntries();
+      } else {
+        const result = action === 'cloud'
+          ? await deleteBackedUpChartData()
+          : await deleteCurrentAccount();
+        if (result.error) {
+          Alert.alert('Could Not Complete Deletion', result.error);
+          return;
+        }
+      }
+      Alert.alert(confirmation.successTitle, confirmation.successBody);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Could not clear data.';
       Alert.alert('Error', msg);
+    } finally {
+      setProcessingDataAction(null);
     }
-  }, []);
+  }, [auth?.user, pendingDataAction]);
+
+  const confirmation = pendingDataAction
+    ? getAccountDataConfirmation(pendingDataAction, Boolean(auth?.user))
+    : null;
 
   const formatSyncTime = (iso: string | null) => {
     if (!iso) return 'Not synced yet';
@@ -88,7 +114,7 @@ export function SettingsScreen(): JSX.Element {
           {auth?.user ? (
             <>
               <Text style={styles.syncStatus}>
-                Signed in with email {auth.user.email}
+                {auth.user.email ? `Signed in as ${auth.user.email}` : 'Signed in'}
               </Text>
               <Text style={styles.syncMeta}>
                 Last sync: {formatSyncTime(sync?.lastSyncedAt ?? null)}
@@ -189,14 +215,22 @@ export function SettingsScreen(): JSX.Element {
           <Text style={styles.actionChevron}>{'›'}</Text>
         </Pressable>
 
-        <Pressable style={[styles.actionRow, styles.dangerRow]} onPress={() => setShowClearModal(true)}>
+        <Pressable
+          style={[styles.actionRow, styles.dangerRow]}
+          onPress={() => setPendingDataAction('local')}
+          disabled={processingDataAction !== null}
+          accessibilityRole="button"
+          accessibilityLabel={auth?.user ? 'Clear data from this device' : 'Clear all data'}
+        >
           <View style={styles.actionLeft}>
             <View style={[styles.actionIconCircle, styles.dangerIconCircle]}>
               <Text style={styles.dangerIconText}>{'×'}</Text>
             </View>
-            <View>
+            <View style={styles.actionText}>
               <Text style={[styles.actionTitle, styles.dangerText]}>
-                {auth?.user ? 'Clear Data From This Device' : 'Clear All Data'}
+                {processingDataAction === 'local'
+                  ? 'Clearing...'
+                  : auth?.user ? 'Clear Data From This Device' : 'Clear All Data'}
               </Text>
               <Text style={styles.actionSub}>
                 {auth?.user
@@ -207,6 +241,52 @@ export function SettingsScreen(): JSX.Element {
           </View>
           <Text style={styles.actionChevron}>{'›'}</Text>
         </Pressable>
+
+        {auth?.user ? (
+          <>
+            <Pressable
+              style={[styles.actionRow, styles.dangerRow]}
+              onPress={() => setPendingDataAction('cloud')}
+              disabled={processingDataAction !== null}
+              accessibilityRole="button"
+              accessibilityLabel="Delete backed-up chart data"
+            >
+              <View style={styles.actionLeft}>
+                <View style={[styles.actionIconCircle, styles.dangerIconCircle]}>
+                  <Text style={styles.dangerIconText}>{'×'}</Text>
+                </View>
+                <View style={styles.actionText}>
+                  <Text style={[styles.actionTitle, styles.dangerText]}>
+                    {processingDataAction === 'cloud' ? 'Deleting Chart Data...' : 'Delete Backed-Up Chart Data'}
+                  </Text>
+                  <Text style={styles.actionSub}>Permanently remove chart data across your signed-in devices</Text>
+                </View>
+              </View>
+              <Text style={styles.actionChevron}>{'›'}</Text>
+            </Pressable>
+
+            <Pressable
+              style={[styles.actionRow, styles.dangerRow]}
+              onPress={() => setPendingDataAction('account')}
+              disabled={processingDataAction !== null}
+              accessibilityRole="button"
+              accessibilityLabel="Permanently delete account"
+            >
+              <View style={styles.actionLeft}>
+                <View style={[styles.actionIconCircle, styles.dangerIconCircle]}>
+                  <Text style={styles.dangerIconText}>{'×'}</Text>
+                </View>
+                <View style={styles.actionText}>
+                  <Text style={[styles.actionTitle, styles.dangerText]}>
+                    {processingDataAction === 'account' ? 'Deleting Account...' : 'Delete Account'}
+                  </Text>
+                  <Text style={styles.actionSub}>Permanently remove your account and associated data</Text>
+                </View>
+              </View>
+              <Text style={styles.actionChevron}>{'›'}</Text>
+            </Pressable>
+          </>
+        ) : null}
       </View>
 
       {showBackupSync ? (
@@ -235,23 +315,22 @@ export function SettingsScreen(): JSX.Element {
         cycles={feedbackCycles}
       />
 
-      <Modal visible={showClearModal} transparent animationType="fade">
+      <Modal
+        visible={confirmation !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPendingDataAction(null)}
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>
-              {auth?.user ? 'Clear Data From This Device?' : 'Clear All Data?'}
-            </Text>
-            <Text style={styles.modalBody}>
-              {auth?.user
-                ? 'This removes observations and cycle history from this device only. Backed-up data remains in your account and may return after the next sync.'
-                : 'This will permanently remove all your observations and cycle history. This action cannot be undone.'}
-            </Text>
+            <Text style={styles.modalTitle}>{confirmation?.title}</Text>
+            <Text style={styles.modalBody}>{confirmation?.body}</Text>
             <View style={styles.modalButtons}>
-              <Pressable style={styles.modalBtnOutline} onPress={() => setShowClearModal(false)}>
+              <Pressable style={styles.modalBtnOutline} onPress={() => setPendingDataAction(null)}>
                 <Text style={styles.modalBtnOutlineText}>Cancel</Text>
               </Pressable>
-              <Pressable style={styles.modalBtnDanger} onPress={handleClearAll}>
-                <Text style={styles.modalBtnDangerText}>Confirm</Text>
+              <Pressable style={styles.modalBtnDanger} onPress={handleConfirmedDataAction}>
+                <Text style={styles.modalBtnDangerText}>{confirmation?.confirmLabel}</Text>
               </Pressable>
             </View>
           </View>

@@ -101,13 +101,17 @@ Example in-app wording:
 
 # 5. Data Control
 
-Users must be able to delete locally stored data.
+Users must be able to distinguish local clearing, cloud-chart deletion, and account deletion.
 
 Recommended location: `Settings -> Clear All Data`
 
 - [x] `[INT-BLOCKER]` clear data option exists
 - [x] `[INT-BLOCKER]` clear data confirmation prompt exists
 - [x] `[INT-BLOCKER]` clearing data resets stored app state
+- [x] `[INT-BLOCKER]` signed-in UI distinguishes device-only, cloud-chart, and account deletion
+- [x] `[EXT-REQ]` deletion schema and `delete-account` Edge Function are deployed
+- [x] `[INT-BLOCKER]` cloud deletion is verified with a production throwaway account plus the simulated stale-second-device regression
+- [x] `[INT-BLOCKER]` account deletion is verified with a throwaway account and associated feedback row
 
 ---
 

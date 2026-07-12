@@ -9,9 +9,44 @@ import {
   type StoredEntryRecord,
 } from './storageV2';
 
+type ProfileDataState = {
+  chart_data_deleted_at: string | null;
+};
+
+function isNewerCloudReset(remote: string | null, local: string | null): boolean {
+  if (!remote) return false;
+  if (!local) return true;
+  const remoteTime = Date.parse(remote);
+  const localTime = Date.parse(local);
+  if (Number.isNaN(remoteTime) || Number.isNaN(localTime)) return remote !== local;
+  return remoteTime > localTime;
+}
+
+async function getCloudResetAt(userId: string): Promise<{ resetAt: string | null; error: string | null }> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('chart_data_deleted_at')
+    .eq('id', userId)
+    .maybeSingle();
+
+  // Backward compatibility while the schema change is being rolled out.
+  if (error?.code === '42703') return { resetAt: null, error: null };
+  if (error) return { resetAt: null, error: error.message };
+  return {
+    resetAt: (data as ProfileDataState | null)?.chart_data_deleted_at ?? null,
+    error: null,
+  };
+}
+
 export async function pullRemoteEntries(userId: string): Promise<{ error: string | null }> {
   if (!hasSupabaseEnv() || !supabase) {
     return { error: 'Supabase is not configured' };
+  }
+  const resetResult = await getCloudResetAt(userId);
+  if (resetResult.error) {
+    const state = await getStoredState();
+    await writeStoredState({ ...state, lastSyncError: resetResult.error });
+    return { error: resetResult.error };
   }
   const { data: rows, error } = await supabase
     .from('daily_entries')
@@ -24,7 +59,11 @@ export async function pullRemoteEntries(userId: string): Promise<{ error: string
     return { error: error.message };
   }
   const state = await getStoredState();
-  const entriesByDate = { ...state.entriesByDate };
+  const shouldApplyCloudReset = isNewerCloudReset(
+    resetResult.resetAt,
+    state.lastCloudResetAt,
+  );
+  const entriesByDate = shouldApplyCloudReset ? {} : { ...state.entriesByDate };
   const remoteList = (rows ?? []) as RemoteRow[];
   for (const row of remoteList) {
     const result = validateDailyEntry(row.entry_payload);
@@ -39,6 +78,7 @@ export async function pullRemoteEntries(userId: string): Promise<{ error: string
     entriesByDate,
     lastSuccessfulSyncAt: new Date().toISOString(),
     lastSyncError: null,
+    lastCloudResetAt: resetResult.resetAt ?? state.lastCloudResetAt,
   };
   await writeStoredState(newState);
   return { error: null };

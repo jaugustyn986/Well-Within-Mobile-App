@@ -323,6 +323,7 @@ Possible implementation: SQLite, AsyncStorage.
 **Future phase**
 
 - Cloud sync.
+- Permanent authenticated deletion uses account identity rather than a specific sign-in method. A server-side reset marker prevents stale devices from restoring chart data after a delete-everywhere action.
 
 ### Feature: Privacy and Security
 
@@ -435,7 +436,10 @@ Layout:
 - **Privacy card**: "How your data works" heading + 4 trust-building bullet items (local storage, observation-based calculations, no ad tracking, exportable/clearable data)
 - **Data Management card**:
   - "Export Data" — exports all entries as JSON via `expo-file-system` + `expo-sharing`
-  - "Clear All Data" — opens a confirmation modal ("Are you sure? This cannot be undone.") with Cancel and Confirm buttons. On confirm, removes all entry data from AsyncStorage.
+  - "Clear Data From This Device" — removes only local chart data and clearly states that cloud backup remains for signed-in users.
+  - "Delete Backed-Up Chart Data" — signed-in only; permanently removes cloud chart data across devices while keeping the account.
+  - "Delete Account" — signed-in only; permanently removes the account, cloud chart, associated authenticated feedback, and current-device chart data.
+  - Every destructive action has action-specific confirmation and success/failure copy.
 - **App Version** footer — reads version from `expo-constants` / `app.json`
 
 ### Feature: First-launch onboarding

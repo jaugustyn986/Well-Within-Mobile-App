@@ -22,13 +22,21 @@ const remoteRows = [
 ];
 
 const mockSupabase = {
-  from: () => ({
-    select: () => ({
-      eq: () => ({
-        order: () => Promise.resolve({ data: remoteRows, error: null }),
-      }),
-    }),
-  }),
+  from: (table: string) => table === 'profiles'
+    ? {
+        select: () => ({
+          eq: () => ({
+            maybeSingle: () => Promise.resolve({ data: null, error: null }),
+          }),
+        }),
+      }
+    : {
+        select: () => ({
+          eq: () => ({
+            order: () => Promise.resolve({ data: remoteRows, error: null }),
+          }),
+        }),
+      },
 };
 jest.mock('../../lib/supabase', () => ({ supabase: mockSupabase }));
 
