@@ -351,7 +351,7 @@ As a user who has tracked multiple cycles, I want to view my cycle history, see 
 The app must provide a Cycle History screen accessible from the Calendar screen. This screen replaces the original Timeline view and includes:
 
 - **Cycle Summary Panel** — 2x2 grid showing: Cycles Tracked, Average Cycle Length (days), Average Peak Day, Average Luteal Phase (days).
-- **Pattern Insights** — Bullet-point list of computed insights (peak day range, fertile window start, luteal phase average, cycle consistency). Requires at least 2 completed cycles. Empty state shown otherwise.
+- **Pattern Insights** — Bullet-point list of computed insights (peak day range, luteal phase average, cycle-length consistency). Requires at least 2 completed cycles. Empty state shown otherwise. The app does not back-calculate a typical fertile-window start from Peak timing.
 - **Peak-Aligned Overlay** — Last 3–6 **completed** cycles with a confirmed peak, shown as rows of colored cells aligned on peak day (column **P**). Cell colors match the calendar grid exactly (shared theme). Tapping a row navigates to Cycle Detail. In-progress and no-peak cycles are excluded (current-cycle comparison may be handled separately).
 - **Cycle Comparison Cards** — Vertical list of all cycles (newest first). Each card shows cycle number, start date, length, peak day, luteal phase, and a status badge (Complete / In Progress / No Peak). Tapping a card navigates to Cycle Detail.
 

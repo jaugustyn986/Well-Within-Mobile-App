@@ -32,7 +32,7 @@ interface AccordionItemData {
   title: string;
   icon: IconName;
   content?: string;
-  renderContent?: () => JSX.Element;
+  renderContent?: () => React.JSX.Element;
 }
 
 const SECTIONS: AccordionItemData[] = [
@@ -77,7 +77,7 @@ type HelpNav = NativeStackNavigationProp<RootStackParamList, 'Help'>;
 
 function SwatchRow({ bg, dotColor, borderColor, label }: {
   bg: string; dotColor?: string; borderColor?: string; label: string;
-}): JSX.Element {
+}): React.JSX.Element {
   return (
     <View style={swatchStyles.row}>
       <View style={[
@@ -92,7 +92,7 @@ function SwatchRow({ bg, dotColor, borderColor, label }: {
   );
 }
 
-function StatusMessageSections(): JSX.Element {
+function StatusMessageSections(): React.JSX.Element {
   return (
     <View style={statusHelpStyles.container}>
       {HELP_STATUS_MESSAGE_SECTIONS.map((section, i) => (
@@ -105,7 +105,7 @@ function StatusMessageSections(): JSX.Element {
   );
 }
 
-function BleedingGuide(): JSX.Element {
+function BleedingGuide(): React.JSX.Element {
   return (
     <View style={bleedingHelpStyles.container}>
       {BLEEDING_EDUCATION.map((item) => (
@@ -154,7 +154,7 @@ const statusHelpStyles = StyleSheet.create({
   },
 });
 
-function ColorGuideSwatches(): JSX.Element {
+function ColorGuideSwatches(): React.JSX.Element {
   return (
     <View style={swatchStyles.container}>
       <SwatchRow bg={BG_NO_ENTRY} label="No entry logged" />
@@ -186,7 +186,7 @@ const swatchStyles = StyleSheet.create({
   label: { fontSize: 14, color: TEXT_SECONDARY, flex: 1 },
 });
 
-function AccordionItem({ item }: { item: AccordionItemData }): JSX.Element {
+function AccordionItem({ item }: { item: AccordionItemData }): React.JSX.Element {
   const [open, setOpen] = useState(false);
   return (
     <View style={styles.accordionItem}>
@@ -208,7 +208,7 @@ function AccordionItem({ item }: { item: AccordionItemData }): JSX.Element {
   );
 }
 
-export function HelpScreen(): JSX.Element {
+export function HelpScreen(): React.JSX.Element {
   const navigation = useNavigation<HelpNav>();
   const resetOnboarding = useResetOnboarding();
   const { cycles } = useCycleHistory();

@@ -23,7 +23,7 @@ import {
    Shared wrapper
 ───────────────────────────────────────────────── */
 
-function PhoneCard({ children }: { children: React.ReactNode }): JSX.Element {
+function PhoneCard({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
     <View style={shared.card}>
       {children}
@@ -103,7 +103,7 @@ function buildSlide7Cells(): CellData[] {
   });
 }
 
-function MiniCalendar({ cells, rows = 3 }: { cells: CellData[]; rows?: number }): JSX.Element {
+function MiniCalendar({ cells, rows = 3 }: { cells: CellData[]; rows?: number }): React.JSX.Element {
   const allRows = padAndChunk(cells);
   const visible = allRows.slice(0, rows);
 
@@ -174,7 +174,7 @@ const cal = StyleSheet.create({
    bleeding days 1-3, dry days 5-6, today=7 (no entry).
 ───────────────────────────────────────────────── */
 
-export function OnboardingCalendarUncertaintyPanel(): JSX.Element {
+export function OnboardingCalendarUncertaintyPanel(): React.JSX.Element {
   return (
     <View style={{ gap: 10 }}>
       <PhoneCard>
@@ -200,7 +200,7 @@ export function OnboardingCalendarUncertaintyPanel(): JSX.Element {
    today=7.
 ───────────────────────────────────────────────── */
 
-export function OnboardingStatusBannerPanel(): JSX.Element {
+export function OnboardingStatusBannerPanel(): React.JSX.Element {
   return (
     <View style={{ gap: 10 }}>
       <PhoneCard>
@@ -236,7 +236,7 @@ const banner = StyleSheet.create({
 const BLEEDING_LABELS = ['None', 'Spotting', 'Light', 'Moderate', 'Heavy', 'Brown'];
 const SENSATION_LABELS = ['Dry', 'Damp', 'Wet', 'Stretchy'];
 
-export function OnboardingEntryPanel(): JSX.Element {
+export function OnboardingEntryPanel(): React.JSX.Element {
   return (
     <PhoneCard>
       <Text style={entry.title}>Daily Observation</Text>
@@ -335,12 +335,11 @@ const STAT_CARDS = [
 
 const PATTERN_INSIGHTS = [
   'Peak day has ranged from cycle day 13 to 22.',
-  'Fertile window typically opens around cycle day 8.',
   'Average luteal phase is 11 days.',
   'Your cycles show significant variation in length.',
 ];
 
-export function OnboardingHistoryPanel(): JSX.Element {
+export function OnboardingHistoryPanel(): React.JSX.Element {
   return (
     <View style={{ gap: 10 }}>
       <PhoneCard>
@@ -388,7 +387,7 @@ const hist = StyleSheet.create({
    Empty calendar + today's entry prompt below.
 ───────────────────────────────────────────────── */
 
-export function OnboardingEmptyCalendarPanel(): JSX.Element {
+export function OnboardingEmptyCalendarPanel(): React.JSX.Element {
   return (
     <View style={{ gap: 10 }}>
       <PhoneCard>

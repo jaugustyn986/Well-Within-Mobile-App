@@ -40,7 +40,7 @@ interface Slide {
   id: string;
   headline: string;
   body: string;
-  renderPanel?: () => JSX.Element;
+  renderPanel?: () => React.JSX.Element;
   isIdentity?: boolean;
   isStatusList?: boolean;
   footerTitle?: string;
@@ -101,7 +101,7 @@ const SLIDES: Slide[] = [
    IDENTITY SLIDE — Screen 1
    ================================================================ */
 
-function IdentitySlide({ headline, body }: { headline: string; body: string }): JSX.Element {
+function IdentitySlide({ headline, body }: { headline: string; body: string }): React.JSX.Element {
   return (
     <View style={iS.container}>
       <View style={iS.decorativeLayer}>
@@ -204,7 +204,7 @@ const iS = StyleSheet.create({
    STATUS LIST SLIDE — Screen 3
    ================================================================ */
 
-function StatusListSlide({ headline, body }: { headline: string; body: string }): JSX.Element {
+function StatusListSlide({ headline, body }: { headline: string; body: string }): React.JSX.Element {
   const terms = [
     { label: 'Tracking', desc: 'Recording observations, no fertile signs yet' },
     { label: 'Fertile pattern', desc: 'Mucus observed, possible fertile window' },
@@ -318,10 +318,10 @@ function PanelSlide({
 }: {
   headline: string;
   body: string;
-  renderPanel: () => JSX.Element;
+  renderPanel: () => React.JSX.Element;
   footerTitle?: string;
   footerBody?: string;
-}): JSX.Element {
+}): React.JSX.Element {
   const hasFooter = footerTitle != null && footerBody != null;
 
   return (
@@ -402,7 +402,7 @@ const pS = StyleSheet.create({
    MAIN COMPONENT
    ================================================================ */
 
-function renderSlideContent(item: Slide): JSX.Element | null {
+function renderSlideContent(item: Slide): React.JSX.Element | null {
   if (item.isIdentity) {
     return <IdentitySlide headline={item.headline} body={item.body} />;
   }
@@ -423,7 +423,7 @@ function renderSlideContent(item: Slide): JSX.Element | null {
   return null;
 }
 
-export function OnboardingScreen({ onComplete }: Props): JSX.Element {
+export function OnboardingScreen({ onComplete }: Props): React.JSX.Element {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeIndexRef = useRef(0);
   const flatListRef = useRef<FlatList<Slide>>(null);

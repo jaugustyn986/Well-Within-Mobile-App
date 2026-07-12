@@ -13,7 +13,7 @@ import { BG_PAGE, TEXT_MUTED, TEXT_PRIMARY } from '../theme/colors';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'CycleHistory'>;
 
-export function CycleHistoryScreen(): JSX.Element {
+export function CycleHistoryScreen(): React.JSX.Element {
   const navigation = useNavigation<Nav>();
   const { cycles, summary, insights, loading, refresh } = useCycleHistory();
 

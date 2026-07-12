@@ -34,7 +34,7 @@ function todayString(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export function CalendarScreen(): JSX.Element {
+export function CalendarScreen(): React.JSX.Element {
   const navigation = useNavigation<Nav>();
   const { entries, sortedEntries, result, loading, refresh } = useCycleData();
   const cycleHistory = useCycleHistory();

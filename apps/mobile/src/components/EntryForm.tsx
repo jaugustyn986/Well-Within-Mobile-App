@@ -110,7 +110,7 @@ export function EntryForm({
   onDelete,
   saveLabel = 'Save Entry',
   showMarkMissingButton = false,
-}: Props): JSX.Element {
+}: Props): React.JSX.Element {
   const [missing, setMissing] = useState(initialEntry?.missing ?? false);
   const [bleeding, setBleeding] = useState<BleedingType>(initialEntry?.bleeding ?? 'none');
   const [sensation, setSensation] = useState<Sensation | null>(

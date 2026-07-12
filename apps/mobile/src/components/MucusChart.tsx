@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { PhaseLabel } from 'core-rules-engine';
+import type { CalendarAlignedCycleDay, PhaseLabel } from 'core-rules-engine';
 import {
   BG_CARD, BG_DRY, BG_MISSING, BG_POST_PEAK, BG_PEAK_TYPE,
   FERTILE_ACCENT, PEAK_BORDER,
@@ -9,10 +9,7 @@ import {
 } from '../theme/colors';
 
 interface Props {
-  mucusRanks: Array<number | null>;
-  phaseLabels: PhaseLabel[];
-  peakIndex: number | null;
-  intercourseFlags?: boolean[];
+  days: CalendarAlignedCycleDay[];
   title?: string;
 }
 
@@ -27,7 +24,7 @@ function getBarColor(rank: number | null, phase: PhaseLabel): string {
 const MAX_RANK = 3;
 const BAR_HEIGHT = 120;
 
-export function MucusChart({ mucusRanks, phaseLabels, peakIndex, intercourseFlags, title }: Props): JSX.Element {
+export function MucusChart({ days, title }: Props): React.JSX.Element {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title ?? 'Mucus Pattern'}</Text>
@@ -41,14 +38,15 @@ export function MucusChart({ mucusRanks, phaseLabels, peakIndex, intercourseFlag
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollArea}>
         <View style={styles.chartRow}>
-          {mucusRanks.map((rank, idx) => {
+          {days.map((day) => {
+            const rank = day.mucusRank;
             const height = rank !== null ? (rank / MAX_RANK) * BAR_HEIGHT : 0;
-            const color = getBarColor(rank, phaseLabels[idx]);
-            const isPeak = idx === peakIndex;
-            const hasIntercourse = intercourseFlags?.[idx];
+            const color = getBarColor(rank, day.phaseLabel);
+            const isPeak = day.phaseLabel === 'peak_confirmed';
+            const hasIntercourse = !!day.entry?.intercourse;
 
             return (
-              <View key={idx} style={styles.barCol}>
+              <View key={day.date} style={styles.barCol}>
                 {hasIntercourse && (
                   <Text style={styles.roseAboveBar}>{INTERCOURSE_ICON}</Text>
                 )}
@@ -65,7 +63,7 @@ export function MucusChart({ mucusRanks, phaseLabels, peakIndex, intercourseFlag
                   />
                 </View>
                 <Text style={[styles.dayLabel, isPeak && styles.peakDayLabel]}>
-                  {idx + 1}
+                  {day.cycleDay}
                 </Text>
               </View>
             );
@@ -84,7 +82,7 @@ export function MucusChart({ mucusRanks, phaseLabels, peakIndex, intercourseFlag
   );
 }
 
-function LegendDot({ color, label }: { color: string; label: string }): JSX.Element {
+function LegendDot({ color, label }: { color: string; label: string }): React.JSX.Element {
   return (
     <View style={styles.legendItem}>
       <View style={[styles.legendDot, { backgroundColor: color }]} />

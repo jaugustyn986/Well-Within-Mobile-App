@@ -1,4 +1,4 @@
-import { addDaysIso, compareIsoDate } from './calendar';
+import { addDaysIso, compareIsoDate, cycleDayForEntryIndex } from './calendar';
 import { CycleComparisonStructured } from './cycleComparisonSummary';
 import {
   CycleResult,
@@ -63,6 +63,24 @@ function recentWindowHasGap(
   result: CycleResult,
   focusIndex: number,
 ): boolean {
+  const firstDate = entries[0]?.date;
+  const focusDate = entries[focusIndex]?.date;
+  if (firstDate && focusDate) {
+    const indexByDate = new Map<string, number>();
+    entries.forEach((entry, index) => {
+      if (entry.date) indexByDate.set(entry.date, index);
+    });
+    for (let offset = 0; offset <= 2; offset += 1) {
+      const date = addDaysIso(focusDate, -offset);
+      if (compareIsoDate(date, firstDate) < 0) continue;
+      const index = indexByDate.get(date);
+      if (index === undefined) return true;
+      if (entries[index]?.missing === true) return true;
+      if (result.phaseLabels[index] === 'missing') return true;
+    }
+    return false;
+  }
+
   const start = Math.max(0, focusIndex - 2);
   for (let i = start; i <= focusIndex; i++) {
     if (entries[i]?.missing === true) return true;
@@ -342,6 +360,7 @@ export function buildCurrentCycleSummary(
 
   const focusQualification =
     todayIndex === null ? FOCUS_QUALIFICATION : null;
+  const cycleDay = cycleDayForEntryIndex(entries, focusIndex);
 
   const confidence = computeConfidenceLine(
     focusMissing,
@@ -434,7 +453,7 @@ export function buildCurrentCycleSummary(
     ? null
     : buildBaselineContext(
         phase,
-        focusIndex + 1,
+        cycleDay,
         isLowConfidence,
         baselineComparison,
       );
@@ -448,7 +467,7 @@ export function buildCurrentCycleSummary(
   );
 
   return {
-    cycleDay: focusIndex + 1,
+    cycleDay,
     headline,
     confidence,
     supportingContext,

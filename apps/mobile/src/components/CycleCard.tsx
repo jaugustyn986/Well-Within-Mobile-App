@@ -25,7 +25,7 @@ function getStatusStyle(status: CycleSlice['status']): { bg: string; text: strin
   }
 }
 
-export function CycleCard({ cycle, allCycles, onPress }: Props): JSX.Element {
+export function CycleCard({ cycle, allCycles, onPress }: Props): React.JSX.Element {
   const statusInfo = getStatusStyle(cycle.status);
   const { primary, secondary } = useMemo(
     () => formatCyclePrimarySecondary(cycle, allCycles),
@@ -50,7 +50,7 @@ export function CycleCard({ cycle, allCycles, onPress }: Props): JSX.Element {
   );
 }
 
-function StatPill({ label, value }: { label: string; value: string }): JSX.Element {
+function StatPill({ label, value }: { label: string; value: string }): React.JSX.Element {
   return (
     <View style={styles.statPill}>
       <Text style={styles.statValue}>{value}</Text>

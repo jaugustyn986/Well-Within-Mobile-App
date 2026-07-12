@@ -97,6 +97,39 @@ describe('buildCycleComparisonStructured', () => {
     expect(s.avgFertileStartDay).toBe(9);
   });
 
+  it('computes avgFertileStartDay from calendar dates rather than row indexes', () => {
+    const resultWithFertile = { ...emptyResult, fertileStartIndex: 1 } as CycleResult;
+    const c1 = makeSlice({
+      cycleNumber: 1,
+      status: 'complete',
+      length: 28,
+      entries: [
+        { date: '2026-01-01', bleeding: 'heavy' },
+        { date: '2026-01-05', bleeding: 'none' },
+      ],
+      result: resultWithFertile,
+    });
+    const c2 = makeSlice({
+      cycleNumber: 2,
+      status: 'complete',
+      length: 28,
+      entries: [
+        { date: '2026-02-01', bleeding: 'heavy' },
+        { date: '2026-02-07', bleeding: 'none' },
+      ],
+      result: resultWithFertile,
+    });
+    const cur = makeSlice({
+      cycleNumber: 3,
+      status: 'in_progress',
+      length: 5,
+      peakDay: null,
+      lutealPhase: null,
+    });
+    const s = buildCycleComparisonStructured(cur, [c1, c2, cur]);
+    expect(s.avgFertileStartDay).toBe(6);
+  });
+
   it('returns null avgFertileStartDay when no prior fertile data', () => {
     const resultNoFertile = { ...emptyResult, fertileStartIndex: null } as CycleResult;
     const c1 = makeSlice({ cycleNumber: 1, status: 'complete', length: 28, result: resultNoFertile });

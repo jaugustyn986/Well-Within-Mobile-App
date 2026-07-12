@@ -47,7 +47,7 @@ const RESOURCES: CareResource[] = [
   },
 ];
 
-export function FindCareScreen(): JSX.Element {
+export function FindCareScreen(): React.JSX.Element {
   const [externalOpenConfirmed, setExternalOpenConfirmed] = useState(false);
   const [pendingResource, setPendingResource] = useState<CareResource | null>(null);
 

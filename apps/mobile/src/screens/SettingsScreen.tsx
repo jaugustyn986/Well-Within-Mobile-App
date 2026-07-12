@@ -35,7 +35,7 @@ const PRIVACY_ITEMS: { icon: IconName; text: string }[] = [
 
 type SettingsNav = NativeStackNavigationProp<RootStackParamList, 'Settings'>;
 
-export function SettingsScreen(): JSX.Element {
+export function SettingsScreen(): React.JSX.Element {
   const navigation = useNavigation<SettingsNav>();
   const auth = useAuth();
   const sync = useSync();

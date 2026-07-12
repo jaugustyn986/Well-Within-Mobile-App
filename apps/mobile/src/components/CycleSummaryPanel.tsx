@@ -7,7 +7,7 @@ interface Props {
   summary: CycleSummary;
 }
 
-function StatCard({ label, value }: { label: string; value: string }): JSX.Element {
+function StatCard({ label, value }: { label: string; value: string }): React.JSX.Element {
   return (
     <View style={styles.card}>
       <Text style={styles.value}>{value}</Text>
@@ -16,7 +16,7 @@ function StatCard({ label, value }: { label: string; value: string }): JSX.Eleme
   );
 }
 
-export function CycleSummaryPanel({ summary }: Props): JSX.Element {
+export function CycleSummaryPanel({ summary }: Props): React.JSX.Element {
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Cycle Summary</Text>

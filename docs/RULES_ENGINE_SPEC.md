@@ -609,7 +609,7 @@ The rules engine includes a multi-cycle utility module (`core/rulesEngine/src/mu
 
 - **`splitIntoCycles(entries)`** — Takes a flat, date-sorted array of `DailyEntry` objects and splits them into individual `CycleSlice` objects. A new cycle starts on the first day of heavy or moderate bleeding that is not a continuation of an existing heavy/moderate bleeding sequence (same bleeding reset rule as the core engine). Any leading days at the start of the chart that have **no** heavy or moderate bleeding are merged into the first cycle (the one that begins on that first heavy/moderate day), so history does not show a spurious one-day “cycle” from spotting/light-only days before flow.
 - **`computeCycleSummary(cycles)`** — Accepts an array of `CycleSlice` and returns aggregate statistics: total cycles tracked, average cycle length, average peak day, and average luteal phase.
-- **`generateInsights(cycles)`** — Accepts an array of `CycleSlice` (requires ≥ 2 completed cycles) and returns human-readable insight strings covering peak day range, typical fertile window start, luteal phase average, and cycle consistency.
+- **`generateInsights(cycles)`** — Accepts an array of `CycleSlice` (requires ≥ 2 completed cycles) and returns human-readable insight strings covering peak day range, luteal phase average, and cycle-length consistency. It does not infer a typical fertile-opening day from Peak timing.
 
 ### CycleSlice interface
 

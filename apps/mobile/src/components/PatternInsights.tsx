@@ -6,7 +6,7 @@ interface Props {
   insights: string[];
 }
 
-export function PatternInsights({ insights }: Props): JSX.Element {
+export function PatternInsights({ insights }: Props): React.JSX.Element {
   if (insights.length === 0) {
     return (
       <View style={styles.container}>

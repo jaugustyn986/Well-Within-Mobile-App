@@ -8,6 +8,7 @@
     "web": "expo start --web",
     "ios": "expo start --ios",
     "test": "jest --runInBand",
+    "typecheck": "tsc --noEmit",
     "doctor": "expo-doctor",
     "config:check": "expo config --type public",
     "release:features:check": "node scripts/check-release-feature-branches.mjs",

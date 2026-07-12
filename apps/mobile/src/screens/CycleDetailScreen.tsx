@@ -4,7 +4,11 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Print from 'expo-print';
 import { shareAsync } from 'expo-sharing';
-import { buildCycleComparisonNarrative } from 'core-rules-engine';
+import {
+  buildCalendarAlignedCycleDays,
+  buildCycleComparisonNarrative,
+  cycleDayForEntryIndex,
+} from 'core-rules-engine';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useCycleHistory } from '../hooks/useCycleHistory';
 import { MucusChart } from '../components/MucusChart';
@@ -20,7 +24,7 @@ import {
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CycleDetail'>;
 
-export function CycleDetailScreen({ route, navigation }: Props): JSX.Element {
+export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Element {
   const { cycleNumber } = route.params;
   const { cycles, loading, refresh } = useCycleHistory();
   const [exporting, setExporting] = useState(false);
@@ -42,6 +46,11 @@ export function CycleDetailScreen({ route, navigation }: Props): JSX.Element {
   const comparisonNarrative = useMemo(
     () => (cycle ? buildCycleComparisonNarrative(cycle, cycles) : ''),
     [cycle, cycles],
+  );
+
+  const alignedDays = useMemo(
+    () => (cycle ? buildCalendarAlignedCycleDays(cycle) : []),
+    [cycle],
   );
 
   const handleExport = useCallback(async (includeIntercourse: boolean) => {
@@ -93,10 +102,8 @@ export function CycleDetailScreen({ route, navigation }: Props): JSX.Element {
 
   const fertileEndLabel =
     cycle.result.fertileEndIndex !== null
-      ? `Day ${cycle.result.fertileEndIndex + 1}`
+      ? `Day ${cycleDayForEntryIndex(cycle.entries, cycle.result.fertileEndIndex)}`
       : '--';
-
-  const intercourseFlags = cycle.entries.map((e) => !!e.intercourse);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -148,10 +155,7 @@ export function CycleDetailScreen({ route, navigation }: Props): JSX.Element {
         </Pressable>
 
         <MucusChart
-          mucusRanks={cycle.result.mucusRanks}
-          phaseLabels={cycle.result.phaseLabels}
-          peakIndex={cycle.result.peakIndex}
-          intercourseFlags={intercourseFlags}
+          days={alignedDays}
           title="Your pattern this cycle"
         />
 
@@ -188,7 +192,7 @@ export function CycleDetailScreen({ route, navigation }: Props): JSX.Element {
   );
 }
 
-function StatBox({ label, value }: { label: string; value: string }): JSX.Element {
+function StatBox({ label, value }: { label: string; value: string }): React.JSX.Element {
   return (
     <View style={styles.statBox}>
       <Text style={styles.statValue}>{value}</Text>

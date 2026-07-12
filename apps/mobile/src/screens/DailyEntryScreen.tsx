@@ -19,7 +19,7 @@ function previousDateString(isoDate: string): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export function DailyEntryScreen(): JSX.Element {
+export function DailyEntryScreen(): React.JSX.Element {
   const route = useRoute<ScreenRoute>();
   const navigation = useNavigation<Nav>();
   const sync = useSync();

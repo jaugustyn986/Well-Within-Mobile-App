@@ -41,7 +41,7 @@ function getFertilityHint(
   }
 }
 
-export function TodayEntryCard({ entry, mucusRank, primaryDayClass, date, onPress }: Props): JSX.Element {
+export function TodayEntryCard({ entry, mucusRank, primaryDayClass, date, onPress }: Props): React.JSX.Element {
   const monthDay = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
   return (

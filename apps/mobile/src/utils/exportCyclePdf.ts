@@ -1,4 +1,6 @@
 import {
+  buildCalendarAlignedCycleDays,
+  cycleDayForEntryIndex,
   CycleSlice,
   generateCreightonCode,
   mucusChartStrengthLabel,
@@ -37,34 +39,33 @@ export function buildCyclePdfHtml(
     options?.headerSubtitle
     ?? `${cycle.startDate} – ${cycle.endDate} · ${cycle.length} days`;
   const fertileStart = cycle.result.fertileStartIndex !== null
-    ? `Day ${cycle.result.fertileStartIndex + 1}`
+    ? `Day ${cycleDayForEntryIndex(cycle.entries, cycle.result.fertileStartIndex)}`
     : '--';
   const fertileEnd = cycle.result.fertileEndIndex !== null
-    ? `Day ${cycle.result.fertileEndIndex + 1}`
+    ? `Day ${cycleDayForEntryIndex(cycle.entries, cycle.result.fertileEndIndex)}`
     : '--';
   const peakDay = cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--';
   const luteal = cycle.lutealPhase !== null ? `${cycle.lutealPhase} days` : '--';
 
   const intercourseHeader = includeIntercourse ? '<th style="padding:6px 8px;text-align:center;">I/C</th>' : '';
 
-  const tableRows = cycle.entries
-    .map((entry, i) => {
-      const phase = cycle.result.phaseLabels[i];
+  const tableRows = buildCalendarAlignedCycleDays(cycle)
+    .map((day) => {
+      const { entry, phaseLabel: phase, mucusRank: rank } = day;
       const bg = phaseBg(phase);
-      const rank = cycle.result.mucusRanks[i];
-      const freq = entry.frequency
+      const freq = entry?.frequency
         ? (entry.frequency === 'all_day' ? 'AD' : `x${entry.frequency}`)
         : '';
-      const appearanceList = entry.appearances?.filter((a) => a !== 'none').join(', ') ?? '';
-      const code = generateCreightonCode(entry).fullCode;
+      const appearanceList = entry?.appearances?.filter((a) => a !== 'none').join(', ') ?? '';
+      const code = entry ? generateCreightonCode(entry).fullCode : '';
       const ic = includeIntercourse
-        ? `<td style="padding:6px 8px;text-align:center;">${entry.intercourse ? '🌹' : ''}</td>`
+        ? `<td style="padding:6px 8px;text-align:center;">${entry?.intercourse ? '🌹' : ''}</td>`
         : '';
       return `<tr style="background:${bg};">
-        <td style="padding:6px 8px;font-weight:600;">${i + 1}</td>
-        <td style="padding:6px 8px;">${entry.date ?? ''}</td>
-        <td style="padding:6px 8px;">${entry.bleeding && entry.bleeding !== 'none' ? entry.bleeding : ''}</td>
-        <td style="padding:6px 8px;">${entry.sensation ?? ''}</td>
+        <td style="padding:6px 8px;font-weight:600;">${day.cycleDay}</td>
+        <td style="padding:6px 8px;">${day.date}</td>
+        <td style="padding:6px 8px;">${entry?.bleeding && entry.bleeding !== 'none' ? entry.bleeding : ''}</td>
+        <td style="padding:6px 8px;">${entry?.sensation ?? ''}</td>
         <td style="padding:6px 8px;">${appearanceList}</td>
         <td style="padding:6px 8px;text-align:center;">${freq}</td>
         <td style="padding:6px 8px;text-align:center;">${mucusChartStrengthLabel(rank, '')}</td>

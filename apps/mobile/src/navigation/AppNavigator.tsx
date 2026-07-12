@@ -45,7 +45,7 @@ export function useResetOnboarding(): OnboardingContextValue | null {
 
 WebBrowser.maybeCompleteAuthSession();
 
-export function AppNavigator(): JSX.Element {
+export function AppNavigator(): React.JSX.Element {
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
 
   useEffect(() => {

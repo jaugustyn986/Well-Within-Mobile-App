@@ -51,7 +51,7 @@ function nextDateAfter(currentDate: string, dates: string[]): string | null {
   return dates.find((date) => compareIsoDate(date, currentDate) > 0) ?? dates[0] ?? null;
 }
 
-export function CatchUpMissingDaysScreen(): JSX.Element {
+export function CatchUpMissingDaysScreen(): React.JSX.Element {
   const navigation = useNavigation<Nav>();
   const sync = useSync();
   const asOfDate = useMemo(() => todayString(), []);

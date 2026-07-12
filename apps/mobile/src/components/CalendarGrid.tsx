@@ -87,7 +87,7 @@ function todayString(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNextMonth }: Props): JSX.Element {
+export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNextMonth }: Props): React.JSX.Element {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const today = todayString();
@@ -175,7 +175,7 @@ export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNex
   );
 }
 
-function LegendItem({ color, dotColor, label }: { color: string; dotColor?: string; label: string }): JSX.Element {
+function LegendItem({ color, dotColor, label }: { color: string; dotColor?: string; label: string }): React.JSX.Element {
   return (
     <View style={styles.legendItem}>
       <View style={[styles.legendSwatch, { backgroundColor: color }]}>

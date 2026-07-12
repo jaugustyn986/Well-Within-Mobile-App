@@ -1,4 +1,5 @@
 import { CycleSlice } from './multiCycle';
+import { cycleDayForEntryIndex } from './calendar';
 
 export type LengthCompare = 'shorter' | 'similar' | 'longer' | 'not_comparable';
 export type PeakCompare = 'earlier' | 'similar' | 'later' | 'not_comparable';
@@ -83,7 +84,7 @@ export function buildCycleComparisonStructured(
 
   const fertileStartDays = priors
     .filter((c) => c.result.fertileStartIndex !== null)
-    .map((c) => c.result.fertileStartIndex! + 1);
+    .map((c) => cycleDayForEntryIndex(c.entries, c.result.fertileStartIndex!));
   const avgFertileStartDay =
     fertileStartDays.length > 0
       ? Math.round(mean(fertileStartDays))

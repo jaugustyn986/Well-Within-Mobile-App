@@ -16,7 +16,7 @@ export function useSync(): SyncContextValue | null {
   return useContext(SyncContext);
 }
 
-export function SyncProvider({ children }: { children: React.ReactNode }): JSX.Element {
+export function SyncProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
   const auth = useAuth();
   const [isSyncing, setIsSyncing] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
@@ -51,15 +51,11 @@ export function SyncProvider({ children }: { children: React.ReactNode }): JSX.E
     doSyncNow();
   }, [auth?.user?.id]);
 
-  const triggerSync = useCallback(() => {
-    void doSyncNow();
-  }, [doSyncNow]);
-
   const value: SyncContextValue = {
     isSyncing,
     lastSyncedAt,
     lastSyncError,
-    syncNow: triggerSync,
+    syncNow: doSyncNow,
   };
 
   return <SyncContext.Provider value={value}>{children}</SyncContext.Provider>;

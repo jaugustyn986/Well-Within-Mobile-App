@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { CycleSlice } from 'core-rules-engine';
+import { buildCalendarAlignedCycleDays, type CycleSlice } from 'core-rules-engine';
 import {
   BG_BLEEDING, BG_CARD, BG_DRY, BG_MISSING, BG_PEAK_TYPE, BG_POST_PEAK,
   FERTILE_ACCENT, PEAK_BORDER,
@@ -38,7 +38,7 @@ function isCompletedWithPeak(c: CycleSlice): boolean {
   return c.status === 'complete' && c.peakDay !== null;
 }
 
-export function PeakAlignedOverlay({ cycles, onCyclePress }: Props): JSX.Element {
+export function PeakAlignedOverlay({ cycles, onCyclePress }: Props): React.JSX.Element {
   const peakCycles = cycles.filter(isCompletedWithPeak).slice(-6);
 
   if (peakCycles.length === 0) {
@@ -79,6 +79,7 @@ export function PeakAlignedOverlay({ cycles, onCyclePress }: Props): JSX.Element
 
           {peakCycles.map((cycle) => {
             const peakIdx = cycle.peakDay! - 1;
+            const days = buildCalendarAlignedCycleDays(cycle);
             return (
               <Pressable
                 key={cycle.cycleNumber}
@@ -89,14 +90,14 @@ export function PeakAlignedOverlay({ cycles, onCyclePress }: Props): JSX.Element
                   <Text style={styles.rowLabelText}>C{cycle.cycleNumber}</Text>
                 </View>
                 {columns.map((col) => {
-                  const entryIdx = peakIdx + col;
-                  if (entryIdx < 0 || entryIdx >= cycle.entries.length) {
+                  const dayIdx = peakIdx + col;
+                  if (dayIdx < 0 || dayIdx >= days.length) {
                     return <View key={col} style={[styles.cell, { backgroundColor: BG_MISSING }]} />;
                   }
-                  const entry = cycle.entries[entryIdx];
-                  const rank = cycle.result.mucusRanks[entryIdx];
-                  const phase = cycle.result.phaseLabels[entryIdx];
-                  const bleeding = entry.bleeding !== undefined && entry.bleeding !== 'none';
+                  const day = days[dayIdx];
+                  const rank = day.mucusRank;
+                  const phase = day.phaseLabel;
+                  const bleeding = day.entry?.bleeding !== undefined && day.entry.bleeding !== 'none';
                   const bg = getCellColor(rank, phase, bleeding);
                   const dotColor = getCellDotColor(rank, phase, bleeding);
 
@@ -124,7 +125,7 @@ export function PeakAlignedOverlay({ cycles, onCyclePress }: Props): JSX.Element
   );
 }
 
-function LegendItem({ color, dotColor, label }: { color: string; dotColor?: string; label: string }): JSX.Element {
+function LegendItem({ color, dotColor, label }: { color: string; dotColor?: string; label: string }): React.JSX.Element {
   return (
     <View style={styles.legendItem}>
       <View style={[styles.legendSwatch, { backgroundColor: color }]}>

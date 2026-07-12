@@ -44,7 +44,7 @@ function resolveSupportLine(
   }
 }
 
-export function StatusBanner({ summary }: Props): JSX.Element {
+export function StatusBanner({ summary }: Props): React.JSX.Element {
   const bg = backgroundForTone(summary.summaryTone);
   const { cycleDay } = summary;
   const supportLine = resolveSupportLine(summary.compactSupportField, summary);

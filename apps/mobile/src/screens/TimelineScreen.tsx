@@ -1,25 +1,28 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCycleData } from '../hooks/useCycleData';
+import { buildCalendarAlignedCycleDays } from 'core-rules-engine';
 import { useCycleHistory } from '../hooks/useCycleHistory';
 import { useCurrentCycleSummaryFromCycles } from '../hooks/useCurrentCycleSummary';
 import { MucusChart } from '../components/MucusChart';
 import { StatusBanner } from '../components/StatusBanner';
 
-export function TimelineScreen(): JSX.Element {
-  const { sortedEntries, result, loading, refresh } = useCycleData();
+export function TimelineScreen(): React.JSX.Element {
   const cycleHistory = useCycleHistory();
   const cycleSummary = useCurrentCycleSummaryFromCycles(cycleHistory.cycles);
+  const currentCycle = cycleHistory.cycles[cycleHistory.cycles.length - 1] ?? null;
+  const alignedDays = useMemo(
+    () => (currentCycle ? buildCalendarAlignedCycleDays(currentCycle) : []),
+    [currentCycle],
+  );
 
   useFocusEffect(
     useCallback(() => {
-      refresh();
       cycleHistory.refresh();
-    }, [refresh, cycleHistory.refresh]),
+    }, [cycleHistory.refresh]),
   );
 
-  if (loading || cycleHistory.loading) {
+  if (cycleHistory.loading) {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.loading}>Loading...</Text>
@@ -27,7 +30,7 @@ export function TimelineScreen(): JSX.Element {
     );
   }
 
-  if (sortedEntries.length === 0) {
+  if (!currentCycle) {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.empty}>No entries yet. Start charting to see your timeline.</Text>
@@ -39,11 +42,7 @@ export function TimelineScreen(): JSX.Element {
     <SafeAreaView style={styles.container}>
       <ScrollView>
         <StatusBanner summary={cycleSummary} />
-        <MucusChart
-          mucusRanks={result.mucusRanks}
-          phaseLabels={result.phaseLabels}
-          peakIndex={result.peakIndex}
-        />
+        <MucusChart days={alignedDays} />
       </ScrollView>
     </SafeAreaView>
   );

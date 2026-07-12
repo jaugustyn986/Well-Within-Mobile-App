@@ -1,5 +1,12 @@
 import { recalculateCycle } from './recalc';
-import { CycleResult, DailyEntry } from './types';
+import {
+  addDaysIso,
+  calendarDatesInclusive,
+  calendarDaysBetween,
+  calendarSpanLength,
+  cycleDayForEntryIndex,
+} from './calendar';
+import { CycleResult, DailyEntry, PhaseLabel } from './types';
 
 export interface CycleSlice {
   cycleNumber: number;
@@ -20,6 +27,59 @@ export interface CycleSummary {
   longestLength: number | null;
   avgPeakDay: number | null;
   avgLutealPhase: number | null;
+}
+
+export interface CalendarAlignedCycleDay {
+  date: string;
+  cycleDay: number;
+  entryIndex: number | null;
+  entry: DailyEntry | null;
+  mucusRank: number | null;
+  phaseLabel: PhaseLabel;
+}
+
+/** Expands a cycle to one slot per calendar date so gaps remain visible. */
+export function buildCalendarAlignedCycleDays(
+  cycle: CycleSlice,
+): CalendarAlignedCycleDay[] {
+  const dates = calendarDatesInclusive(cycle.startDate, cycle.endDate);
+  if (dates.length === 0) {
+    return cycle.entries.map((entry, entryIndex) => ({
+      date: entry.date ?? '',
+      cycleDay: entryIndex + 1,
+      entryIndex,
+      entry,
+      mucusRank: cycle.result.mucusRanks[entryIndex] ?? null,
+      phaseLabel: cycle.result.phaseLabels[entryIndex] ?? 'missing',
+    }));
+  }
+
+  const indexByDate = new Map<string, number>();
+  cycle.entries.forEach((entry, index) => {
+    if (entry.date) indexByDate.set(entry.date, index);
+  });
+
+  return dates.map((date, cycleDayIndex) => {
+    const entryIndex = indexByDate.get(date) ?? null;
+    if (entryIndex === null) {
+      return {
+        date,
+        cycleDay: cycleDayIndex + 1,
+        entryIndex: null,
+        entry: null,
+        mucusRank: null,
+        phaseLabel: 'missing' as const,
+      };
+    }
+    return {
+      date,
+      cycleDay: cycleDayIndex + 1,
+      entryIndex,
+      entry: cycle.entries[entryIndex],
+      mucusRank: cycle.result.mucusRanks[entryIndex] ?? null,
+      phaseLabel: cycle.result.phaseLabels[entryIndex] ?? 'missing',
+    };
+  });
 }
 
 /**
@@ -79,12 +139,29 @@ export function splitIntoCycles(entries: DailyEntry[]): CycleSlice[] {
     if (cycleEntries.length === 0) continue;
 
     const result = recalculateCycle(cycleEntries);
-    const peakDay = result.peakIndex !== null ? result.peakIndex + 1 : null;
+    const peakDay = result.peakIndex !== null
+      ? cycleDayForEntryIndex(cycleEntries, result.peakIndex)
+      : null;
     const isLastCycle = b === boundaries.length - 1;
+    const startDate = cycleEntries[0].date ?? '';
+    const lastLoggedDate = cycleEntries[cycleEntries.length - 1].date ?? '';
+    const nextStartDate = !isLastCycle ? entries[end]?.date ?? '' : '';
+    const canUseNextBoundary =
+      nextStartDate.length > 0 &&
+      calendarDaysBetween(startDate, nextStartDate) !== null;
+    const endDate = canUseNextBoundary
+      ? addDaysIso(nextStartDate, -1)
+      : lastLoggedDate;
+    const calendarLength = calendarSpanLength(startDate, endDate);
+    const length = calendarLength !== null ? calendarLength : cycleEntries.length;
 
     let lutealPhase: number | null = null;
-    if (peakDay !== null && !isLastCycle) {
-      lutealPhase = cycleEntries.length - peakDay;
+    if (result.peakIndex !== null && peakDay !== null && !isLastCycle) {
+      const peakDate = cycleEntries[result.peakIndex]?.date ?? '';
+      const daysToNextCycle = calendarDaysBetween(peakDate, nextStartDate);
+      lutealPhase = daysToNextCycle !== null
+        ? Math.max(0, daysToNextCycle - 1)
+        : Math.max(0, length - peakDay);
     }
 
     let status: CycleSlice['status'];
@@ -98,11 +175,11 @@ export function splitIntoCycles(entries: DailyEntry[]): CycleSlice[] {
 
     slices.push({
       cycleNumber: b + 1,
-      startDate: cycleEntries[0].date ?? '',
-      endDate: cycleEntries[cycleEntries.length - 1].date ?? '',
+      startDate,
+      endDate,
       entries: cycleEntries,
       result,
-      length: cycleEntries.length,
+      length,
       peakDay,
       lutealPhase,
       status,
@@ -162,8 +239,6 @@ export function generateInsights(cycles: CycleSlice[]): string[] {
         : `Peak day has ranged from cycle day ${minP} to ${maxP}.`
     );
 
-    const earliestFertile = Math.max(1, minP - 5);
-    insights.push(`Fertile window typically opens around cycle day ${earliestFertile}.`);
   }
 
   const lutealPhases = completed.filter((c) => c.lutealPhase !== null).map((c) => c.lutealPhase!);

@@ -1,6 +1,11 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { mucusChartStrengthLabel, CycleSlice, PhaseLabel } from 'core-rules-engine';
+import {
+  buildCalendarAlignedCycleDays,
+  mucusChartStrengthLabel,
+  type CycleSlice,
+  type PhaseLabel,
+} from 'core-rules-engine';
 import {
   BG_BLEEDING, BG_CARD, BG_DRY, BG_MISSING, BG_PEAK_TYPE, BG_POST_PEAK,
   FERTILE_ACCENT, PEAK_BORDER,
@@ -46,15 +51,16 @@ function getRankLabel(rank: number | null): string {
   return mucusChartStrengthLabel(rank, '--');
 }
 
-export function DailyLogList({ cycle }: Props): JSX.Element {
+export function DailyLogList({ cycle }: Props): React.JSX.Element {
+  const days = buildCalendarAlignedCycleDays(cycle);
+
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Daily Log</Text>
       <View style={styles.card}>
-        {cycle.entries.map((entry, idx) => {
-          const phase = cycle.result.phaseLabels[idx];
-          const rank = cycle.result.mucusRanks[idx];
-          const bleeding = entry.bleeding !== undefined && entry.bleeding !== 'none';
+        {days.map((day) => {
+          const { entry, phaseLabel: phase, mucusRank: rank } = day;
+          const bleeding = entry?.bleeding !== undefined && entry.bleeding !== 'none';
           const isPeak = phase === 'peak_confirmed';
           const circleColor = getDayCircleColor(phase, rank, bleeding);
           const dotColor =
@@ -64,22 +70,22 @@ export function DailyLogList({ cycle }: Props): JSX.Element {
             : null;
 
           return (
-            <View key={idx} style={[styles.row, isPeak && styles.peakRow]}>
+            <View key={day.date} style={[styles.row, isPeak && styles.peakRow]}>
               <View style={[styles.dayCircle, { backgroundColor: circleColor }]}>
                 {dotColor && <View style={[styles.dayDot, { backgroundColor: dotColor }]} />}
-                <Text style={styles.dayNum}>{idx + 1}</Text>
+                <Text style={styles.dayNum}>{day.cycleDay}</Text>
               </View>
               <View style={styles.rowContent}>
-                <Text style={styles.dateText}>{entry.date ? formatDate(entry.date) : '--'}</Text>
+                <Text style={styles.dateText}>{formatDate(day.date)}</Text>
                 <Text style={styles.rankText}>
-                  {bleeding ? `Bleeding (${entry.bleeding})` : getRankLabel(rank)}
-                  {!bleeding && entry.frequency
+                  {!entry ? 'No entry' : bleeding ? `Bleeding (${entry.bleeding})` : getRankLabel(rank)}
+                  {!bleeding && entry?.frequency
                     ? ` ${entry.frequency === 'all_day' ? 'AD' : `x${entry.frequency}`}`
                     : ''}
                 </Text>
               </View>
               <View style={styles.rowRight}>
-                {entry.intercourse && (
+                {entry?.intercourse && (
                   <Text style={styles.roseIcon}>{INTERCOURSE_ICON}</Text>
                 )}
                 <View style={styles.phaseBadge}>

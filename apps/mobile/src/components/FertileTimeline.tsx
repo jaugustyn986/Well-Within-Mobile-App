@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { CycleSlice } from 'core-rules-engine';
+import { cycleDayForEntryIndex, type CycleSlice } from 'core-rules-engine';
 import {
   BG_CARD, BG_DRY, BG_POST_PEAK,
   FERTILE_ACCENT, PEAK_BORDER,
@@ -18,13 +18,17 @@ interface Milestone {
   color: string;
 }
 
-export function FertileTimeline({ cycle }: Props): JSX.Element {
+export function FertileTimeline({ cycle }: Props): React.JSX.Element {
   const { result, peakDay, length } = cycle;
 
   const fertileStartDay =
-    result.fertileStartIndex !== null ? result.fertileStartIndex + 1 : null;
+    result.fertileStartIndex !== null
+      ? cycleDayForEntryIndex(cycle.entries, result.fertileStartIndex)
+      : null;
   const fertileEndDay =
-    result.fertileEndIndex !== null ? result.fertileEndIndex + 1 : null;
+    result.fertileEndIndex !== null
+      ? cycleDayForEntryIndex(cycle.entries, result.fertileEndIndex)
+      : null;
 
   const milestones: Milestone[] = [];
 

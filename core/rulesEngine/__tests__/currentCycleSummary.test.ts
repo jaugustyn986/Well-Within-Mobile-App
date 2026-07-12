@@ -62,6 +62,37 @@ describe('buildCurrentCycleSummary', () => {
     expect(s.cycleDay).toBe(2);
   });
 
+  it('uses elapsed calendar dates for cycle day when a row is absent', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-03', bleeding: 'none', mucusRankOverride: 0 },
+    ];
+    const result = sliceResult(entries);
+    const s = buildCurrentCycleSummary({
+      entries,
+      result,
+      status: 'no_peak',
+      todayIndex: 1,
+    });
+    expect(s.cycleDay).toBe(3);
+  });
+
+  it('treats an absent date in the recent three-day window as a confidence gap', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-04', bleeding: 'none', mucusRankOverride: 0 },
+    ];
+    const result = sliceResult(entries);
+    const s = buildCurrentCycleSummary({
+      entries,
+      result,
+      status: 'in_progress',
+      todayIndex: 2,
+    });
+    expect(s.confidence).toBe('Low confidence — recent observations missing');
+  });
+
   it('omits focusQualification when todayIndex is set', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },

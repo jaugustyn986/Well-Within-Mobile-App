@@ -10,7 +10,7 @@ interface Props {
   onTabChange: (tab: TabKey) => void;
 }
 
-export function SegmentedToggle({ activeTab, onTabChange }: Props): JSX.Element {
+export function SegmentedToggle({ activeTab, onTabChange }: Props): React.JSX.Element {
   return (
     <View style={styles.container}>
       <View style={styles.pill}>
