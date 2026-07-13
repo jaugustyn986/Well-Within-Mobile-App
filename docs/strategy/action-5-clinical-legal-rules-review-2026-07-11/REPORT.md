@@ -2,7 +2,7 @@
 
 Date: July 11, 2026
 
-Status: discovery pass complete; approved Phase 1A calendar-correctness work implemented and verified locally. Broader interpretation UX remains gated on clinical, legal, and product decisions.
+Status: discovery, Phase 1A, and the conservative Phase 1B interpretation-support layer are implemented and verified locally. Broader clinical pattern support remains gated on qualified review.
 
 ## Outcome
 
@@ -52,6 +52,8 @@ Discovery baseline result: **15 suites passed; 158 tests passed**.
 
 Phase 1A result: **16 suites passed; 168 tests passed** in the rules engine, plus **17 mobile suites passed; 52 tests passed; 1 skipped**. Core and mobile type checks, Expo iOS export, the native Release simulator build, and simulator launch also passed.
 
+Phase 1B result: **17 suites passed; 180 tests passed** in the rules engine, plus **17 mobile suites passed; 53 tests passed; 1 skipped**. Core/mobile type checks, Expo config, Expo iOS export, the native Release simulator build, and simulator launch passed.
+
 Interpretation: this proves internal consistency with the present specification. It does not constitute clinical validation of that specification or legal approval of the resulting claims.
 
 ## Deliverables
@@ -64,13 +66,15 @@ Interpretation: this proves internal consistency with the present specification.
 - [External source register](SOURCE_REGISTER.md)
 - [Action 5 goal contract](ACTION_5_GOAL.md)
 - [Phase 1A implementation and verification](PHASE_1A_IMPLEMENTATION.md)
+- [Phase 1B goal contract](PHASE_1B_GOAL.md)
+- [Phase 1B implementation](PHASE_1B_IMPLEMENTATION.md)
 
 ## Recommended sequence
 
 1. Obtain a qualified Creighton/FABM reviewer for the rule matrix and fixtures.
 2. Obtain health-app/IP counsel review for the held claims, method naming, copied-source provenance, and intended-use posture.
 3. ~~Fix calendar-date correctness and remove the fabricated `Peak - 5` history insight.~~ Completed in Phase 1A.
-4. Add explicit supported/unsupported/blocked interpretation states.
+4. ~~Add explicit forming/summary/missing/review interpretation-support states without inventing clinical rules.~~ Implemented in Phase 1B.
 5. Create one engine-owned presentation model: observation → derived marker → retrospective context → expert detail.
 6. Implement Calendar and Day Detail first; verify with reviewed fixtures and accessibility output.
 7. Implement Cycle Detail and History after date math and comparison rules are approved.

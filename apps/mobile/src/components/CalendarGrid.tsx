@@ -169,7 +169,7 @@ export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNex
         <LegendItem color={BG_DRY} label="Dry" />
         <LegendItem color={BG_DRY} dotColor={FERTILE_ACCENT} label="Mucus" />
         <LegendItem color={BG_PEAK_TYPE} label="Peak-type" />
-        <LegendItem color={BG_POST_PEAK} label="Post-peak" />
+        <LegendItem color={BG_POST_PEAK} label="Post-Peak" />
       </View>
     </View>
   );

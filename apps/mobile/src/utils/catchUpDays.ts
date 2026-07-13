@@ -22,7 +22,10 @@ export function buildCurrentCycleCatchUpDates(
   const dates: string[] = [];
   for (let date = currentCycle.startDate; compareIsoDate(date, endDate) <= 0; date = addDaysIso(date, 1)) {
     const entry = entriesByDate[date];
-    if (!entry || entry.missing === true) {
+    // An explicit `missing: true` row means the user already handled the date by
+    // recording that it was not observed. Keep it as an interpretation limitation,
+    // but do not trap the catch-up workflow in a permanent loop.
+    if (!entry) {
       dates.push(date);
     }
   }

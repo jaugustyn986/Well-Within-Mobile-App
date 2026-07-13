@@ -5,6 +5,7 @@ export * from './mucusClassification';
 export * from './primaryDayClass';
 export * from './rank';
 export * from './peak';
+export * from './interpretationSupport';
 export * from './fertileWindow';
 export * from './recalc';
 export * from './multiCycle';

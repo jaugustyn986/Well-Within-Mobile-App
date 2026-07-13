@@ -14,6 +14,7 @@ describe('buildCurrentCycleSummary', () => {
       { date: '2026-01-03', bleeding: 'none', mucusRankOverride: 1 },
     ];
     const result = sliceResult(entries);
+    result.interpretationWarnings.push('uncertain_fertile_start');
     const summary = buildCurrentCycleSummary({
       entries,
       result,
@@ -21,7 +22,7 @@ describe('buildCurrentCycleSummary', () => {
       todayIndex: 1,
     });
     expect(result.interpretationWarnings).toContain('uncertain_fertile_start');
-    expect(summary.interpretationNotes.length).toBeGreaterThan(0);
+    expect(summary.interpretationNotes).toHaveLength(1);
     expect(summary.interpretationNotes[0]).toContain('fertile');
   });
 
@@ -35,13 +36,17 @@ describe('buildCurrentCycleSummary', () => {
       todayIndex: null,
     });
     expect(s.cycleDay).toBeNull();
-    expect(s.headline).toContain('appear');
-    expect(s.confidence).toBe('Not enough data yet');
+    expect(s.headline).toBe('Your chart is ready when you are');
+    expect(s.statusLine).toBe(
+      'Your first observation gives Well Within a place to begin.',
+    );
     expect(s.supportingContext).toBe('');
-    expect(s.completeness).toContain('Nothing charted');
+    expect(s.completeness).toBe('');
+    expect(s.guidance).toBe('Log today’s observation when you’re ready.');
     expect(s.focusQualification).toBeNull();
     expect(s.summaryTone).toBe('neutral');
     expect(s.interpretationNotes).toEqual([]);
+    expect(s.explanationTarget).toBeNull();
   });
 
   it('uses shortened focus qualification when todayIndex is null', () => {
@@ -77,7 +82,7 @@ describe('buildCurrentCycleSummary', () => {
     expect(s.cycleDay).toBe(3);
   });
 
-  it('treats an absent date in the recent three-day window as a confidence gap', () => {
+  it('does not present confidence language when a recent calendar date is absent', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 0 },
@@ -90,7 +95,8 @@ describe('buildCurrentCycleSummary', () => {
       status: 'in_progress',
       todayIndex: 2,
     });
-    expect(s.confidence).toBe('Low confidence — recent observations missing');
+    expect(s.statusLine).toBe('No mucus signs are recorded for this day.');
+    expect(s.statusLine).not.toContain('confidence');
   });
 
   it('omits focusQualification when todayIndex is set', () => {
@@ -121,10 +127,13 @@ describe('buildCurrentCycleSummary', () => {
       status: 'no_peak',
       todayIndex: 1,
     });
-    expect(s.headline).toBe('Observation needed for this day');
-    expect(s.confidence).toBe('Low confidence — missing observations');
+    expect(s.headline).toBe('This day was marked not observed');
+    expect(s.statusLine).toBe(
+      'There is no observation to interpret for this day.',
+    );
     expect(s.supportingContext).toBe('');
     expect(s.summaryTone).toBe('caution');
+    expect(s.explanationTarget).toBe('status_messages');
   });
 
   it('uses phase headline for no_peak when focus day is charted', () => {
@@ -140,10 +149,10 @@ describe('buildCurrentCycleSummary', () => {
       status: 'no_peak',
       todayIndex: 2,
     });
-    expect(s.headline).toBe('Tracking');
-    expect(s.confidence).toBe('Moderate confidence \u2014 pattern still forming');
+    expect(s.headline).toBe('Your pattern is still taking shape');
+    expect(s.statusLine).toBe('No mucus signs are recorded for this day.');
     expect(s.supportingContext).toBe('');
-    expect(s.guidance).toContain('cycle pattern becomes clearer');
+    expect(s.guidance).toContain('This card will update');
     expect(s.summaryTone).toBe('neutral');
   });
 
@@ -161,6 +170,24 @@ describe('buildCurrentCycleSummary', () => {
       todayIndex: 2,
     });
     expect(s.completeness).toBe('2 days still open in this cycle');
+  });
+
+  it('handles an undated legacy row without losing its not-observed state', () => {
+    const entries: DailyEntry[] = [
+      { bleeding: 'heavy', mucusRankOverride: 0 },
+      { missing: true, mucusRankOverride: 0 },
+      { bleeding: 'none', mucusRankOverride: 0 },
+    ];
+    const result = sliceResult(entries);
+    const s = buildCurrentCycleSummary({
+      entries,
+      result,
+      status: 'no_peak',
+      todayIndex: 2,
+    });
+    expect(s.cycleDay).toBe(3);
+    expect(s.completeness).toBe('1 day still open in this cycle');
+    expect(s.baselineContext).toBeNull();
   });
 
   it('completeness counts calendar gaps between first and last logged dates', () => {
@@ -205,11 +232,67 @@ describe('buildCurrentCycleSummary', () => {
       todayIndex: 0,
     });
     expect(s.supportingContext).toBe('');
-    expect(s.headline).toContain('Fertile pattern');
-    expect(s.guidance).toContain('Fertile signs');
+    expect(s.headline).toBe('Your chart shows mucus signs');
+    expect(s.statusLine).toContain('does not show a Peak-type day yet');
+    expect(s.guidance).toContain('pattern develops');
   });
 
-  it('p_plus_2: Peak day headline, guidance only, Moderate confidence', () => {
+  it('explains a possible Peak Day without crowding the card', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-03', bleeding: 'none', mucusRankOverride: 1 },
+      { date: '2026-01-04', bleeding: 'none', mucusRankOverride: 3 },
+    ];
+    const result = sliceResult(entries);
+    expect(result.phaseLabels[3]).toBe('fertile_unconfirmed_peak');
+    const s = buildCurrentCycleSummary({
+      entries,
+      result,
+      status: 'no_peak',
+      todayIndex: 3,
+    });
+    expect(s.headline).toBe('Your chart shows a possible Peak Day');
+    expect(s.statusLine).toContain('Peak-type mucus sign on Cycle Day 4');
+    expect(s.statusLine).toContain('waits for three days');
+    expect(s.supportingContext).toBe('');
+    expect(s.guidance).toBe('Keep charting daily as the pattern develops.');
+    expect(s.explanationTarget).toBe('peak_day');
+  });
+
+  it('keeps menstrual-flow messaging observational and concise', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 1 },
+    ];
+    const s = buildCurrentCycleSummary({
+      entries,
+      result: sliceResult(entries),
+      status: 'no_peak',
+      todayIndex: 0,
+    });
+    expect(s.headline).toBe('Menstrual flow recorded');
+    expect(s.statusLine).toBe('This day is recorded as menstrual flow.');
+    expect(s.guidance).toContain('does not interpret it as Peak-type');
+    expect(s.explanationTarget).toBeNull();
+  });
+
+  it('keeps spotting messaging observational and concise', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'spotting', mucusRankOverride: 0 },
+    ];
+    const s = buildCurrentCycleSummary({
+      entries,
+      result: sliceResult(entries),
+      status: 'no_peak',
+      todayIndex: 0,
+    });
+    expect(s.headline).toBe('Spotting recorded');
+    expect(s.statusLine).toContain('light bleeding or spotting');
+    expect(s.guidance).toContain('mucus signs remain part');
+    expect(s.explanationTarget).toBeNull();
+  });
+
+  it('p_plus_2: explains why the chart marks Peak Day', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 1 },
@@ -226,13 +309,20 @@ describe('buildCurrentCycleSummary', () => {
       status: 'in_progress',
       todayIndex: 4,
     });
-    expect(s.headline).toBe('Peak day identified');
-    expect(s.confidence).toBe('Moderate confidence — pattern still forming');
-    expect(s.supportingContext).toBe('');
-    expect(s.guidance).toBe('Day 2 of 3 after Peak \u2014 continue observing to confirm.');
+    expect(s.headline).toBe('Your chart marks Cycle Day 3 as Peak Day');
+    expect(s.statusLine).toBe(
+      'You logged a Peak-type mucus sign on Cycle Day 3, followed by three days without another one. Well Within marked Cycle Day 3 as Peak Day.',
+    );
+    expect(s.supportingContext).toBe(
+      'This reflects your chart; it does not confirm ovulation.',
+    );
+    expect(s.guidance).toBe(
+      'Keep charting daily. This summary updates when your observations change.',
+    );
+    expect(s.explanationTarget).toBe('peak_day');
   });
 
-  it('p_plus_3: Post-peak headline, High confidence — Peak confirmed, target guidance', () => {
+  it('p_plus_3: explains the post-Peak pattern without claiming ovulation', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 1 },
@@ -249,17 +339,21 @@ describe('buildCurrentCycleSummary', () => {
       status: 'in_progress',
       todayIndex: 5,
     });
-    expect(s.headline).toBe('Post-peak phase');
-    expect(s.confidence).toBe('High confidence — Peak confirmed');
-    expect(s.supportingContext).toBe('');
+    expect(s.headline).toBe('Your chart shows a post-Peak pattern');
+    expect(s.statusLine).toBe(
+      'You logged a Peak-type mucus sign on Cycle Day 3, followed by three days without another one. Well Within marked Cycle Day 3 as Peak Day.',
+    );
+    expect(s.supportingContext).toBe(
+      'This reflects your chart; it does not confirm ovulation.',
+    );
     expect(s.guidance).toBe(
-      'Three days past Peak confirm the post-Peak phase.',
+      'Keep charting daily. This summary updates when your observations change.',
     );
     expect(s.guidance).not.toContain('non-peak-type');
     expect(s.summaryTone).toBe('positive');
   });
 
-  it('peak_confirmed: Peak day headline and High confidence — Peak confirmed', () => {
+  it('peak_confirmed: names the marked Peak Day and supporting observations', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 1 },
@@ -276,13 +370,13 @@ describe('buildCurrentCycleSummary', () => {
       status: 'in_progress',
       todayIndex: 2,
     });
-    expect(s.headline).toBe('Peak day identified');
-    expect(s.confidence).toBe('High confidence — Peak confirmed');
-    expect(s.supportingContext).toBe('');
-    expect(s.guidance).toContain('three days after Peak');
+    expect(s.headline).toBe('Your chart marks Cycle Day 3 as Peak Day');
+    expect(s.statusLine).toContain('followed by three days without another one');
+    expect(s.supportingContext).toContain('does not confirm ovulation');
+    expect(s.guidance).toContain('Keep charting daily');
   });
 
-  it('post_peak phase uses Post-peak headline and post-Peak guidance', () => {
+  it('post_peak phase explains evidence and the next step', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 1 },
@@ -301,12 +395,13 @@ describe('buildCurrentCycleSummary', () => {
       status: 'in_progress',
       todayIndex: idx,
     });
-    expect(s.headline).toBe('Post-peak phase');
-    expect(s.confidence).toBe('High confidence — Peak confirmed');
-    expect(s.guidance).toBe('Your chart reflects the post-Peak phase.');
+    expect(s.headline).toBe('Your chart shows a post-Peak pattern');
+    expect(s.statusLine).toContain('Peak-type mucus sign on Cycle Day 3');
+    expect(s.supportingContext).toContain('does not confirm ovulation');
+    expect(s.guidance).toContain('summary updates');
   });
 
-  it('lowers confidence when recent window has missing entry but focus day is complete', () => {
+  it('avoids confidence language when a recent observation is missing', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 0 },
@@ -321,8 +416,8 @@ describe('buildCurrentCycleSummary', () => {
       status: 'in_progress',
       todayIndex: 4,
     });
-    expect(s.headline).not.toBe('Observation needed for this day');
-    expect(s.confidence).toBe('Low confidence — recent observations missing');
+    expect(s.headline).not.toBe('This day was marked not observed');
+    expect(s.statusLine).toBe('No mucus signs are recorded for this day.');
   });
 
   it('zero missing entries uses tightened completeness copy', () => {
@@ -364,7 +459,7 @@ describe('compact support field + baseline context', () => {
     expect(s.baselineContext).toBeNull();
   });
 
-  it('dry pattern with baseline: shows fertile-start context', () => {
+  it('forming dry pattern suppresses anticipatory baseline context', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'moderate', mucusRankOverride: 0 },
@@ -383,8 +478,8 @@ describe('compact support field + baseline context', () => {
       todayIndex: 7,
       baselineComparison: baseComparison,
     });
-    expect(s.baselineContext).toContain('day 11');
-    expect(s.compactSupportField).toBe('baselineContext');
+    expect(s.baselineContext).toBeNull();
+    expect(s.compactSupportField).toBe('guidance');
   });
 
   it('dry pattern without baseline: falls back to guidance', () => {
@@ -423,6 +518,54 @@ describe('compact support field + baseline context', () => {
     expect(s.baselineContext).toBeNull();
   });
 
+  it('uses prior fertile timing as context when reviewing an earlier dry day', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-03', bleeding: 'none', mucusRankOverride: 1 },
+      { date: '2026-01-04', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-01-05', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-06', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-07', bleeding: 'none', mucusRankOverride: 0 },
+    ];
+    const result = sliceResult(entries);
+    expect(result.phaseLabels[1]).toBe('dry');
+    const s = buildCurrentCycleSummary({
+      entries,
+      result,
+      status: 'in_progress',
+      todayIndex: 1,
+      baselineComparison: baseComparison,
+    });
+    expect(s.interpretationStatus).toBe('summary_available');
+    expect(s.baselineContext).toContain('fertile signs starting around day 11');
+    expect(s.compactSupportField).toBe('baselineContext');
+  });
+
+  it('omits prior fertile timing when the comparison has no fertile-start average', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-03', bleeding: 'none', mucusRankOverride: 1 },
+      { date: '2026-01-04', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-01-05', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-06', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-07', bleeding: 'none', mucusRankOverride: 0 },
+    ];
+    const s = buildCurrentCycleSummary({
+      entries,
+      result: sliceResult(entries),
+      status: 'in_progress',
+      todayIndex: 1,
+      baselineComparison: {
+        ...baseComparison,
+        avgFertileStartDay: null,
+      },
+    });
+    expect(s.baselineContext).toBeNull();
+    expect(s.compactSupportField).toBe('guidance');
+  });
+
   it('fertile open with baseline: shows avg peak day context', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
@@ -445,7 +588,7 @@ describe('compact support field + baseline context', () => {
     expect(s.compactSupportField).toBe('baselineContext');
   });
 
-  it('P+1: guidance only, no baseline', () => {
+  it('P+1: clear next step, no baseline', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 1 },
@@ -465,10 +608,10 @@ describe('compact support field + baseline context', () => {
     });
     expect(s.baselineContext).toBeNull();
     expect(s.compactSupportField).toBe('guidance');
-    expect(s.guidance).toContain('Day 1 of 3');
+    expect(s.guidance).toContain('Keep charting daily');
   });
 
-  it('P+2: guidance only, no baseline', () => {
+  it('P+2: clear next step, no baseline', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 1 },
@@ -488,7 +631,7 @@ describe('compact support field + baseline context', () => {
     });
     expect(s.baselineContext).toBeNull();
     expect(s.compactSupportField).toBe('guidance');
-    expect(s.guidance).toContain('Day 2 of 3');
+    expect(s.guidance).toContain('Keep charting daily');
   });
 
   it('P+3: no baseline, guidance about confirmation', () => {
@@ -511,8 +654,8 @@ describe('compact support field + baseline context', () => {
     });
     expect(s.baselineContext).toBeNull();
     expect(s.compactSupportField).toBe('guidance');
-    expect(s.headline).toBe('Post-peak phase');
-    expect(s.confidence).toBe('High confidence \u2014 Peak confirmed');
+    expect(s.headline).toBe('Your chart shows a post-Peak pattern');
+    expect(s.statusLine).toContain('Peak-type mucus sign on Cycle Day 3');
   });
 
   it('post-peak with later peak: shows baseline context', () => {
@@ -542,7 +685,7 @@ describe('compact support field + baseline context', () => {
     expect(s.compactSupportField).toBe('baselineContext');
   });
 
-  it('missing day: Low confidence, interpretationNote takes priority', () => {
+  it('missing day: limited summary, interpretationNote takes priority', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', missing: true, mucusRankOverride: 0 },
@@ -555,11 +698,13 @@ describe('compact support field + baseline context', () => {
       todayIndex: 1,
       baselineComparison: baseComparison,
     });
-    expect(s.confidence).toContain('Low confidence');
+    expect(s.statusLine).toBe(
+      'There is no observation to interpret for this day.',
+    );
     expect(s.baselineContext).toBeNull();
   });
 
-  it('low confidence suppresses baseline even when comparison is provided', () => {
+  it('limited summary suppresses baseline even when comparison is provided', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 0 },
@@ -574,7 +719,7 @@ describe('compact support field + baseline context', () => {
       todayIndex: 3,
       baselineComparison: baseComparison,
     });
-    expect(s.confidence).toContain('Low confidence');
+    expect(s.statusLine).toBe('No mucus signs are recorded for this day.');
     expect(s.baselineContext).toBeNull();
   });
 
@@ -615,5 +760,78 @@ describe('compact support field + baseline context', () => {
       baselineComparison: baseComparison,
     });
     expect(s.baselineContext).toBeNull();
+  });
+});
+
+describe('interpretation support states', () => {
+  it('turns a missing confirmation date into a non-stranding blocked state', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-01-04', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-05', bleeding: 'none', mucusRankOverride: 0 },
+    ];
+    const s = buildCurrentCycleSummary({
+      entries,
+      result: sliceResult(entries),
+      status: 'no_peak',
+      todayIndex: 3,
+    });
+    expect(s.interpretationStatus).toBe('blocked_by_missing');
+    expect(s.headline).toBe('A few days need context');
+    expect(s.statusLine).toContain('An open date falls within the three days');
+    expect(s.guidance).toContain('Keep charting');
+    expect(s.statusLine).not.toContain('confidence');
+    expect(s.explanationTarget).toBe('status_messages');
+  });
+
+  it('explains when a day marked not observed interrupts Peak confirmation', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-01-03', missing: true, mucusRankOverride: 0 },
+      { date: '2026-01-04', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-05', bleeding: 'none', mucusRankOverride: 0 },
+    ];
+    const s = buildCurrentCycleSummary({
+      entries,
+      result: sliceResult(entries),
+      status: 'no_peak',
+      todayIndex: 4,
+    });
+    expect(s.interpretationStatus).toBe('blocked_by_missing');
+    expect(s.interpretationReason).toBe('not_observed');
+    expect(s.statusLine).toContain('A day marked not observed falls within');
+    expect(s.guidance).toContain('Keep charting');
+  });
+
+  it('suppresses automatic conclusions when two sequences need optional review', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-01-03', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-04', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-05', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-06', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-01-07', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-08', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-09', bleeding: 'none', mucusRankOverride: 0 },
+    ];
+    const s = buildCurrentCycleSummary({
+      entries,
+      result: sliceResult(entries),
+      status: 'in_progress',
+      todayIndex: 8,
+    });
+    expect(s.interpretationStatus).toBe('review_recommended');
+    expect(s.headline).toBe(
+      'Your chart shows more than one possible Peak pattern',
+    );
+    expect(s.statusLine).toContain('More than one Peak-type day');
+    expect(s.supportingContext).toContain('isn’t choosing one Peak Day');
+    expect(s.guidance).toContain('Keep charting');
+    expect(s.guidance).toContain('check again');
+    expect(s.baselineContext).toBeNull();
+    expect(s.explanationTarget).toBe('status_messages');
   });
 });

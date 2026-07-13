@@ -8,6 +8,7 @@ import {
   buildCalendarAlignedCycleDays,
   buildCycleComparisonNarrative,
   cycleDayForEntryIndex,
+  evaluateInterpretationSupport,
 } from 'core-rules-engine';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useCycleHistory } from '../hooks/useCycleHistory';
@@ -50,6 +51,11 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
 
   const alignedDays = useMemo(
     () => (cycle ? buildCalendarAlignedCycleDays(cycle) : []),
+    [cycle],
+  );
+
+  const interpretation = useMemo(
+    () => (cycle ? evaluateInterpretationSupport(cycle.entries, cycle.result) : null),
     [cycle],
   );
 
@@ -104,6 +110,9 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
     cycle.result.fertileEndIndex !== null
       ? `Day ${cycleDayForEntryIndex(cycle.entries, cycle.result.fertileEndIndex)}`
       : '--';
+  const interpretationLimited =
+    interpretation?.status === 'blocked_by_missing' ||
+    interpretation?.status === 'review_recommended';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -127,15 +136,46 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.statsRow}>
-          <StatBox label="Length" value={`${cycle.length}d`} />
-          <StatBox label="Peak Day" value={cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--'} />
-          <StatBox label="Fertile End" value={fertileEndLabel} />
-        </View>
+        {interpretationLimited ? (
+          <View style={styles.interpretationNotice}>
+            <Text style={styles.interpretationNoticeTitle}>
+              {interpretation?.status === 'review_recommended'
+                ? 'Your chart shows more than one possible Peak pattern'
+                : 'A few days need context'}
+            </Text>
+            <Text style={styles.interpretationNoticeBody}>
+              {interpretation?.status === 'review_recommended'
+                ? 'More than one Peak-type day is followed by the three-day pattern Well Within looks for, so the app isn’t choosing one Peak Day. Keep charting; we’ll check again whenever your observations change.'
+                : 'Keep charting. If you remember an open day, you can add it; days marked not observed stay part of your record.'}
+            </Text>
+            <View style={styles.interpretationActions}>
+              <Pressable
+                onPress={() =>
+                  navigation.navigate('Help', { initialSection: 'status_messages' })
+                }
+              >
+                <Text style={styles.interpretationActionText}>Learn what this means</Text>
+              </Pressable>
+              {interpretation?.status === 'review_recommended' ? (
+                <Pressable onPress={() => navigation.navigate('FindCare')}>
+                  <Text style={styles.interpretationActionText}>Find charting support</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          </View>
+        ) : (
+          <>
+            <View style={styles.statsRow}>
+              <StatBox label="Length" value={`${cycle.length}d`} />
+              <StatBox label="Peak Day" value={cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--'} />
+              <StatBox label="Fertile End" value={fertileEndLabel} />
+            </View>
 
-        <View style={styles.comparisonCard}>
-          <Text style={styles.comparisonText}>{comparisonNarrative}</Text>
-        </View>
+            <View style={styles.comparisonCard}>
+              <Text style={styles.comparisonText}>{comparisonNarrative}</Text>
+            </View>
+          </>
+        )}
 
         <Pressable
           style={({ pressed }) => [styles.findCareCard, pressed && styles.findCareCardPressed]}
@@ -144,7 +184,9 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
           accessibilityLabel="Find care resources"
         >
           <View style={styles.findCareText}>
-            <Text style={styles.findCareTitle}>Find care</Text>
+            <Text style={styles.findCareTitle}>
+              {interpretation?.status === 'review_recommended' ? 'Find charting support' : 'Find care'}
+            </Text>
             <Text style={styles.findCareBody}>
               NaPro, NFP, and restorative care resources outside Well Within.
             </Text>
@@ -154,13 +196,16 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
           </View>
         </Pressable>
 
-        <MucusChart
-          days={alignedDays}
-          title="Your pattern this cycle"
-        />
-
-        <FertileTimeline cycle={cycle} />
-        <DailyLogList cycle={cycle} />
+        {!interpretationLimited ? (
+          <>
+            <MucusChart
+              days={alignedDays}
+              title="Your pattern this cycle"
+            />
+            <FertileTimeline cycle={cycle} />
+          </>
+        ) : null}
+        <DailyLogList cycle={cycle} showInterpretation={!interpretationLimited} />
       </ScrollView>
 
       <Modal visible={showIntercoursePrompt} transparent animationType="fade" onDismiss={handlePromptDismiss}>
@@ -239,6 +284,29 @@ const styles = StyleSheet.create({
   exportBtnDisabled: { opacity: 0.5 },
   exportBtnText: { color: BG_CARD, fontWeight: '600', fontSize: 13 },
   scrollContent: { paddingBottom: 32 },
+  interpretationNotice: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 4,
+    backgroundColor: '#F7F0E8',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+  },
+  interpretationNoticeTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: TEXT_PRIMARY,
+    marginBottom: 6,
+  },
+  interpretationNoticeBody: {
+    fontSize: 14,
+    color: TEXT_SECONDARY,
+    lineHeight: 21,
+  },
+  interpretationActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 14 },
+  interpretationActionText: { fontSize: 13, fontWeight: '600', color: TEXT_PRIMARY },
   comparisonCard: {
     marginHorizontal: 16,
     marginTop: 12,

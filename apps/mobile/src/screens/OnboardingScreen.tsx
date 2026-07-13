@@ -71,7 +71,7 @@ const SLIDES: Slide[] = [
   {
     id: '4',
     headline: 'See where you are in your cycle',
-    body: 'The app identifies your fertile window, Peak, and post-peak phase based on what you record.',
+    body: 'The app identifies your fertile window, Peak, and post-Peak phase based on what you record.',
     renderPanel: () => <OnboardingStatusBannerPanel />,
   },
   {
@@ -206,10 +206,10 @@ const iS = StyleSheet.create({
 
 function StatusListSlide({ headline, body }: { headline: string; body: string }): React.JSX.Element {
   const terms = [
-    { label: 'Tracking', desc: 'Recording observations, no fertile signs yet' },
-    { label: 'Fertile pattern', desc: 'Mucus observed, possible fertile window' },
-    { label: 'Peak identified', desc: 'Most fertile day confirmed' },
-    { label: 'Post-peak', desc: 'Past the fertile window' },
+    { label: 'Tracking', desc: 'Your pattern is still taking shape' },
+    { label: 'Mucus observed', desc: 'A mucus observation is part of your chart' },
+    { label: 'Peak identified', desc: 'A chart marker based on recorded observations' },
+    { label: 'Post-Peak', desc: 'Days recorded after the Peak marker' },
   ];
 
   return (

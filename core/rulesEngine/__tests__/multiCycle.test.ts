@@ -95,6 +95,24 @@ describe('splitIntoCycles', () => {
 });
 
 describe('computeCycleSummary', () => {
+  it('excludes a review-recommended cycle from derived history aggregates', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-01-03', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-04', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-05', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-06', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-01-07', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-08', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-09', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-02-01', bleeding: 'heavy', mucusRankOverride: 0 },
+    ];
+    const [reviewCycle] = splitIntoCycles(entries);
+    expect(reviewCycle.status).toBe('complete');
+    expect(computeCycleSummary([reviewCycle]).cyclesTracked).toBe(0);
+  });
+
   it('sets cyclesTracked to completed cycles only, not in-progress', () => {
     const cycles: CycleSlice[] = [
       makeSlice({ cycleNumber: 1, status: 'complete', length: 28 }),

@@ -76,7 +76,7 @@ export function MucusChart({ days, title }: Props): React.JSX.Element {
         <LegendDot color={BG_DRY} label="Dry" />
         <LegendDot color={FERTILE_ACCENT} label="Mucus" />
         <LegendDot color={BG_PEAK_TYPE} label="Peak-type" />
-        <LegendDot color={BG_POST_PEAK} label="Post-peak" />
+        <LegendDot color={BG_POST_PEAK} label="Post-Peak" />
       </View>
     </View>
   );

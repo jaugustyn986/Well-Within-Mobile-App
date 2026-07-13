@@ -3,7 +3,7 @@ import {
   buildCycleComparisonStructured,
   getPriorCompleted,
 } from '../src/cycleComparisonSummary';
-import { CycleSlice } from '../src/multiCycle';
+import { CycleSlice, splitIntoCycles } from '../src/multiCycle';
 import { CycleResult } from '../src/types';
 
 const emptyResult = {} as CycleResult;
@@ -24,6 +24,22 @@ function makeSlice(
 }
 
 describe('getPriorCompleted', () => {
+  it('excludes a review-recommended completed cycle from comparison baselines', () => {
+    const cycles = splitIntoCycles([
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-01-03', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-04', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-05', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-06', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-01-07', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-08', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-09', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-02-01', bleeding: 'heavy', mucusRankOverride: 0 },
+    ]);
+    expect(getPriorCompleted(cycles[1], cycles)).toEqual([]);
+  });
+
   it('returns only completed cycles before current', () => {
     const all = [
       makeSlice({ cycleNumber: 1, status: 'complete', length: 28 }),

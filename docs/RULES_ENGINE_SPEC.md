@@ -138,7 +138,7 @@ If no such day exists, `fertileStartIndex` is `null`.
 ## Missing data and interpretation warnings
 
 - Missing rows **block** peak confirmation when they fall in the P+1–P+3 **calendar** window for the active candidate.  
-- Calendar gaps (no row for a date) are treated like missing for confirmation.  
+- Interior calendar gaps (a skipped date before a later recorded row) are treated like missing for confirmation. Dates beyond the last recorded row mean the pattern is still developing, not that the user missed a day.
 - Missing **after** Peak is confirmed does **not** invalidate the confirmed peak; it may reduce certainty in the banner (see Current cycle summary).  
 - **`dataComplete`** — `true` iff **`interpretationWarnings`** is empty. (Calendar completeness for the banner—explicit missing rows, interior gaps, trailing gaps—is a separate **`buildCurrentCycleSummary`** calculation; it does not flip `dataComplete` on `CycleResult`.)  
 - **`interpretationWarnings`** — deterministic `InterpretationWarningId[]` (closed set):
@@ -146,9 +146,9 @@ If no such day exists, `fertileStartIndex` is `null`.
   | ID | Meaning |
   |----|--------|
   | `uncertain_fertile_start` | Fertile start boundary is uncertain because of a missing row or calendar gap between cycle start and first mucus day (`fertileStartReason` may be `uncertain_due_to_missing`). |
-  | `calendar_gap_blocks_peak_confirmation` | A calendar gap in the P+1–P+3 window after the active peak-type candidate blocks Peak confirmation. |
+| `calendar_gap_blocks_peak_confirmation` | An interior calendar gap in the P+1–P+3 window after the active peak-type candidate blocks Peak confirmation; dates beyond the last recorded row do not count as gaps. |
   | `missing_blocks_peak_confirmation` | A day in that window is `missing: true` or has null rank, blocking confirmation. |
-  | `peak_confirmation_incomplete` | A peak-type candidate exists and Peak is not yet confirmed, but P+1–P+3 are all present as rows with non-null ranks (no gap/missing in that window)—the chart has not yet satisfied strict-lower confirmation. |
+| `peak_confirmation_incomplete` | A Peak-type candidate exists and Peak is not yet confirmed because the sequence is still developing or has not satisfied strict-lower confirmation, with no interior gap or explicit missing row blocking it. |
 
   The UI maps these IDs to short, deterministic copy (see **`buildCurrentCycleSummary`** → **`interpretationNotes`**). The engine does not emit freeform prose on `CycleResult`.
 
@@ -202,7 +202,7 @@ Each day in the slice has derived:
 
 The mobile calendar header shows a deterministic **`CurrentCycleSummary`** from `buildCurrentCycleSummary` in `core/rulesEngine/src/currentCycleSummary.ts` (exported as `core-rules-engine`). Copy and interpretation live in the engine; the UI only lays out fields and maps **`summaryTone`** to background tokens.
 
-**Reference matrix (headlines, confidence, baseline, compact support line, mobile layout):** [docs/CURRENT_CYCLE_SUMMARY_MATRIX.md](CURRENT_CYCLE_SUMMARY_MATRIX.md) — keep this file updated when changing banner behavior so agents and humans have a single checklist.
+**Reference matrix (support state, warm status copy, gating, and mobile layout):** [docs/CURRENT_CYCLE_SUMMARY_MATRIX.md](CURRENT_CYCLE_SUMMARY_MATRIX.md) — keep this file updated when changing banner behavior so agents and humans have a single checklist.
 
 **Inputs (last `CycleSlice` only)**
 
@@ -220,10 +220,12 @@ The mobile calendar header shows a deterministic **`CurrentCycleSummary`** from 
 
 **Headline priority (deterministic)**
 
-1. Missing data at the focus row (`missing: true` or phase `missing`) → **Observation needed for this day**.
-2. **`primaryClass`** from `primaryDayClassByDay[focusIndex]` — **`menstrual_flow`** → **Menstrual flow**; **`spotting`** → **Spotting** (see `primaryDayClass.ts`: spotting with mucus rank ≥ 1 resolves to mucus tiers, not this headline).
-3. **`phase === 'fertile_unconfirmed_peak'`** → **Fertile pattern — Peak not confirmed yet** (guidance branches on `peakCandidateIndex`).
-4. Otherwise **`headlineFromPhase(phase)`** — e.g. **Tracking** (`dry` / `previous_cycle`), **Fertile pattern** (`fertile_open`), **Peak day identified** / **Post-peak phase** as appropriate. Slice **`status === 'no_peak'` does not override** phase headlines (user still sees Tracking vs fertile titles, not a single “Peak not yet identified” for every day).
+1. `review_recommended` → **Your chart shows more than one possible Peak pattern**.
+2. `blocked_by_missing` → **A few days need context**.
+3. Missing data at the focus row (`missing: true` or phase `missing`) → **This day was marked not observed**.
+4. **`primaryClass`** from `primaryDayClassByDay[focusIndex]` — **`menstrual_flow`** → **Menstrual flow recorded**; **`spotting`** → **Spotting recorded**.
+5. **`phase === 'fertile_unconfirmed_peak'`** with a Peak-type candidate → **Your chart shows a possible Peak Day**; without one → **Your chart shows mucus signs**.
+6. Otherwise the observation-specific phase headline from `buildCurrentCycleSummary`.
 
 Full table: [docs/CURRENT_CYCLE_SUMMARY_MATRIX.md](CURRENT_CYCLE_SUMMARY_MATRIX.md).
 
@@ -237,11 +239,13 @@ The completeness total is the sum of three parts (no double-counting: a calendar
 
 Date arithmetic uses ISO `YYYY-MM-DD` strings as local calendar dates (same convention as stored entry dates).
 
-**Confidence (Requirement 2 — Summary Confidence Indicator)**
+**Interpretation support and status line**
 
-- Field **`confidence`** is **only** a deterministic tier line: `High confidence`, `Moderate confidence`, or `Low confidence`, plus an **em dash variant**. The High variant is **`High confidence — Peak confirmed`** (capital **P** on Peak). The UI must not infer or rewrite confidence.
-- **Recent window:** indices `max(0, focusIndex - 2)` through `focusIndex` (inclusive). If the **focus row** is incomplete (`missing` / phase `missing`), confidence is **Low — missing observations**. Else if **any** day in the recent window has `entry.missing === true` or phase `missing`, confidence is **Low — recent observations missing** (High tier is never used in that case).
-- **Rule order (first match wins after Low checks):** `no_peak` status → Moderate — pattern still forming; `fertile_unconfirmed_peak` → Moderate — pattern still forming; `p_plus_1` / `p_plus_2` → Moderate — pattern still forming; `peak_confirmed` / `p_plus_3` / `post_peak` → High — Peak confirmed; `fertile_open` / `dry` / `previous_cycle` → Moderate — pattern still forming; default → Moderate — pattern still forming.
+- `evaluateInterpretationSupport(entries, result)` returns `forming`, `summary_available`, `blocked_by_missing`, or `review_recommended`.
+- `statusLine` uses warm product-capability language. It is not a calibrated or clinical confidence score.
+- Existing calendar-gap and not-observed warnings drive `blocked_by_missing`.
+- More than one sequence independently satisfying the existing three-lower-days rule drives `review_recommended`; the evaluator does not select which Peak is clinically correct.
+- Charting and editing remain available in every state. See [docs/CURRENT_CYCLE_SUMMARY_MATRIX.md](CURRENT_CYCLE_SUMMARY_MATRIX.md).
 
 **Completeness line**
 
@@ -253,24 +257,25 @@ Date arithmetic uses ISO `YYYY-MM-DD` strings as local calendar dates (same conv
 **`interpretationNotes`**
 
 - **`interpretationNotes: string[]`** — Human-readable lines derived **only** from `result.interpretationWarnings` via a fixed template map (`WARNING_COPY` order). Empty when there are no warnings.
-- **Mobile (compact banner):** At most **one** note may appear, when **`compactSupportField === 'interpretationNote'`** (see matrix doc). The full array remains on **`CurrentCycleSummary`** for tests and future surfaces.
+- **Mobile (compact banner):** Detailed interpretation notes and baseline comparisons do not displace the primary next step. The full data remains on **`CurrentCycleSummary`** for tests and future surfaces.
 
 **Guidance, `supportingContext`, `baselineContext`, `compactSupportField`**
 
 - Primary explanatory copy for each branch lives in **`guidance`** (deterministic table in `buildCurrentCycleSummary`).
-- **`supportingContext`** is still computed for traceability; compact UI may omit it.
+- **`supportingContext`** carries a nearby limitation or clarification and is rendered when present.
 - **`baselineContext`** — optional retrospective line from prior completed cycles (`buildCycleComparisonStructured`); guards in `buildBaselineContext`. See [docs/CURRENT_CYCLE_SUMMARY_MATRIX.md](CURRENT_CYCLE_SUMMARY_MATRIX.md).
-- **`compactSupportField`** — selects which single line the compact banner shows: `guidance` | `completeness` | `interpretationNote` | `baselineContext`.
+- **`compactSupportField`** — retained as structured priority metadata for future/full surfaces. The compact status card always shows `guidance` as its single next-step line.
 - Calendar/PDF still use **Dry/Damp/Wet/Peak-type** via `mucusChartStrengthLabel` where applicable.
 
 **Banner layout (mobile `StatusBanner`)**
 
 1. `focusQualification` (if any) — muted  
 2. `headline`  
-3. `confidence`  
-4. `cycleDay` (if any) — **Cycle Day** {n}  
-5. `completeness` — shown under cycle day when it is **not** duplicated as the selected support line  
-6. **One support line** resolved from `compactSupportField` (`guidance`, `baselineContext`, `completeness`, or first `interpretationNote`)
+3. `statusLine` — one short, observation-specific reason
+4. `supportingContext` (if any) — nearby limitation or clarification
+5. Combined metadata — **Cycle Day** {n} · completeness
+6. **One next-step line** from `guidance`
+7. A contextual explanation action for supported, missing, or review states
 
 See [docs/CURRENT_CYCLE_SUMMARY_MATRIX.md](CURRENT_CYCLE_SUMMARY_MATRIX.md).
 
@@ -299,19 +304,20 @@ Long-form user education for Help and related UI is **not** inlined in the mobil
 | No entries | Empty-state summary; no `focusQualification`. |
 | Today in last slice, charted | `focusQualification` null; headline follows phase / primary-class rules (not overridden by `no_peak`). |
 | Today not in last slice (non-empty slice) | Non-null `focusQualification`; focus = last row. |
-| `entry.missing` on focus day | Observation-needed headline; caution tone; **Low confidence — missing observations**. |
-| Missing in recent window, focus complete | **Low confidence — recent observations missing**. |
-| Slice `no_peak`, dry focus day charted | **Tracking** headline (not a generic “peak not yet identified” for all days); Moderate confidence when window clean. |
-| Slice `no_peak`, fertile focus day | **Fertile pattern — Peak not confirmed yet** (when phase is `fertile_unconfirmed_peak`); guidance per `buildCurrentCycleSummary`. |
-| Confirmed peak, P+1–P+2 | **Peak day identified**; **guidance** for day count; Moderate confidence. |
-| P+3 | **Post-peak phase** headline; **guidance** for post-peak confirmation; High — Peak confirmed. |
-| Post-peak | **Post-peak phase** headline; High — Peak confirmed when recent window intact. |
+| `entry.missing` on focus day | **This day was marked not observed**; reassurance and keep-charting direction; caution tone. |
+| Missing warning limits an engine boundary | **A few days need context**; charting remains available. |
+| More than one independently confirmed sequence | **Your chart shows more than one possible Peak pattern**; exact reason plus optional Help/Find Care actions; charting remains available. |
+| Slice `no_peak`, dry focus day charted | **Your pattern is still taking shape** with observation-specific reason. |
+| Slice `no_peak`, mucus focus day without candidate | **Your chart shows mucus signs**; concise developing-pattern direction. |
+| Peak-type candidate with no interior gap/missing day | **Your chart shows a possible Peak Day**; identifies the candidate Cycle Day and keeps charting primary. |
+| Confirmed peak, P+1–P+2 | **Your chart marks Cycle Day {n} as Peak Day**; exact observation evidence, chart-only limitation, and keep-charting direction. |
+| P+3 / post-Peak | **Your chart shows a post-Peak pattern**; exact observation evidence, chart-only limitation, and keep-charting direction. |
 | Several `missing: true` in slice | Completeness line includes them in the total. |
 | Interior date gap (no row between first and last logged dates in slice) | Completeness line count includes those days. |
 | Last log before `calendarAsOfDate`, slice not `complete` | Completeness includes unlogged days from day after last log through `calendarAsOfDate`. |
 | Slice `complete` | No trailing gap count after last logged date (only explicit missing + interior gaps within first→last span). |
-| `interpretationWarnings` non-empty (e.g. `uncertain_fertile_start`) | `interpretationNotes` populated; compact banner may show one note when priority selects `interpretationNote`. |
-| Prior cycles + baselineComparison | Optional **`baselineContext`** when guards pass; see [docs/CURRENT_CYCLE_SUMMARY_MATRIX.md](CURRENT_CYCLE_SUMMARY_MATRIX.md). |
+| `interpretationWarnings` non-empty (e.g. `uncertain_fertile_start`) | `interpretationNotes` remain populated for full/detail surfaces; compact card uses its short status-specific reason. |
+| Prior cycles + baselineComparison | Optional **`baselineContext`** remains structured but does not replace the compact card’s next step. |
 
 ## Rules Engine Verification Examples
 

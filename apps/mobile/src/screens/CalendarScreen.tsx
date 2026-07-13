@@ -171,7 +171,15 @@ export function CalendarScreen(): React.JSX.Element {
       <ScrollView>
         {activeTab === 'calendar' ? (
           <>
-            <StatusBanner summary={cycleSummary} />
+            <StatusBanner
+              summary={cycleSummary}
+              onUnderstandStatus={() =>
+                navigation.navigate('Help', {
+                  initialSection: cycleSummary.explanationTarget ?? 'status_messages',
+                })
+              }
+              onFindChartingSupport={() => navigation.navigate('FindCare')}
+            />
             {showCatchUpPrompt ? (
               <Pressable
                 style={styles.catchUpCard}
@@ -195,7 +203,7 @@ export function CalendarScreen(): React.JSX.Element {
               style={styles.feedbackLink}
               onPress={() => setShowFeedbackModal(true)}
             >
-              <Text style={styles.feedbackText}>Something looks off? Send feedback</Text>
+              <Text style={styles.feedbackText}>Something looks off? Report an app issue</Text>
             </Pressable>
 
             <CalendarGrid

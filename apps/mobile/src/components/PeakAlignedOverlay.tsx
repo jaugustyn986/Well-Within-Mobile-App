@@ -1,6 +1,10 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { buildCalendarAlignedCycleDays, type CycleSlice } from 'core-rules-engine';
+import {
+  buildCalendarAlignedCycleDays,
+  cycleHasSummaryAvailable,
+  type CycleSlice,
+} from 'core-rules-engine';
 import {
   BG_BLEEDING, BG_CARD, BG_DRY, BG_MISSING, BG_PEAK_TYPE, BG_POST_PEAK,
   FERTILE_ACCENT, PEAK_BORDER,
@@ -35,7 +39,7 @@ function getCellDotColor(rank: number | null, phase: string, bleeding: boolean):
 }
 
 function isCompletedWithPeak(c: CycleSlice): boolean {
-  return c.status === 'complete' && c.peakDay !== null;
+  return cycleHasSummaryAvailable(c) && c.peakDay !== null;
 }
 
 export function PeakAlignedOverlay({ cycles, onCyclePress }: Props): React.JSX.Element {
@@ -118,7 +122,7 @@ export function PeakAlignedOverlay({ cycles, onCyclePress }: Props): React.JSX.E
         <LegendItem color={BG_DRY} label="Dry" />
         <LegendItem color={BG_DRY} dotColor={FERTILE_ACCENT} label="Mucus" />
         <LegendItem color={BG_PEAK_TYPE} label="Peak" />
-        <LegendItem color={BG_POST_PEAK} label="Post-peak" />
+        <LegendItem color={BG_POST_PEAK} label="Post-Peak" />
         <LegendItem color={BG_MISSING} label="No data" />
       </View>
     </View>

@@ -1,4 +1,5 @@
 import { recalculateCycle } from './recalc';
+import { evaluateInterpretationSupport } from './interpretationSupport';
 import {
   addDaysIso,
   calendarDatesInclusive,
@@ -36,6 +37,19 @@ export interface CalendarAlignedCycleDay {
   entry: DailyEntry | null;
   mucusRank: number | null;
   phaseLabel: PhaseLabel;
+}
+
+/** True when a completed cycle is eligible for derived history aggregates. */
+export function cycleHasSummaryAvailable(cycle: CycleSlice): boolean {
+  if (cycle.status !== 'complete') return false;
+  const hasFullEngineResult =
+    Array.isArray(cycle.result.mucusRanks) &&
+    Array.isArray(cycle.result.phaseLabels) &&
+    typeof cycle.result.peakConfirmed === 'boolean';
+  // Keeps manually constructed/legacy CycleSlice consumers deterministic while
+  // production slices always take the support-state path below.
+  if (!hasFullEngineResult) return true;
+  return evaluateInterpretationSupport(cycle.entries, cycle.result).status === 'summary_available';
 }
 
 /** Expands a cycle to one slot per calendar date so gaps remain visible. */
@@ -204,7 +218,7 @@ export function computeCycleSummary(cycles: CycleSlice[]): CycleSummary {
     };
   }
 
-  const completedCycles = cycles.filter((c) => c.status === 'complete');
+  const completedCycles = cycles.filter(cycleHasSummaryAvailable);
   const lengths = completedCycles.map((c) => c.length);
   const peakDays = completedCycles.filter((c) => c.peakDay !== null).map((c) => c.peakDay!);
   const lutealPhases = completedCycles.filter((c) => c.lutealPhase !== null).map((c) => c.lutealPhase!);
@@ -224,7 +238,7 @@ export function computeCycleSummary(cycles: CycleSlice[]): CycleSummary {
  * Requires at least 2 completed cycles for meaningful output.
  */
 export function generateInsights(cycles: CycleSlice[]): string[] {
-  const completed = cycles.filter((c) => c.status === 'complete');
+  const completed = cycles.filter(cycleHasSummaryAvailable);
   if (completed.length < 2) return [];
 
   const insights: string[] = [];

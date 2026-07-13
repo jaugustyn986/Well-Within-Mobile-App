@@ -25,7 +25,7 @@ export type RootStackParamList = {
   CycleDetail: { cycleNumber: number };
   DailyEntry: { date: string; existingEntry?: boolean };
   CatchUpMissingDays: undefined;
-  Help: undefined;
+  Help: { initialSection?: 'peak_day' | 'status_messages' } | undefined;
   FindCare: undefined;
   Settings: undefined;
   Auth: undefined;

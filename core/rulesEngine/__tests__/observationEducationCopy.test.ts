@@ -39,8 +39,9 @@ describe('observationEducationCopy', () => {
     expect(HELP_SENSATION_APPEARANCE_TITLE.length).toBeGreaterThan(0);
     expect(HELP_SENSATION_APPEARANCE_BODY).toContain('lubricative');
     expect(HELP_SENSATION_APPEARANCE_BODY).not.toMatch(/Type\s*[0-3]/i);
-    expect(HELP_STATUS_MESSAGE_SECTIONS.length).toBe(7);
-    expect(HELP_STATUS_MESSAGE_SECTIONS[0].title).toContain('Menstrual');
+    expect(HELP_STATUS_MESSAGE_SECTIONS.length).toBe(11);
+    expect(HELP_STATUS_MESSAGE_SECTIONS.some((section) => section.title.includes('Menstrual'))).toBe(true);
+    expect(HELP_STATUS_MESSAGE_SECTIONS.some((section) => section.title.includes('more than one possible'))).toBe(true);
     expect(HELP_WHAT_IS_PEAK_DAY_TITLE.length).toBeGreaterThan(0);
     expect(HELP_WHAT_IS_PEAK_DAY_BODY).toContain('three full days');
     expect(HELP_COLOR_GUIDE_PEAK_TYPE_MUCUS).toContain('grey');

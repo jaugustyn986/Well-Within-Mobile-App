@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { CycleSlice } from 'core-rules-engine';
+import { evaluateInterpretationSupport, type CycleSlice } from 'core-rules-engine';
 import { formatCyclePrimarySecondary } from '../utils/cycleDisplay';
 import {
   BG_CARD, BG_DRY, BG_POST_PEAK, BG_MISSING,
@@ -26,7 +26,19 @@ function getStatusStyle(status: CycleSlice['status']): { bg: string; text: strin
 }
 
 export function CycleCard({ cycle, allCycles, onPress }: Props): React.JSX.Element {
-  const statusInfo = getStatusStyle(cycle.status);
+  const interpretation = useMemo(
+    () => evaluateInterpretationSupport(cycle.entries, cycle.result),
+    [cycle],
+  );
+  const statusInfo =
+    interpretation.status === 'review_recommended'
+      ? { bg: BG_POST_PEAK, text: '#92400e', label: 'Summary open' }
+      : interpretation.status === 'blocked_by_missing'
+        ? { bg: BG_MISSING, text: TEXT_MUTED, label: 'Needs context' }
+        : getStatusStyle(cycle.status);
+  const interpretationLimited =
+    interpretation.status === 'review_recommended' ||
+    interpretation.status === 'blocked_by_missing';
   const { primary, secondary } = useMemo(
     () => formatCyclePrimarySecondary(cycle, allCycles),
     [cycle, allCycles],
@@ -41,11 +53,19 @@ export function CycleCard({ cycle, allCycles, onPress }: Props): React.JSX.Eleme
         </View>
       </View>
       <Text style={styles.secondaryLine}>{secondary}</Text>
-      <View style={styles.statsRow}>
-        <StatPill label="Length" value={`${cycle.length}d`} />
-        <StatPill label="Peak" value={cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--'} />
-        <StatPill label="Luteal" value={cycle.lutealPhase !== null ? `${cycle.lutealPhase}d` : '--'} />
-      </View>
+      {interpretationLimited ? (
+        <Text style={styles.limitationText}>
+          {interpretation.status === 'review_recommended'
+            ? 'More than one possible Peak pattern appears here. Your recorded observations remain available.'
+            : 'A few days need context before this chart can be summarized.'}
+        </Text>
+      ) : (
+        <View style={styles.statsRow}>
+          <StatPill label="Length" value={`${cycle.length}d`} />
+          <StatPill label="Peak" value={cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--'} />
+          <StatPill label="Luteal" value={cycle.lutealPhase !== null ? `${cycle.lutealPhase}d` : '--'} />
+        </View>
+      )}
     </Pressable>
   );
 }
@@ -83,4 +103,5 @@ const styles = StyleSheet.create({
   },
   statValue: { fontSize: 14, fontWeight: '600', color: TEXT_PRIMARY },
   statLabel: { fontSize: 10, color: TEXT_MUTED, marginTop: 1 },
+  limitationText: { fontSize: 13, color: TEXT_MUTED, lineHeight: 19, marginTop: 10 },
 });

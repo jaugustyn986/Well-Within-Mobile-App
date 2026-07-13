@@ -31,16 +31,14 @@ describe('buildCurrentCycleCatchUpDates', () => {
     ]);
   });
 
-  test('includes explicit missing rows so they can be replaced by remembered observations', () => {
+  test('treats explicit not-observed rows as handled instead of reopening them forever', () => {
     const entries = sorted([
       { date: '2026-07-01', bleeding: 'moderate', sensation: 'dry' },
       { date: '2026-07-02', missing: true },
       { date: '2026-07-03', bleeding: 'none', sensation: 'stretchy' },
     ]);
 
-    expect(buildCurrentCycleCatchUpDates(entries, map(entries), '2026-07-03')).toEqual([
-      '2026-07-02',
-    ]);
+    expect(buildCurrentCycleCatchUpDates(entries, map(entries), '2026-07-03')).toEqual([]);
   });
 
   test('matches engine cycle slices when leading days merge into the first flow cycle', () => {

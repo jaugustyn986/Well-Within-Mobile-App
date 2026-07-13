@@ -2,6 +2,7 @@ import {
   buildCalendarAlignedCycleDays,
   cycleDayForEntryIndex,
   CycleSlice,
+  evaluateInterpretationSupport,
   generateCreightonCode,
   mucusChartStrengthLabel,
   PDF_CHART_STRENGTH_HEADER,
@@ -35,6 +36,10 @@ export function buildCyclePdfHtml(
   includeIntercourse: boolean,
   options?: { headerSubtitle?: string },
 ): string {
+  const interpretation = evaluateInterpretationSupport(cycle.entries, cycle.result);
+  const observationOnly =
+    interpretation.status === 'blocked_by_missing' ||
+    interpretation.status === 'review_recommended';
   const headerSubtitle =
     options?.headerSubtitle
     ?? `${cycle.startDate} – ${cycle.endDate} · ${cycle.length} days`;
@@ -48,19 +53,29 @@ export function buildCyclePdfHtml(
   const luteal = cycle.lutealPhase !== null ? `${cycle.lutealPhase} days` : '--';
 
   const intercourseHeader = includeIntercourse ? '<th style="padding:6px 8px;text-align:center;">I/C</th>' : '';
+  const interpretationHeaders = observationOnly
+    ? ''
+    : `<th style="padding:6px 8px;text-align:center;">${PDF_CHART_STRENGTH_HEADER}</th>
+        <th style="padding:6px 8px;">Code</th>
+        <th style="padding:6px 8px;">Phase</th>`;
 
   const tableRows = buildCalendarAlignedCycleDays(cycle)
     .map((day) => {
       const { entry, phaseLabel: phase, mucusRank: rank } = day;
-      const bg = phaseBg(phase);
+      const bg = observationOnly ? '#ffffff' : phaseBg(phase);
       const freq = entry?.frequency
         ? (entry.frequency === 'all_day' ? 'AD' : `x${entry.frequency}`)
         : '';
       const appearanceList = entry?.appearances?.filter((a) => a !== 'none').join(', ') ?? '';
-      const code = entry ? generateCreightonCode(entry).fullCode : '';
+      const code = !observationOnly && entry ? generateCreightonCode(entry).fullCode : '';
       const ic = includeIntercourse
         ? `<td style="padding:6px 8px;text-align:center;">${entry?.intercourse ? '🌹' : ''}</td>`
         : '';
+      const interpretationCells = observationOnly
+        ? ''
+        : `<td style="padding:6px 8px;text-align:center;">${mucusChartStrengthLabel(rank, '')}</td>
+        <td style="padding:6px 8px;">${code}</td>
+        <td style="padding:6px 8px;">${PHASE_DISPLAY[phase] ?? phase}</td>`;
       return `<tr style="background:${bg};">
         <td style="padding:6px 8px;font-weight:600;">${day.cycleDay}</td>
         <td style="padding:6px 8px;">${day.date}</td>
@@ -68,9 +83,7 @@ export function buildCyclePdfHtml(
         <td style="padding:6px 8px;">${entry?.sensation ?? ''}</td>
         <td style="padding:6px 8px;">${appearanceList}</td>
         <td style="padding:6px 8px;text-align:center;">${freq}</td>
-        <td style="padding:6px 8px;text-align:center;">${mucusChartStrengthLabel(rank, '')}</td>
-        <td style="padding:6px 8px;">${code}</td>
-        <td style="padding:6px 8px;">${PHASE_DISPLAY[phase] ?? phase}</td>
+        ${interpretationCells}
         ${ic}
       </tr>`;
     })
@@ -93,18 +106,24 @@ export function buildCyclePdfHtml(
     th { background: #F5F3F1; padding: 8px; text-align: left; font-weight: 600; border-bottom: 2px solid #E7E2DE; }
     td { border-bottom: 1px solid #F5F3F1; }
     .footer { margin-top: 20px; font-size: 10px; color: #A09A94; text-align: center; }
+    .notice { background: #F7F0E8; border: 1px solid #E7E2DE; border-radius: 8px; padding: 12px; margin-bottom: 20px; }
+    .notice-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .notice-body { color: #5A5550; font-size: 12px; line-height: 1.5; }
   </style>
 </head>
 <body>
   <h1>Cycle ${cycle.cycleNumber}</h1>
   <div class="subtitle">${headerSubtitle}</div>
 
-  <div class="stats">
+  ${observationOnly ? `<div class="notice">
+    <div class="notice-title">${interpretation.status === 'review_recommended' ? 'Your chart shows more than one possible Peak pattern' : 'A few days need context'}</div>
+    <div class="notice-body">This export focuses on recorded observations and leaves out the chart summary. Keep charting; Well Within checks again when entries are added or updated.</div>
+  </div>` : `<div class="stats">
     <div class="stat"><div class="stat-value">${cycle.length}d</div><div class="stat-label">Length</div></div>
     <div class="stat"><div class="stat-value">${peakDay}</div><div class="stat-label">Peak Day</div></div>
     <div class="stat"><div class="stat-value">${fertileStart}–${fertileEnd}</div><div class="stat-label">Fertile Window</div></div>
     <div class="stat"><div class="stat-value">${luteal}</div><div class="stat-label">Luteal Phase</div></div>
-  </div>
+  </div>`}
 
   <h2 style="font-size:14px;margin-bottom:8px;">Day-by-Day Observations</h2>
   <table>
@@ -116,9 +135,7 @@ export function buildCyclePdfHtml(
         <th style="padding:6px 8px;">Sensation</th>
         <th style="padding:6px 8px;">Appearance</th>
         <th style="padding:6px 8px;text-align:center;">Freq</th>
-        <th style="padding:6px 8px;text-align:center;">${PDF_CHART_STRENGTH_HEADER}</th>
-        <th style="padding:6px 8px;">Code</th>
-        <th style="padding:6px 8px;">Phase</th>
+        ${interpretationHeaders}
         ${intercourseHeader}
       </tr>
     </thead>

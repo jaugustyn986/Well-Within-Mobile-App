@@ -1,140 +1,89 @@
-# Current cycle summary matrix (calendar status banner)
+# Current cycle summary matrix
 
-**Single source of implementation:** `core/rulesEngine/src/currentCycleSummary.ts` (`buildCurrentCycleSummary`) and `core/rulesEngine/src/cycleComparisonSummary.ts` (`buildCycleComparisonStructured`). Exported as `core-rules-engine`.
+The implementation source is `core/rulesEngine/src/currentCycleSummary.ts`. Interpretation eligibility comes from `core/rulesEngine/src/interpretationSupport.ts`.
 
-**Help glossary alignment:** User-education titles for the same *themes* live in `core/rulesEngine/src/observationEducationCopy.ts` → **`HELP_STATUS_MESSAGE_SECTIONS`**. Banner **headline** strings are chosen to match those themes (wording aligned where possible). The glossary is explanatory; the engine strings are what the live banner shows.
+## Interpretation support states
 
-**When changing copy or rules:** Update `currentCycleSummary.ts` first, then `HELP_STATUS_MESSAGE_SECTIONS` if themes drift, then this doc. Add or adjust tests in `core/rulesEngine/__tests__/currentCycleSummary.test.ts`.
+These describe what this version of Well Within can summarize. They are not diagnoses, clinical confidence scores, or charting locks.
 
----
+| Internal state | Meaning | User-facing direction | Charting |
+| --- | --- | --- | --- |
+| `forming` | The record does not yet support a retrospective summary. | Names what is recorded now—no mucus signs, mucus signs without Peak, or a possible Peak Day—then gives one keep-charting next step. | Always available |
+| `summary_available` | One supported retrospective sequence is available. | Names the marked Peak Day, the three logged days that support it, the chart-only limitation, and the next step. | Always available |
+| `blocked_by_missing` | An existing engine warning identifies an interior missing date or not-observed day that limits a boundary/confirmation. Dates after the last recorded row are treated as a developing pattern, not a gap. | **A few days need context** plus the specific way the open/not-observed day affects the summary. | Always available; unlogged dates may be completed |
+| `review_recommended` | More than one sequence independently satisfies the current automatic confirmation rule, so the app does not choose between them. | **Your chart shows more than one possible Peak pattern** plus the exact reason the app is not choosing one Peak Day. | Always available; outside review is optional |
 
-## Headline (by evaluation order)
+The evaluator reruns whenever entries are recalculated. More data or an edit may change the state, but user copy must not promise that it will.
 
-`buildCurrentCycleSummary` applies **primary-class and missing overrides before phase**. Slice **`status`** (e.g. `no_peak`) does **not** replace phase headlines — the user sees the phase-appropriate title even when Peak is not yet confirmed for the cycle.
+## Priority
 
-| Order | Condition | Headline |
-|-------|-----------|----------|
-| 1 | Focus row missing (`missing` or phase `missing`) | **Observation needed for this day** |
-| 2 | `primaryClass === 'menstrual_flow'` | **Menstrual flow** |
-| 3 | `primaryClass === 'spotting'` | **Spotting** |
-| 4 | `phase === 'fertile_unconfirmed_peak'` | **Fertile pattern — Peak not confirmed yet** (guidance varies by whether `peakCandidateIndex` is set) |
-| 5 | Else | **`headlineFromPhase(phase)`** — see table below |
+1. `review_recommended`
+2. `blocked_by_missing`
+3. Focus-day observation/bleeding/spotting state
+4. Existing phase headline
 
-### `headlineFromPhase(phase)` (phase-only; no menstrual/spotting/missing here)
+Review and missing states suppress phase conclusions, comparison baselines, fertile-boundary cards, marker charts, and detailed derived export fields. They preserve observation history, editing, daily charting, and an observation-focused export.
 
-| `PhaseLabel` | Headline |
-|--------------|----------|
-| `dry`, `previous_cycle` | **Tracking** |
-| `fertile_open` | **Fertile pattern** |
-| `fertile_unconfirmed_peak` | **Fertile pattern — Peak not confirmed yet** (normally handled in branch 4 above) |
-| `peak_confirmed`, `p_plus_1`, `p_plus_2` | **Peak day identified** |
-| `p_plus_3`, `post_peak` | **Post-peak phase** |
-| `missing` | **Missing observation** |
-| default | **Tracking** |
+## Support destinations
 
----
+- **See why your chart shows this** → the Peak Day Help explanation opens directly for a supported summary.
+- **How Peak Day is identified** → the same focused explanation for a possible Peak Day.
+- **Learn what this means** → the relevant Help explanation for a missing/review state.
+- **Find charting support** → outside instructor/clinician directories; optional and never an unlock.
+- **Report an app issue** → product feedback only.
 
-## Confidence (`confidence` string)
+Opening Help, Find Care, or product feedback does not change interpretation status. No practitioner-reviewed override exists.
 
-Evaluated in `computeConfidenceLine` (recent window = last 3 slice indices ending at focus).
+## Missing versus not observed
 
-| Condition | Line |
-|-----------|------|
-| Focus row missing | **Low confidence — missing observations** |
-| Any missing in recent window (focus row complete) | **Low confidence — recent observations missing** |
-| Slice `status === 'no_peak'` | **Moderate confidence — pattern still forming** |
-| `fertile_unconfirmed_peak` | **Moderate — pattern still forming** |
-| `p_plus_1` / `p_plus_2` | **Moderate — pattern still forming** |
-| `peak_confirmed` / `p_plus_3` / `post_peak` | **High confidence — Peak confirmed** |
-| `fertile_open` / `dry` / `previous_cycle` | **Moderate — pattern still forming** |
-| default | **Moderate — pattern still forming** |
+- An unlogged calendar date may appear in Catch Up.
+- `missing: true` means the user already recorded that the day was not observed. It remains an interpretation limitation but is treated as handled by Catch Up so the workflow cannot loop forever.
 
----
+## History and export
 
-## Support line selection (`compactSupportField`)
+- Only completed cycles with `summary_available` contribute to aggregate history, insights, comparisons, and Peak-aligned overlays.
+- Review/missing cycles remain visible in the cycle list with a neutral explanation.
+- Review/missing PDF exports include recorded observations and omit derived strength, code, phase, Peak, fertile-window, and luteal summary fields.
 
-The mobile **StatusBanner** shows **one** primary support string from this priority (first match):
+## Banner fields
 
-| Priority | Field | When |
-|----------|-------|------|
-| 1 | `interpretationNote` | `focusMissing && interpretationNotes.length > 0` |
-| 2 | `completeness` | `Low confidence && missingCount > 0` |
-| 3 | `baselineContext` | Non-null baseline string (see below) |
-| 4 | `guidance` | Default |
+`CurrentCycleSummary` provides:
 
-Resolve the displayed string: `guidance` | `baselineContext` | `completeness` | `interpretationNotes[0]` per field.
+- `headline`
+- `statusLine` — observation-specific evidence, never a confidence score
+- `supportingContext` — a nearby limitation when the evidence could be mistaken for a biological conclusion
+- `cycleDay`
+- `completeness`
+- `guidance`
+- `explanationTarget` — contextual `peak_day` or `status_messages` Help destination; null when the compact card is self-contained
+- `interpretationStatus` and `interpretationReason`
+- `focusQualification`, `interpretationNotes`, `baselineContext`, and `compactSupportField`
 
----
+Baseline context is suppressed unless `interpretationStatus === 'summary_available'`.
 
-## Baseline context (`baselineContext`)
+## Compact-card hierarchy
 
-Optional; requires **`baselineComparison`** from `buildCycleComparisonStructured(currentSlice, allSlices)` (mobile: `useCurrentCycleSummaryFromCycles`).
+The card uses progressive disclosure to stay calm and scannable:
 
-**Global guards:** No baseline if `comparison` absent, **`confidence` starts with `Low confidence`**, or **`priorSampleSize < 2`**.
+1. one headline naming what the chart shows;
+2. one short, observation-specific reason;
+3. an optional muted limitation only when a Peak interpretation could be mistaken for ovulation or when the app declines to choose a Peak Day;
+4. combined cycle-day/completeness metadata;
+5. one next step, always `guidance`; and
+6. a contextual Help action only when a deeper explanation is useful.
 
-**Additional suppression:** Baseline is cleared when **`primaryClass === 'menstrual_flow'`** (spotting is **not** suppressed — spotting with mucus uses `mucus_observed` / `peak_type`; pure spotting may still show phase-appropriate baseline).
+`baselineContext`, detailed `interpretationNotes`, and longer education remain available to other surfaces or Help; they do not displace the primary next step on the compact card.
 
-| Phase | Baseline text (when applicable) |
-|-------|--------------------------------|
-| `dry` / `previous_cycle` | If `avgFertileStartDay` known and `cycleDay < avgFertileStartDay`: *Your cycles have typically shown fertile signs starting around day {avg}.* |
-| `fertile_open` | If `avgPeakDay` known: *Peak has usually occurred around day {avg} in your previous cycles.* |
-| `fertile_unconfirmed_peak` | Same as `fertile_open` (uses **day number**, not vague “this point in the cycle”). |
-| `peak_confirmed` / `post_peak` | If `peakVsPrior` is `earlier` or `later`: *Peak occurred earlier/later than your usual pattern.* |
-| `p_plus_1`, `p_plus_2`, `p_plus_3` | No baseline (guidance only). |
+## Required QA
 
----
-
-## Completeness (`completeness`)
-
-Unchanged: explicit `missing: true` rows + interior calendar gaps + trailing gaps through `calendarAsOfDate` for in-progress slices. See `RULES_ENGINE_SPEC.md` (Current cycle summary section).
-
-**Mobile:** StatusBanner shows **`completeness`** as a **secondary line under Cycle Day** when it is **not** already the selected `compactSupportField` (avoids duplicating the same line when Low confidence selects completeness as the support line).
-
----
-
-## Other engine fields (banner / exports)
-
-| Field | Role |
-|-------|------|
-| `supportingContext` | Still computed for tests/traceability; compact UI does not show it. |
-| `interpretationNotes` | Full list from `interpretationWarnings`; compact UI shows **at most one** line when `compactSupportField === 'interpretationNote'`. |
-| `guidance` | Primary non-baseline line when selected. |
-| `summaryTone` | `neutral` \| `caution` \| `positive` → banner background tokens. |
-
----
-
-## Mobile layout (`StatusBanner.tsx`)
-
-Typical order:
-
-1. `focusQualification` (if any)
-2. `headline`
-3. `confidence`
-4. `cycleDay` (if non-null)
-5. `completeness` (if not duplicate of support line)
-6. Single **support line** from `compactSupportField`
-
----
-
-## Scenario reference (quick QA)
-
-| Situation | Expect headline theme | Notes |
-|-----------|------------------------|--------|
-| Empty slice | *Your cycle will appear here* | Empty-state object |
-| Dry days, no peak in slice | **Tracking** | Not “Peak not yet identified” |
-| Fertile, peak not confirmed | **Fertile pattern — Peak not confirmed yet** | |
-| P+1 / P+2 | **Peak day identified** | Moderate confidence |
-| P+3 / post-peak | **Post-peak phase** | High confidence when window clean |
-| Focus missing | **Observation needed for this day** | Low confidence |
-
----
-
-## Related files
-
-| File | Purpose |
-|------|---------|
-| `core/rulesEngine/src/currentCycleSummary.ts` | Summary builder |
-| `core/rulesEngine/src/cycleComparisonSummary.ts` | `CycleComparisonStructured`, `avgPeakDay`, `avgFertileStartDay` |
-| `core/rulesEngine/src/observationEducationCopy.ts` | `HELP_STATUS_MESSAGE_SECTIONS` glossary |
-| `apps/mobile/src/hooks/useCurrentCycleSummary.ts` | Passes `baselineComparison` |
-| `apps/mobile/src/components/StatusBanner.tsx` | Compact layout |
+- Charting and editing remain reachable in every state.
+- Adding/editing an entry recomputes status.
+- Dates beyond the last recorded row produce a developing possible-Peak state, not a missing-day warning.
+- A confirmation gap produces `blocked_by_missing`.
+- Two independently confirmed sequences produce `review_recommended` without choosing a clinical Peak.
+- Editing the later sequence can return the fixture to `summary_available`.
+- Marking a day not observed completes Catch Up but remains visible as a limitation.
+- Review/missing cycles do not enter aggregates or overlays.
+- Observation-focused export remains available.
+- No user-facing state uses `High`, `Moderate`, or `Low confidence`.
+- No state diagnoses, predicts, promises resolution, or blocks charting.

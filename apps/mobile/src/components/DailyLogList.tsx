@@ -15,6 +15,7 @@ import {
 
 interface Props {
   cycle: CycleSlice;
+  showInterpretation?: boolean;
 }
 
 function getDayCircleColor(phase: PhaseLabel, rank: number | null, bleeding: boolean): string {
@@ -36,7 +37,7 @@ function getPhaseShortLabel(phase: PhaseLabel): string {
     case 'p_plus_1': return 'P+1';
     case 'p_plus_2': return 'P+2';
     case 'p_plus_3': return 'P+3';
-    case 'post_peak': return 'Post-peak';
+    case 'post_peak': return 'Post-Peak';
     case 'missing': return 'Missing';
     default: return '';
   }
@@ -51,7 +52,7 @@ function getRankLabel(rank: number | null): string {
   return mucusChartStrengthLabel(rank, '--');
 }
 
-export function DailyLogList({ cycle }: Props): React.JSX.Element {
+export function DailyLogList({ cycle, showInterpretation = true }: Props): React.JSX.Element {
   const days = buildCalendarAlignedCycleDays(cycle);
 
   return (
@@ -61,9 +62,13 @@ export function DailyLogList({ cycle }: Props): React.JSX.Element {
         {days.map((day) => {
           const { entry, phaseLabel: phase, mucusRank: rank } = day;
           const bleeding = entry?.bleeding !== undefined && entry.bleeding !== 'none';
-          const isPeak = phase === 'peak_confirmed';
-          const circleColor = getDayCircleColor(phase, rank, bleeding);
+          const isPeak = showInterpretation && phase === 'peak_confirmed';
+          const circleColor = showInterpretation
+            ? getDayCircleColor(phase, rank, bleeding)
+            : bleeding ? BG_BLEEDING : entry ? BG_CARD : BG_MISSING;
           const dotColor =
+            !showInterpretation ? null
+            :
             phase === 'peak_confirmed' ? null
             : (phase === 'fertile_open' || phase === 'fertile_unconfirmed_peak') && rank !== null && rank >= 3 ? null
             : (phase === 'fertile_open' || phase === 'fertile_unconfirmed_peak') && rank !== null && rank >= 1 ? FERTILE_ACCENT
@@ -88,9 +93,11 @@ export function DailyLogList({ cycle }: Props): React.JSX.Element {
                 {entry?.intercourse && (
                   <Text style={styles.roseIcon}>{INTERCOURSE_ICON}</Text>
                 )}
-                <View style={styles.phaseBadge}>
-                  <Text style={styles.phaseBadgeText}>{getPhaseShortLabel(phase)}</Text>
-                </View>
+                {showInterpretation ? (
+                  <View style={styles.phaseBadge}>
+                    <Text style={styles.phaseBadgeText}>{getPhaseShortLabel(phase)}</Text>
+                  </View>
+                ) : null}
               </View>
             </View>
           );

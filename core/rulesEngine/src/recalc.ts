@@ -59,11 +59,20 @@ function collectInterpretationWarnings(
   if (peakCandidateIndex !== null && peakIndex === null) {
     const dateToIndex = buildDateToIndex(entries);
     const D = entryDateOrSynthetic(entries[peakCandidateIndex]?.date, peakCandidateIndex);
+    const lastRecordedDate = entries.reduce<string>((latest, entry, index) => {
+      const date = entryDateOrSynthetic(entry?.date, index);
+      return latest.length === 0 || compareIsoDate(date, latest) > 0
+        ? date
+        : latest;
+    }, '');
     let blockedByGapOrMissing = false;
     for (let k = 1; k <= 3; k += 1) {
       const nextD = addDaysIso(D, k);
       const idx = dateToIndex.get(nextD);
       if (idx === undefined) {
+        // A date beyond the last recorded row has not necessarily happened yet.
+        // Treat the sequence as developing; only an interior skipped date is a gap.
+        if (compareIsoDate(nextD, lastRecordedDate) > 0) break;
         w.push('calendar_gap_blocks_peak_confirmation');
         blockedByGapOrMissing = true;
         break;

@@ -179,11 +179,10 @@ export function OnboardingCalendarUncertaintyPanel(): React.JSX.Element {
     <View style={{ gap: 10 }}>
       <PhoneCard>
         <View style={[banner.container, { backgroundColor: BG_CARD_GRADIENT_START }]}>
-          <Text style={banner.headline}>Tracking</Text>
-          <Text style={banner.confidence}>Moderate confidence — pattern still forming</Text>
-          <Text style={banner.cycleDay}>Cycle Day 7</Text>
-          <Text style={banner.extra}>1 day still open in this cycle</Text>
-          <Text style={banner.support}>As you add days, your cycle pattern becomes clearer.</Text>
+          <Text style={banner.headline}>Your pattern is still taking shape</Text>
+          <Text style={banner.confidence}>No mucus signs are recorded for this day.</Text>
+          <Text style={banner.cycleDay}>Cycle Day 7 · 1 day still open in this cycle</Text>
+          <Text style={banner.support}>Keep charting daily. This card will update as your observations change.</Text>
         </View>
       </PhoneCard>
       <PhoneCard>
@@ -195,7 +194,7 @@ export function OnboardingCalendarUncertaintyPanel(): React.JSX.Element {
 
 /* ─────────────────────────────────────────────────
    SLIDE 4 — "See where you are in your cycle"
-   Matches reference: Post-peak phase banner (green bg)
+   Matches reference: post-Peak pattern banner (green bg)
    + calendar with mucus days 1-2 (dot), post-peak 5-7,
    today=7.
 ───────────────────────────────────────────────── */
@@ -205,11 +204,13 @@ export function OnboardingStatusBannerPanel(): React.JSX.Element {
     <View style={{ gap: 10 }}>
       <PhoneCard>
         <View style={[banner.container, { backgroundColor: BANNER_TONE_POSITIVE_BG }]}>
-          <Text style={banner.headline}>Post-peak phase</Text>
-          <Text style={banner.confidence}>High confidence — Peak confirmed</Text>
-          <Text style={banner.cycleDay}>Cycle Day 15</Text>
-          <Text style={banner.extra}>No gaps in your chart this cycle</Text>
-          <Text style={banner.support}>Three days past Peak confirm the post-Peak phase.</Text>
+          <Text style={banner.headline}>Your chart shows a post-Peak pattern</Text>
+          <Text style={banner.confidence}>
+            You logged a Peak-type mucus sign on Cycle Day 12, followed by three days without another one. Well Within marked Cycle Day 12 as Peak Day.
+          </Text>
+          <Text style={banner.limitation}>This reflects your chart; it does not confirm ovulation.</Text>
+          <Text style={banner.cycleDay}>Cycle Day 15 · All days charted so far</Text>
+          <Text style={banner.support}>Keep charting daily. This summary updates when your observations change.</Text>
         </View>
       </PhoneCard>
       <PhoneCard>
@@ -223,8 +224,8 @@ const banner = StyleSheet.create({
   container: { borderRadius: 10, padding: 14 },
   headline: { fontSize: 19, fontWeight: '600', color: TEXT_PRIMARY, letterSpacing: -0.2 },
   confidence: { fontSize: 13, fontWeight: '500', color: TEXT_SECONDARY, marginTop: 8, lineHeight: 20 },
+  limitation: { fontSize: 12, color: TEXT_SUBTLE, marginTop: 5, lineHeight: 17 },
   cycleDay: { fontSize: 12, color: TEXT_SUBTLE, marginTop: 4, lineHeight: 17 },
-  extra: { fontSize: 12, color: TEXT_SUBTLE, marginTop: 2, lineHeight: 17 },
   support: { fontSize: 13, color: TEXT_SECONDARY, marginTop: 8, lineHeight: 20 },
 });
 

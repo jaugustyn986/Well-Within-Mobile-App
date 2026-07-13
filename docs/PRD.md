@@ -80,7 +80,7 @@ The calendar renders days from ALL cycles correctly, not just the current cycle.
 
 **Current cycle summary (status card)**
 
-The header card above the grid is driven by **`buildCurrentCycleSummary`** from the rules engine (`core-rules-engine`), using the **last cycle slice only** (same source as the active cycle in multi-cycle logic). It is not a second, whole-chart `recalculateCycle` interpretation. Underlying interpretation comes from **`recalculateCycle`** outputs on that slice (see `docs/RULES_ENGINE_SPEC.md` — engine contract). The compact banner shows headline, confidence, cycle day, a completeness line (gaps / missing days), and **one** primary support line chosen via **`compactSupportField`** (`guidance`, optional **`baselineContext`** from prior cycles, **`completeness`**, or a single **`interpretationNote`**). Optional **`baselineComparison`** is supplied by the app via `buildCycleComparisonStructured`. When today is not logged in that slice, **`focusQualification`** states that the summary reflects the last logged day. Headlines align with the Help glossary themes in **`HELP_STATUS_MESSAGE_SECTIONS`** (e.g. **Tracking**, **Fertile pattern**, **Peak day identified**). **Authoritative field matrix and tweak guide:** `docs/CURRENT_CYCLE_SUMMARY_MATRIX.md`.
+The header card above the grid is driven by **`buildCurrentCycleSummary`** from the rules engine (`core-rules-engine`), using the **last cycle slice only**. `evaluateInterpretationSupport` first assigns a product-capability state: `forming`, `summary_available`, `blocked_by_missing`, or `review_recommended`. These states never lock charting and never represent diagnosis or clinical confidence. The banner shows a warm headline/status line, cycle day, completeness, and one support line. Missing/review states suppress derived conclusions and link separately to Help, optional outside charting support, and product issue reporting. **Authoritative field matrix:** `docs/CURRENT_CYCLE_SUMMARY_MATRIX.md`.
 
 **Calendar indicators**
 
@@ -352,10 +352,10 @@ The app must provide a Cycle History screen accessible from the Calendar screen.
 
 - **Cycle Summary Panel** — 2x2 grid showing: Cycles Tracked, Average Cycle Length (days), Average Peak Day, Average Luteal Phase (days).
 - **Pattern Insights** — Bullet-point list of computed insights (peak day range, luteal phase average, cycle-length consistency). Requires at least 2 completed cycles. Empty state shown otherwise. The app does not back-calculate a typical fertile-window start from Peak timing.
-- **Peak-Aligned Overlay** — Last 3–6 **completed** cycles with a confirmed peak, shown as rows of colored cells aligned on peak day (column **P**). Cell colors match the calendar grid exactly (shared theme). Tapping a row navigates to Cycle Detail. In-progress and no-peak cycles are excluded (current-cycle comparison may be handled separately).
-- **Cycle Comparison Cards** — Vertical list of all cycles (newest first). Each card shows cycle number, start date, length, peak day, luteal phase, and a status badge (Complete / In Progress / No Peak). Tapping a card navigates to Cycle Detail.
+- **Peak-Aligned Overlay** — Last 3–6 eligible completed cycles with `summary_available`, shown as rows aligned on Peak. Missing/review cycles are excluded without being hidden from the cycle list.
+- **Cycle Comparison Cards** — Vertical list of all cycles (newest first). Missing/review cycles remain visible with a warm eligibility explanation while derived Peak/luteal stats are suppressed.
 
-The app must provide a Cycle Detail screen that shows:
+The app must provide a Cycle Detail screen that shows derived summaries only when the support state allows them. Missing/review states preserve charting, editing, daily observations, optional Find Care, and an observation-focused export while suppressing conclusions.
 
 - **Stats Header** — Three stat cards: Length (days), Peak Day (cycle day), Fertile End (day number or "--").
 - **Daily Mucus Pattern Chart** — Adapted MucusChart with bar colors matching the calendar grid. Rose emoji (🌹) above bars for intercourse days.

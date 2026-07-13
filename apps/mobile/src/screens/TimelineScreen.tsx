@@ -1,13 +1,19 @@
 import React, { useCallback, useMemo } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { buildCalendarAlignedCycleDays } from 'core-rules-engine';
 import { useCycleHistory } from '../hooks/useCycleHistory';
 import { useCurrentCycleSummaryFromCycles } from '../hooks/useCurrentCycleSummary';
 import { MucusChart } from '../components/MucusChart';
 import { StatusBanner } from '../components/StatusBanner';
+import type { RootStackParamList } from '../navigation/AppNavigator';
+
+type Nav = NativeStackNavigationProp<RootStackParamList, 'Timeline'>;
 
 export function TimelineScreen(): React.JSX.Element {
+  const navigation = useNavigation<Nav>();
   const cycleHistory = useCycleHistory();
   const cycleSummary = useCurrentCycleSummaryFromCycles(cycleHistory.cycles);
   const currentCycle = cycleHistory.cycles[cycleHistory.cycles.length - 1] ?? null;
@@ -41,7 +47,15 @@ export function TimelineScreen(): React.JSX.Element {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-        <StatusBanner summary={cycleSummary} />
+        <StatusBanner
+          summary={cycleSummary}
+          onUnderstandStatus={() =>
+            navigation.navigate('Help', {
+              initialSection: cycleSummary.explanationTarget ?? 'status_messages',
+            })
+          }
+          onFindChartingSupport={() => navigation.navigate('FindCare')}
+        />
         <MucusChart days={alignedDays} />
       </ScrollView>
     </SafeAreaView>

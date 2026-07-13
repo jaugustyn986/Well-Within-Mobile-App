@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   BLEEDING_EDUCATION,
@@ -29,6 +30,7 @@ import {
 } from '../theme/colors';
 
 interface AccordionItemData {
+  id: string;
   title: string;
   icon: IconName;
   content?: string;
@@ -37,36 +39,43 @@ interface AccordionItemData {
 
 const SECTIONS: AccordionItemData[] = [
   {
+    id: 'observe',
     title: HELP_HOW_TO_OBSERVE_TITLE,
     icon: 'eye',
     content: HELP_HOW_TO_OBSERVE_BODY,
   },
   {
+    id: 'sensation_appearance',
     title: HELP_SENSATION_APPEARANCE_TITLE,
     icon: 'droplet',
     content: HELP_SENSATION_APPEARANCE_BODY,
   },
   {
+    id: 'bleeding',
     title: HELP_BLEEDING_TYPES_TITLE,
     icon: 'droplet',
     renderContent: () => <BleedingGuide />,
   },
   {
+    id: 'peak_day',
     title: HELP_WHAT_IS_PEAK_DAY_TITLE,
     icon: 'sparkle',
     content: HELP_WHAT_IS_PEAK_DAY_BODY,
   },
   {
+    id: 'trying_to_conceive',
     title: 'When should we try to conceive?',
     icon: 'heart',
     content: HELP_TRYING_TO_CONCEIVE_BODY,
   },
   {
+    id: 'status_messages',
     title: 'What do the status messages mean?',
     icon: 'chart',
     renderContent: () => <StatusMessageSections />,
   },
   {
+    id: 'calendar_colors',
     title: 'Calendar color guide',
     icon: 'grid',
     renderContent: () => <ColorGuideSwatches />,
@@ -163,7 +172,7 @@ function ColorGuideSwatches(): React.JSX.Element {
       <SwatchRow bg={BG_DRY} dotColor={FERTILE_ACCENT} label={HELP_COLOR_GUIDE_NON_PEAK_MUCUS} />
       <SwatchRow bg={BG_PEAK_TYPE} label={HELP_COLOR_GUIDE_PEAK_TYPE_MUCUS} />
       <SwatchRow bg={BG_PEAK_TYPE} borderColor={PEAK_BORDER} label="Confirmed Peak Day" />
-      <SwatchRow bg={BG_POST_PEAK} label="Post-peak (P+1, P+2, P+3)" />
+      <SwatchRow bg={BG_POST_PEAK} label="Post-Peak (P+1, P+2, P+3)" />
       <SwatchRow bg={BG_NO_ENTRY} borderColor={BORDER_TODAY} label="Today" />
       <View style={swatchStyles.row}>
         <View style={[swatchStyles.swatch, { borderWidth: 1, borderColor: BORDER_CARD, justifyContent: 'center', alignItems: 'center' }]}>
@@ -186,8 +195,14 @@ const swatchStyles = StyleSheet.create({
   label: { fontSize: 14, color: TEXT_SECONDARY, flex: 1 },
 });
 
-function AccordionItem({ item }: { item: AccordionItemData }): React.JSX.Element {
-  const [open, setOpen] = useState(false);
+function AccordionItem({ item, initialOpen }: {
+  item: AccordionItemData;
+  initialOpen: boolean;
+}): React.JSX.Element {
+  const [open, setOpen] = useState(initialOpen);
+  useEffect(() => {
+    if (initialOpen) setOpen(true);
+  }, [initialOpen]);
   return (
     <View style={styles.accordionItem}>
       <Pressable style={styles.accordionHeader} onPress={() => setOpen(!open)}>
@@ -210,15 +225,27 @@ function AccordionItem({ item }: { item: AccordionItemData }): React.JSX.Element
 
 export function HelpScreen(): React.JSX.Element {
   const navigation = useNavigation<HelpNav>();
+  const route = useRoute<RouteProp<RootStackParamList, 'Help'>>();
   const resetOnboarding = useResetOnboarding();
   const { cycles } = useCycleHistory();
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const initialSection = route.params?.initialSection;
+  const orderedSections = initialSection
+    ? [
+        ...SECTIONS.filter((section) => section.id === initialSection),
+        ...SECTIONS.filter((section) => section.id !== initialSection),
+      ]
+    : SECTIONS;
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
       <Text style={styles.heading}>Understanding Your Chart</Text>
-      {SECTIONS.map((section, idx) => (
-        <AccordionItem key={idx} item={section} />
+      {orderedSections.map((section) => (
+        <AccordionItem
+          key={section.id}
+          item={section}
+          initialOpen={initialSection === section.id}
+        />
       ))}
       <Pressable
         style={styles.findCareFooter}

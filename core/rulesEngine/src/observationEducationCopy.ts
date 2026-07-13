@@ -126,7 +126,7 @@ export const HELP_WHAT_IS_PEAK_DAY_TITLE = 'What is the Peak Day?';
 
 export const HELP_WHAT_IS_PEAK_DAY_BODY =
   'The Peak Day is the last day of peak-type mucus (clear, stretchy, or lubricative).\n\n' +
-  'It is only confirmed after three full days of lower-quality observations.\n\n' +
+  'Well Within marks it after you log three full days without another Peak-type mucus sign.\n\n' +
   'Peak Day is an observation-based charting marker. It does not confirm ovulation on its own.';
 
 export interface HelpStatusMessageSection {
@@ -137,38 +137,57 @@ export interface HelpStatusMessageSection {
 /** Glossary for status headlines (Understanding Your Chart). */
 export const HELP_STATUS_MESSAGE_SECTIONS: readonly HelpStatusMessageSection[] = [
   {
-    title: 'Menstrual flow',
+    title: 'Your pattern is still taking shape',
     body:
-      'You\u2019re in your period. Bleeding is the primary sign during this time, and fertility is not assessed.',
+      'No Peak-type pattern appears in the observations shown on the card yet. Keep charting normally; the card updates whenever an observation is added or changed.',
   },
   {
-    title: 'Tracking',
+    title: 'A few days need context',
     body:
-      'You\u2019re recording observations, but no fertile signs have been identified yet.',
+      'An open calendar date or a day marked not observed falls within a part of the chart Well Within uses to mark Peak or show a phase summary. If you remember an open date, add it; a not-observed day can stay as it is. Either way, keep charting.',
   },
   {
-    title: 'Fertile pattern',
+    title: 'Your chart shows more than one possible Peak pattern',
     body:
-      'Mucus has been observed. This may be the start of your fertile window.',
+      'More than one Peak-type day is followed by the three-day pattern Well Within looks for, so the app does not choose one Peak Day from these observations. Charting and editing remain available, and the app checks again after entries change. This describes what the app can interpret, not a diagnosis. Optional outside charting support is available from Find Care.',
   },
   {
-    title: 'Fertile pattern \u2014 Peak not confirmed yet',
+    title: 'This day was marked not observed',
     body:
-      'Fertile signs are present, but Peak has not been confirmed. The pattern is still developing.',
+      'There is no observation for Well Within to interpret on this day. That is okay. Keep charting, and add an observation later only if you remember it.',
   },
   {
-    title: 'Peak day identified',
+    title: 'Menstrual flow recorded',
     body:
-      'A Peak Day has been identified from your observations and confirmed after three lower-quality days.',
+      'This day is recorded as menstrual flow. Mucus can still be saved, but Well Within does not interpret it as Peak-type while flow is selected.',
   },
   {
-    title: 'Post-peak phase',
+    title: 'Spotting recorded',
     body:
-      'Three days of lower-quality mucus follow the identified Peak Day.',
+      'This day is recorded as light bleeding or spotting. Any mucus signs you recorded remain part of the day’s observation.',
   },
   {
-    title: 'Missing observation',
+    title: 'Your chart shows mucus signs',
     body:
-      'A required observation is missing. This can prevent the app from confirming Peak or identifying the fertile window accurately.',
+      'Mucus signs are present in your observations, but the pattern does not show a Peak-type day yet. Keep charting as the pattern develops.',
+  },
+  {
+    title: 'Your chart shows a possible Peak Day',
+    body:
+      'A Peak-type mucus sign is recorded in your chart. Well Within waits for three days without another Peak-type sign before marking that earlier day as Peak Day.',
+  },
+  {
+    title: 'Your chart marks a Peak Day',
+    body:
+      'Well Within marks the last Peak-type day after you log three days without another Peak-type mucus sign. This is an interpretation of the observations in your chart, not confirmation of ovulation.',
+  },
+  {
+    title: 'Your chart shows a post-Peak pattern',
+    body:
+      'Three days without another Peak-type mucus sign follow the Peak Day marked on your chart. Keep charting each day; the summary updates whenever you add or change an observation.',
+  },
+  {
+    title: 'Your chart is ready when you are',
+    body: 'Your first daily observation begins the chart. Start whenever you are ready.',
   },
 ];
