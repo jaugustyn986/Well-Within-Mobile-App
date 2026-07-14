@@ -13,9 +13,9 @@ describe('entry observation confirmation', () => {
     expect(initialSensationForEntry({ sensation: 'wet' })).toBe('wet');
   });
 
-  test('a legacy existing entry without sensation remains editable as dry', () => {
+  test('a legacy existing entry without sensation is not silently treated as dry', () => {
     const legacyEntry: DailyEntry = { bleeding: 'none' };
-    expect(initialSensationForEntry(legacyEntry)).toBe('dry');
+    expect(initialSensationForEntry(legacyEntry)).toBeNull();
   });
 
   test('an observed new entry cannot save until a sensation is chosen', () => {

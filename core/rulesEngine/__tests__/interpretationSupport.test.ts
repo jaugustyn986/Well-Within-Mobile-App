@@ -111,7 +111,7 @@ describe('evaluateInterpretationSupport', () => {
     });
   });
 
-  it('routes light or spotting plus mucus to review', () => {
+  it('allows spotting with non-Peak mucus in a supported pattern', () => {
     const entries: DailyEntry[] = [
       { date: '2026-03-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-03-02', bleeding: 'spotting', mucusRankOverride: 1 },
@@ -121,8 +121,38 @@ describe('evaluateInterpretationSupport', () => {
       { date: '2026-03-06', bleeding: 'none', mucusRankOverride: 0 },
     ];
     expect(evaluate(entries)).toMatchObject({
+      status: 'summary_available',
+      reason: 'retrospective_summary_available',
+    });
+  });
+
+  it('continues to route light menstrual flow plus mucus to review', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-03-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-03-02', bleeding: 'light', mucusRankOverride: 1 },
+      { date: '2026-03-03', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-03-04', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-03-05', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-03-06', bleeding: 'none', mucusRankOverride: 0 },
+    ];
+    expect(evaluate(entries)).toMatchObject({
       status: 'review_recommended',
       reason: 'bleeding_mucus_ambiguity',
+    });
+  });
+
+  it('does not let an unanswered bleeding-only row satisfy P+ confirmation', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-04-01', bleeding: 'heavy', sensation: 'dry' },
+      { date: '2026-04-02', bleeding: 'none', sensation: 'stretchy' },
+      { date: '2026-04-03', bleeding: 'spotting' },
+      { date: '2026-04-04', bleeding: 'brown', sensation: 'dry' },
+      { date: '2026-04-05', bleeding: 'none', sensation: 'dry' },
+    ];
+
+    expect(evaluate(entries)).toMatchObject({
+      status: 'blocked_by_missing',
+      reason: 'incomplete_observation',
     });
   });
 });

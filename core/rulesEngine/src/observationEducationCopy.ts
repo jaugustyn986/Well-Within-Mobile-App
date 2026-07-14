@@ -104,11 +104,11 @@ export const HELP_SENSATION_APPEARANCE_BODY =
   'When both are present, the app uses the strongest recorded sign from either one.\n\n' +
   'Examples:\n\n' +
   'Dry sensation with no mucus \u2192 dry day\n' +
-  'Damp or sticky mucus \u2192 early fertile pattern\n' +
+  'Damp or sticky mucus \u2192 non-Peak mucus observation\n' +
   'Clear, stretchy, or lubricative mucus \u2192 peak-type pattern\n\n' +
   'If you record multiple observations in one day, the app uses the most fertile one.\n\n' +
-  'During your period\n\n' +
-  'If you are experiencing menstrual flow, bleeding is the primary sign. Mucus observations during this time are not used to identify fertility.';
+  'When bleeding is also recorded\n\n' +
+  'Heavy, moderate, or light menstrual flow remains the primary chart sign. Spotting and brown stay visible alongside the dry, non-Peak, or Peak-type observation you record. A spotting or brown day can also carry a retrospective P+ marker when it is one of three completed observations after a possible Peak.';
 
 export const HELP_TRYING_TO_CONCEIVE_BODY =
   'Your chart can help you discuss the timing of observed fertile signs with a qualified fertility-awareness educator or clinician.\n\n' +
@@ -127,6 +127,7 @@ export const HELP_WHAT_IS_PEAK_DAY_TITLE = 'What is the Peak Day?';
 export const HELP_WHAT_IS_PEAK_DAY_BODY =
   'The Peak Day is the last day of peak-type mucus (clear, stretchy, or lubricative).\n\n' +
   'Well Within marks it after you log three full days without another Peak-type mucus sign.\n\n' +
+  'Spotting or brown does not erase a mucus observation. If a Peak-type sign is recorded with either one, the day remains a Peak-type observation. If no Peak-type sign is recorded, an explicitly completed spotting or brown observation can be one of the three follow-up days.\n\n' +
   'Peak Day is an observation-based charting marker. It does not confirm ovulation on its own.';
 
 export interface HelpStatusMessageSection {
@@ -144,7 +145,7 @@ export const HELP_STATUS_MESSAGE_SECTIONS: readonly HelpStatusMessageSection[] =
   {
     title: 'A few days need context',
     body:
-      'An open calendar date or a day marked not observed falls within a part of the chart Well Within uses to mark Peak or show a phase summary. If you remember an open date, add it; a not-observed day can stay as it is. Either way, keep charting.',
+      'An open calendar date, a day marked not observed, or a saved day that still needs a sensation or appearance falls within a part of the chart Well Within uses to mark Peak or show a phase summary. If the saved observation is incomplete, open that date and choose a sensation—including Dry. A not-observed day can stay as it is. Either way, keep charting.',
   },
   {
     title: 'This day was marked not observed',
@@ -159,7 +160,12 @@ export const HELP_STATUS_MESSAGE_SECTIONS: readonly HelpStatusMessageSection[] =
   {
     title: 'Spotting recorded',
     body:
-      'This day is recorded as light bleeding or spotting. Any mucus signs you recorded remain part of the day’s observation.',
+      'Spotting stays visible alongside the sensation and appearance recorded for the day. A Peak-type sign remains Peak-type; a completed non-Peak observation may also carry a P+ marker when it follows the chart’s possible Peak.',
+  },
+  {
+    title: 'Brown recorded',
+    body:
+      'Brown stays visible as a small B marker. The day’s fill still follows the dry, non-Peak, or Peak-type observation you recorded.',
   },
   {
     title: 'Your chart shows mucus signs',

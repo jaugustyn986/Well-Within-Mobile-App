@@ -34,6 +34,11 @@ export interface CalendarDayInfo {
 export interface CalendarDayPresentation {
   backgroundColor: string;
   indicatorColor: string | null;
+  /** Compact observation marker shown independently from the day fill. */
+  bleedingMarker: 'S' | 'B' | null;
+  /** Retrospective marker shown independently from the recorded observation. */
+  patternMarkerLabel: 'P+1' | 'P+2' | 'P+3' | null;
+  /** @deprecated Prefer bleedingMarker. Retained for presentation consumers during migration. */
   showsSpottingMarker: boolean;
   showsPeakMarker: boolean;
   stateLabel: string;
@@ -82,6 +87,12 @@ function indicatorForDay(day: CalendarDayInfo): string | null {
 function stateLabelForDay(day: CalendarDayInfo): string {
   if (!day.hasEntry) return 'No entry';
   if (day.primaryDayClass === 'missing' || day.phaseLabel === 'missing') {
+    if (day.bleeding === 'brown') {
+      return 'Brown recorded; choose a sensation to complete the observation';
+    }
+    if (day.bleeding === 'spotting') {
+      return 'Spotting recorded; choose a sensation to complete the observation';
+    }
     return 'Not observed';
   }
 
@@ -93,16 +104,22 @@ function stateLabelForDay(day: CalendarDayInfo): string {
   const prefix = derivedPatternMarkerLabel(evidence.derivedMarker);
   const rank = day.mucusRank;
   const hasMucus = rank !== null && rank !== undefined && rank >= 1;
-  const spotting = day.bleeding === 'spotting';
+  const bleedingLabel = day.bleeding === 'spotting'
+    ? 'Spotting'
+    : day.bleeding === 'brown'
+      ? 'Brown'
+      : null;
   const mucusLabel = hasMucus
     ? `${mucusChartStrengthLabel(rank, 'Mucus')} mucus recorded`
     : null;
 
   let observation: string;
-  if (spotting && mucusLabel) {
-    observation = `Spotting and ${mucusLabel.toLowerCase()}`;
-  } else if (spotting || day.primaryDayClass === 'spotting') {
+  if (bleedingLabel && mucusLabel) {
+    observation = `${mucusLabel}; ${bleedingLabel.toLowerCase()} also recorded`;
+  } else if (day.bleeding === 'spotting' || day.primaryDayClass === 'spotting') {
     observation = 'Spotting recorded';
+  } else if (day.bleeding === 'brown') {
+    observation = 'Dry observation; brown also recorded';
   } else if (day.primaryDayClass === 'menstrual_flow') {
     observation = 'Menstrual flow recorded';
   } else if (mucusLabel) {
@@ -116,7 +133,7 @@ function stateLabelForDay(day: CalendarDayInfo): string {
 
 /**
  * Presentation-only mapping. The fill shows the engine chart state, while the
- * dot and S marker preserve mucus and spotting observations recorded together.
+ * dot and S/B marker preserve mucus and spotting/brown observations recorded together.
  */
 export function getCalendarDayPresentation(
   day: CalendarDayInfo,
@@ -126,9 +143,21 @@ export function getCalendarDayPresentation(
     phaseLabel: day.phaseLabel,
     showDerivedMarkers: day.showDerivedMarkers === true,
   });
+  const patternLabel = derivedPatternMarkerLabel(evidence.derivedMarker);
   return {
     backgroundColor: backgroundForDay(day),
     indicatorColor: indicatorForDay(day),
+    bleedingMarker: day.hasEntry
+      ? day.bleeding === 'spotting'
+        ? 'S'
+        : day.bleeding === 'brown'
+          ? 'B'
+          : null
+      : null,
+    patternMarkerLabel:
+      patternLabel === 'P+1' || patternLabel === 'P+2' || patternLabel === 'P+3'
+        ? patternLabel
+        : null,
     showsSpottingMarker: day.hasEntry && day.bleeding === 'spotting',
     showsPeakMarker: evidence.derivedMarker === 'peak_day',
     stateLabel: stateLabelForDay(day),

@@ -82,4 +82,20 @@ describe('detectPeak', () => {
       fertileEndIndex: null,
     });
   });
+
+  it('allows spotting or brown observations to supply Peak and P+ days', () => {
+    const entries: DailyEntry[] = [
+      { date: '2000-02-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2000-02-02', bleeding: 'spotting', mucusRankOverride: 3 },
+      { date: '2000-02-03', bleeding: 'brown', mucusRankOverride: 2 },
+      { date: '2000-02-04', bleeding: 'spotting', mucusRankOverride: 1 },
+      { date: '2000-02-05', bleeding: 'brown', mucusRankOverride: 0 },
+    ];
+
+    expect(detectPeak(entries, [0, 3, 2, 1, 0], 0)).toEqual({
+      peakCandidateIndex: 1,
+      peakIndex: 1,
+      fertileEndIndex: 4,
+    });
+  });
 });

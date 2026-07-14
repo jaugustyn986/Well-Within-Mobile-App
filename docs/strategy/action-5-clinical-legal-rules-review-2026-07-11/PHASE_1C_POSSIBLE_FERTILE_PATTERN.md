@@ -62,7 +62,7 @@ The opening is the first dated observation after Cycle Day 1 that the approved c
 
 The presentation layer must consume that approved boundary. It must not independently infer a start from color, generated code, a historical average, Peak-minus-five, or a hard-coded cycle day.
 
-An exact bounded pattern is not eligible when the opening is limited by an open/not-observed date, an unresolved input contradiction, an ambiguous cycle boundary, or bleeding-plus-mucus that the approved first-release rules route to review.
+An exact bounded pattern is not eligible when the opening is limited by an open/not-observed date, an unresolved input contradiction, an ambiguous cycle boundary, or light menstrual flow plus mucus that the approved first-release rules route to review. Spotting/brown with a complete observation follows the July 14 observation-layer decision and is not blanket-routed to review.
 
 An unresolved Cycle Day 1 boundary blocks the exact possible-pattern interval and derived Cycle Day statistics; it does not erase a separately supported retrospective Peak/P+ sequence from dated observation surfaces. Calendar, the recorded-pattern chart, and Daily Log may show the absolute Peak and P+1–P+3 date markers when interpretation support is `summary_available` and normal-context eligibility is accepted. Those markers must not be used to imply a start boundary, fertile-window duration, or an eligible history range.
 
@@ -101,7 +101,8 @@ Do not show an exact start/end band when the chart is `blocked_by_missing`, `rev
 - continuous Peak-type or continuous lower-quality mucus;
 - a completed non-Peak-only pattern;
 - possible BIP/change-from-pattern interpretation;
-- unusual or irregular bleeding, or unresolved mucus with light/very-light flow or spotting;
+- unusual or irregular bleeding patterns beyond the narrow spotting/brown observation-layer rule, or unresolved mucus with light/very-light menstrual flow;
+- a spotting/brown row with no recorded sensation or appearance when that row affects the opening or P+3 sequence;
 - postpartum/breastfeeding, perimenopause, recent hormonal contraception, relevant medication, or persistent discharge/infection context **when known or represented**; the first release does not collect these contexts and instead discloses that they are not supported or accounted for;
 - invalid, duplicate, missing, or unresolved cycle-boundary dates; or
 - a contradictory observation excluded from automation.
@@ -139,6 +140,7 @@ These are Action 5 implementation strings. They remain subject to usability test
 - Add at most one possible-pattern line when mucus signs are present; do not add start/end dates while the support state is `forming`.
 - Do not introduce predicted future shading or a second calendar legend.
 - Preserve existing non-color distinctions for no entry, bleeding, dry, mucus, Peak-type, Peak Day, and P+1 through P+3. Retrospective Peak/P+ date markers may remain visible when only Cycle Day 1 is unresolved; exact interval shading remains withheld.
+- For combined rows, use `S` or `B` as a small observation marker independent from the fill/dot and from any `P+1`–`P+3` label. Brown + explicit dry uses the dry fill; spotting + explicit dry retains the spotting fill.
 
 ### Cycle Detail
 
@@ -178,7 +180,7 @@ These are Action 5 implementation strings. They remain subject to usability test
 Engineering now owns one versioned presentation model for the possible-pattern feature and tests the accepted first-release behavior for:
 
 1. the engine-derived opening boundary without any surface re-derivation;
-2. bleeding-plus-mucus review routing and invalid/unresolved dates;
+2. light-menstrual-flow-plus-mucus review routing, combined spotting/brown observation layering, and invalid/unresolved dates;
 3. explicit Cycle Day 1 eligibility;
 4. the existing Peak candidate and calendar-correct three-day rule;
 5. immediate reopen behavior for later Peak-type signs and latest-candidate replacement after the new P+3 count completes; later non-Peak mucus remains observational;
@@ -199,8 +201,9 @@ Add the following cross-surface fixtures to the existing Action 5 pack:
 | PFP-02 | Mucus observed; P+3 not reached | Possible pattern may be developing; no start/end dates, duration, band, or future boundary. |
 | PFP-03 | New mucus appears during the count or after a previously displayed P+3 | Later non-Peak mucus remains visible and does not, by itself, remove the completed presentation. A later Peak-type sign removes the earlier derived marker immediately and becomes the Peak Day only after its own qualifying P+3 count; earlier Peak-type signs remain recorded observations. |
 | PFP-04 | Gap or not-observed date affects opening or P+3 | No exact band; observations remain; blocking date/reason is named. |
-| PFP-05 | Continuous, non-Peak-only, BIP-like, bleeding-ambiguous, or known/represented special-context chart | No exact band when the state is detectable; uncollected special contexts remain outside the first release and are named in the limitation. |
+| PFP-05 | Continuous, non-Peak-only, BIP-like, light-flow/mucus-ambiguous, broader unusual-bleeding, or known/represented special-context chart | No exact band when the state is detectable; isolated complete spotting/brown rows follow the observation-layer rule, while uncollected special contexts remain outside the first release and are named in the limitation. |
 | PFP-06 | Three or more eligible completed cycles | Retrospective Cycle Day ranges with `N`; no active/future forecast. |
+| PFP-12 | Spotting/brown combined with dry, non-Peak, Peak-type, and P+ observations | Preserve the completed underlying observation, add `S`/`B`, and keep the retrospective P+ marker independent. Brown + explicit dry remains dry. An unanswered row stays incomplete and cannot count toward P+3. |
 
 For each fixture, verify Calendar, Cycle Detail, Daily Log, History, Help, accessibility output, and PDF use the same centralized model.
 

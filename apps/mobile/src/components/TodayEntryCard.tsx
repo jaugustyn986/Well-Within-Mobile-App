@@ -16,8 +16,10 @@ interface Props {
   onPress: () => void;
 }
 
-function hasSpottingWithMucus(entry: DailyEntry, rank: number | null): boolean {
-  return entry.bleeding === 'spotting' && rank !== null && rank >= 1;
+function layeredBleedingLabel(entry: DailyEntry): string | null {
+  if (entry.bleeding === 'spotting') return 'spotting';
+  if (entry.bleeding === 'brown') return 'brown';
+  return null;
 }
 
 function getMucusLabel(
@@ -25,11 +27,14 @@ function getMucusLabel(
   rank: number | null,
   primary: PrimaryDayClass | null | undefined,
 ): string {
-  if (hasSpottingWithMucus(entry, rank)) {
-    return `Spotting + ${mucusChartStrengthLabel(rank, 'mucus')}`;
+  const bleedingLabel = layeredBleedingLabel(entry);
+  if (bleedingLabel && rank !== null && rank >= 1) {
+    return `${mucusChartStrengthLabel(rank, 'Mucus')} + ${bleedingLabel}`;
   }
   if (primary === 'menstrual_flow') return 'Menstrual flow';
   if (primary === 'spotting') return 'Spotting';
+  if (entry.bleeding === 'brown' && rank === 0) return 'Dry + brown';
+  if (entry.bleeding === 'brown' && rank === null) return 'Brown · observation incomplete';
   return mucusChartStrengthLabel(rank, 'No observation');
 }
 
@@ -38,14 +43,22 @@ function getFertilityHint(
   rank: number | null,
   primary: PrimaryDayClass | null | undefined,
 ): string {
-  if (hasSpottingWithMucus(entry, rank)) {
-    return 'Spotting and a mucus sign were both recorded. The chart keeps both observations.';
+  const bleedingLabel = layeredBleedingLabel(entry);
+  if (bleedingLabel && rank !== null && rank >= 1) {
+    const sign = rank >= 3 ? 'Peak-type sign' : 'mucus sign';
+    return `A ${sign} and ${bleedingLabel} were both recorded. The chart keeps both observations.`;
   }
   if (primary === 'menstrual_flow') {
     return 'Logged as menstrual flow; mucus is not read as Peak-type for this day.';
   }
   if (primary === 'spotting') {
-    return 'Spotting noted; mucus signs show when present.';
+    return 'Spotting noted with a dry observation.';
+  }
+  if (entry.bleeding === 'brown' && rank === 0) {
+    return 'A dry observation and brown were both recorded.';
+  }
+  if (entry.bleeding === 'brown' && rank === null) {
+    return 'Choose a sensation to complete this observation.';
   }
   switch (rank) {
     case 0: return 'Dry observation recorded.';

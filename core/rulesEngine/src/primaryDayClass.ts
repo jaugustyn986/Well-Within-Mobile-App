@@ -15,18 +15,19 @@ export function derivePrimaryDayClassFromEntry(
   entry: DailyEntry,
   rank: number | null,
 ): PrimaryDayClass {
-  if (entry.missing || rank === null) return 'missing';
+  if (entry.missing) return 'missing';
 
   const b = entry.bleeding ?? 'none';
   if (b === 'heavy' || b === 'moderate' || b === 'light') {
     return 'menstrual_flow';
   }
   if (b === 'spotting') {
-    return rank >= 1 ? mucusPrimary(rank) : 'spotting';
+    return rank !== null && rank >= 1 ? mucusPrimary(rank) : 'spotting';
   }
   if (b === 'brown') {
-    return mucusPrimary(rank);
+    return rank === null ? 'missing' : mucusPrimary(rank);
   }
+  if (rank === null) return 'missing';
   return mucusPrimary(rank);
 }
 
@@ -42,7 +43,7 @@ export function derivePrimaryDayClassAtIndex(
 ): PrimaryDayClass {
   const entry = entries[i];
   const rank = ranks[i];
-  if (entry?.missing || rank === null) return 'missing';
+  if (entry?.missing) return 'missing';
 
   const bc = bleedingClassByDay[i] ?? 'none';
 
@@ -51,17 +52,18 @@ export function derivePrimaryDayClassAtIndex(
   }
 
   if (bc === 'post_peak_spotting') {
-    return rank >= 1 ? mucusPrimary(rank) : 'spotting';
+    return rank !== null && rank >= 1 ? mucusPrimary(rank) : 'spotting';
   }
 
   if (bc === 'spotting') {
-    return rank >= 1 ? mucusPrimary(rank) : 'spotting';
+    return rank !== null && rank >= 1 ? mucusPrimary(rank) : 'spotting';
   }
 
   if (bc === 'brown_discharge' || bc === 'intermenstrual') {
-    return mucusPrimary(rank);
+    return rank === null ? 'missing' : mucusPrimary(rank);
   }
 
+  if (rank === null) return 'missing';
   return mucusPrimary(rank);
 }
 

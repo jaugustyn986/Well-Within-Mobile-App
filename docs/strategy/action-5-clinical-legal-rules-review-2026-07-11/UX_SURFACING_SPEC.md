@@ -64,6 +64,7 @@ Surfaces consume this contract. They do not calculate a possible-pattern boundar
 - Preserve the catch-up card directly under the banner because it explains and resolves uncertainty.
 - Preserve a visually distinct no-entry state versus recorded dry.
 - Add non-color day markers and VoiceOver descriptions containing date, observation, derived marker, and action status.
+- Preserve combined observations without forcing one fact to replace another: the fill/dot shows the completed dry, non-Peak, or Peak-type observation; `S` or `B` preserves spotting/brown; `P+1`–`P+3` remains a separate retrospective marker.
 - Keep everyday legend terms observational; do not expose internal phase enums.
 - When mucus signs are present in a `forming` chart, add at most one line to the existing banner: `Possible fertile pattern may be developing.` Show no start/end dates, duration, or band; do not add future calendar shading or a new legend color.
 
@@ -102,6 +103,7 @@ Allowed direction after approval:
 - Clear distinction that a Peak-type observation is not yet an identified Peak Day.
 - Exact three-day evidence when a marker is retrospectively identified.
 - Menstrual-flow primary-marker explanation.
+- Combined spotting/brown explanation that names both the underlying observation and the recorded `S`/`B` fact. Brown + explicit dry remains a dry chart observation.
 - Exact missing date when derivation is blocked.
 
 Notes remain user content and must never influence interpretation unless a future, explicit, validated feature is approved.
@@ -141,6 +143,7 @@ For a developing chart with mucus signs, say that a possible pattern may be deve
 - Every marker can expose its evidence and limitations.
 - Unsupported/BIP-like patterns never silently receive the standard interpretation.
 - Later non-Peak mucus after P+3 remains visible as an observation and does not, by itself, reopen the bounded presentation. A later Peak-type sign immediately reopens it and becomes the displayed Peak only after its own qualifying P+3 count.
+- A complete spotting/brown row follows the same observation-versus-derived-marker hierarchy. It may carry Peak-type, non-Peak, or a qualifying P+ marker; spotting/brown alone does not reopen a completed pattern.
 - Editing a prior entry refreshes marker, explanation, status, history eligibility, and export.
 - An unresolved Cycle Day 1 may withhold the possible-pattern interval without suppressing an otherwise supported retrospective Peak/P+ date sequence; do not turn those date markers into Cycle Day statistics or a range.
 - A recoverable leading-light ambiguity names the deciding light-flow date and the following fuller-flow date in History and Cycle Detail and offers one direct `Confirm {date}` or `Review {date}` action. Do not silently fall back to the first bleeding day.

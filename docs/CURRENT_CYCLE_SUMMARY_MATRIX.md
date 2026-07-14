@@ -10,8 +10,8 @@ These describe what this version of Well Within can summarize. They are not diag
 | --- | --- | --- | --- |
 | `forming` | The record does not yet support a retrospective summary. | Names what is recorded now—no mucus signs, mucus signs without Peak, or a possible Peak Day—then gives one keep-charting next step. | Always available |
 | `summary_available` | One supported retrospective sequence is available. | Names the marked Peak Day, the three logged days that support it, the chart-only limitation, and the next step. | Always available |
-| `blocked_by_missing` | An existing engine warning identifies an interior missing date or not-observed day that limits a boundary/confirmation. Dates after the last recorded row are treated as a developing pattern, not a gap. | **A few days need context** plus the specific way the open/not-observed day affects the summary. | Always available; unlogged dates may be completed |
-| `review_recommended` | More than one sequence independently satisfies the current automatic confirmation rule, so the app does not choose between them. | **Your chart shows more than one possible Peak pattern** plus the exact reason the app is not choosing one Peak Day. | Always available; outside review is optional |
+| `blocked_by_missing` | An existing engine warning identifies an interior missing date, not-observed day, or incomplete stored observation that limits a boundary/confirmation. Dates after the last recorded row are treated as a developing pattern, not a gap. | **A few days need context** plus the specific way the open/not-observed/incomplete day affects the summary. When the incomplete day is focused, name the missing sensation/appearance directly. | Always available; unlogged or incomplete dates may be completed |
+| `review_recommended` | A detected case is outside the supported automatic path, currently light menstrual flow plus mucus or invalid/unresolved date chronology. | Names the exact limitation without choosing a Peak Day or exact range. | Always available; outside review is optional |
 
 The evaluator reruns whenever entries are recalculated. More data or an edit may change the state, but user copy must not promise that it will.
 
@@ -19,7 +19,7 @@ The evaluator reruns whenever entries are recalculated. More data or an edit may
 
 1. `review_recommended`
 2. `blocked_by_missing`
-3. Focus-day observation/bleeding/spotting state
+3. Focus-day observation state, including combined spotting/brown and incomplete observations
 4. Existing phase headline
 
 Review and missing states suppress phase conclusions, comparison baselines, fertile-boundary cards, marker charts, and detailed derived export fields. They preserve observation history, editing, daily charting, and an observation-focused export.
@@ -67,7 +67,7 @@ The card uses progressive disclosure to stay calm and scannable:
 
 1. one headline naming what the chart shows;
 2. one short, observation-specific reason;
-3. an optional muted limitation only when a Peak interpretation could be mistaken for ovulation or when the app declines to choose a Peak Day;
+3. an optional muted limitation only when a Peak interpretation could be mistaken for ovulation, when the app declines to choose a Peak Day, or when a combined spotting/brown row needs completion;
 4. combined cycle-day/completeness metadata;
 5. one next step, always `guidance`; and
 6. a contextual Help action only when a deeper explanation is useful.
@@ -80,8 +80,10 @@ The card uses progressive disclosure to stay calm and scannable:
 - Adding/editing an entry recomputes status.
 - Dates beyond the last recorded row produce a developing possible-Peak state, not a missing-day warning.
 - A confirmation gap produces `blocked_by_missing`.
-- Two independently confirmed sequences produce `review_recommended` without choosing a clinical Peak.
-- Editing the later sequence can return the fixture to `summary_available`.
+- A later Peak-type observation supersedes the earlier candidate and returns the chart to forming until its own qualifying P+3 count completes.
+- Complete spotting/brown observations preserve their underlying dry/non-Peak/Peak-type state; qualifying lower observations may carry P+1–P+3.
+- Brown + explicit dry remains dry with `B`; spotting + explicit dry remains spotting-colored with `S`.
+- A spotting/brown row with no sensation or appearance is not inferred dry and cannot count toward P+ confirmation until completed.
 - Marking a day not observed completes Catch Up but remains visible as a limitation.
 - Review/missing cycles do not enter aggregates or overlays.
 - Observation-focused export remains available.

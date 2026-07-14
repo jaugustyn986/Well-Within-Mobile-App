@@ -103,7 +103,7 @@ export function CycleCard({
           <Text style={styles.limitationText}>
             {interpretation.status === 'review_recommended'
               ? interpretation.reason === 'bleeding_mucus_ambiguity'
-                ? 'Mucus and light bleeding were recorded together. Both observations remain available.'
+                ? 'Mucus and light menstrual flow were recorded together. Both observations remain available.'
                 : 'Some chart details need review before a pattern summary can be shown.'
               : 'A few days need context before this chart can be summarized.'}
           </Text>

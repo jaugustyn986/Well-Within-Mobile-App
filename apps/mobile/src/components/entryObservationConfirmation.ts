@@ -2,7 +2,7 @@ import type { DailyEntry, Sensation } from 'core-rules-engine';
 
 export function initialSensationForEntry(initialEntry?: DailyEntry | null): Sensation | null {
   if (!initialEntry) return null;
-  return initialEntry.sensation ?? 'dry';
+  return initialEntry.sensation ?? null;
 }
 
 export function canSaveObservationEntry(

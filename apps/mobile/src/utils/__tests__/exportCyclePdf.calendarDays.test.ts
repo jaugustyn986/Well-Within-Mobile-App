@@ -177,8 +177,8 @@ describe('buildCyclePdfHtml calendar-day output', () => {
       possibleFertilePatternEligibility: eligible,
     });
 
-    expect(html).toContain('Mucus and light bleeding were recorded together');
-    expect(html).toContain('mucus was recorded with light bleeding or spotting');
+    expect(html).toContain('Mucus and light menstrual flow were recorded together');
+    expect(html).toContain('mucus was recorded with light menstrual flow');
     expect(html).toContain('focuses on recorded observations');
     expect(html).not.toContain('>Phase</th>');
   });

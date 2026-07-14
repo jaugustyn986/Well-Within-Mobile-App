@@ -178,7 +178,7 @@ export function EntryForm({
   const handleSameAsYesterday = useCallback((on: boolean) => {
     if (on && previousDayEntry) {
       preToggleSnapshot.current = { sensation, appearances: [...appearances] };
-      setSensation(previousDayEntry.sensation ?? 'dry');
+      setSensation(initialSensationForEntry(previousDayEntry));
       setAppearances(previousDayEntry.appearances ?? []);
     } else if (!on && preToggleSnapshot.current) {
       setSensation(preToggleSnapshot.current.sensation);
@@ -221,13 +221,20 @@ export function EntryForm({
     }
     if (primary === 'spotting') {
       return {
-        title: 'Spotting',
+        title: 'Spotting recorded',
         desc: 'Light bleeding or spotting without full flow.',
-        hint: 'Note sensation and appearance alongside spotting.',
+        hint: 'Your dry or mucus observation stays separate from the spotting you recorded.',
       };
     }
     const classification = classifyFertility({ sensation, appearances });
-    return CLASSIFICATION_LABELS[classification] ?? null;
+    const base = CLASSIFICATION_LABELS[classification] ?? null;
+    if (!base || (bleeding !== 'spotting' && bleeding !== 'brown')) return base;
+    const bleedingLabel = bleeding === 'brown' ? 'Brown was' : 'Spotting was';
+    return {
+      ...base,
+      desc: `${base.desc} ${bleedingLabel} also recorded.`,
+      hint: 'Both observations stay visible on your chart; the mucus sign determines the mucus pattern shown for this day.',
+    };
   }, [missing, rank, bleeding, sensation, appearances]);
 
   const displayDate = formatFullDate(date);

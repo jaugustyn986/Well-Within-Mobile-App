@@ -165,14 +165,15 @@ The app uses **color-coded calendar cells** and a small **indicator dot** (in pl
 |---|---|---|
 | Dusty magenta/pink cell | None | Red sticker (bleeding) |
 | White cell | None | No entry logged |
-| Soft sage cell | None | Green sticker (dry, or post-peak) |
+| Soft sage cell | None | Recorded dry observation |
 | Soft sage cell | Muted green dot | Green baby sticker (non-peak mucus, rank 1–2) |
 | Warm grey cell | None | White baby sticker (peak-type mucus, rank 3) |
 | Warm grey cell | Charcoal border | Confirmed Peak day |
 | Warm butter cell | None | Yellow sticker for post-peak days (P+1, P+2, P+3) |
+| Any eligible observation cell | `S` or `B` (top-left) | Spotting or brown was also recorded; the marker does not replace the completed dry/mucus observation |
 | Any cell | 🌹 (bottom-right) | Intercourse recorded |
 
-**Display logic:** Non-peak mucus (rank 1–2) uses a muted green indicator dot when the day is eligible for a mucus sticker display. Peak-type mucus (rank 3) uses the warm-grey cell treatment, and a confirmed Peak Day adds the charcoal border. This keeps the actual observation visible while preserving the app's distinction between non-peak and peak-type mucus. The calendar renders past cycles correctly by using per-cycle results from the multi-cycle engine rather than the single flat `recalculateCycle()` output.
+**Display logic:** Non-peak mucus (rank 1–2) uses a muted green indicator dot when the day is eligible for a mucus sticker display. Peak-type mucus (rank 3) uses the warm-grey cell treatment, and a confirmed Peak Day adds the charcoal border. Spotting/brown is an independent `S`/`B` observation marker: complete mucus stays visible, brown + explicit dry stays dry, and a qualifying P+ label remains separate. A combined row with no sensation or appearance stays incomplete rather than silently becoming dry. This keeps recorded observations distinct from retrospective markers. The calendar renders past cycles correctly by using per-cycle results from the multi-cycle engine rather than the single flat `recalculateCycle()` output.
 
 ### Future feature: paper chart view
 

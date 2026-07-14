@@ -182,7 +182,7 @@ function firstBleedingMucusIndex(entries: DailyEntry[], result: CycleResult): nu
     const rank = result.mucusRanks[i];
     if (
       !entries[i]?.missing &&
-      (bleeding === 'light' || bleeding === 'spotting') &&
+      bleeding === 'light' &&
       rank !== null &&
       rank >= 1
     ) {
@@ -206,6 +206,28 @@ function firstMissingConfirmationDate(
     const index = dates.get(date);
     if (absentOnly && index === undefined) return date;
     if (!absentOnly && index !== undefined && entries[index]?.missing) return date;
+  }
+  return null;
+}
+
+function firstIncompleteConfirmationDate(
+  entries: DailyEntry[],
+  result: CycleResult,
+): string | null {
+  if (result.peakCandidateIndex === null) return null;
+  const candidateDate = entries[result.peakCandidateIndex]?.date;
+  if (!candidateDate) return null;
+  const dates = indexByDate(entries);
+  for (let offset = 1; offset <= 3; offset += 1) {
+    const date = addDaysIso(candidateDate, offset);
+    const index = dates.get(date);
+    if (
+      index !== undefined &&
+      entries[index]?.missing !== true &&
+      result.mucusRanks[index] === null
+    ) {
+      return date;
+    }
   }
   return null;
 }
@@ -251,10 +273,12 @@ function limitDetail(
       return `${datePrefix}no observation is recorded during the three-day Peak count.`;
     case 'not_observed':
       return `${datePrefix}this day is marked not observed during the three-day Peak count.`;
+    case 'incomplete_observation':
+      return `${datePrefix}this observation needs a sensation or appearance before it can count in the three-day Peak follow-up.`;
     case 'earlier_gap_limits_boundary':
       return `${datePrefix}an open or not-observed day limits the opening boundary.`;
     case 'bleeding_mucus_ambiguity':
-      return `${datePrefix}mucus was recorded with light bleeding or spotting, which this release does not use to bound a possible pattern.`;
+      return `${datePrefix}mucus was recorded with light menstrual flow, which this release does not use to bound a possible pattern.`;
     case 'invalid_or_unresolved_dates':
       return 'One or more dates are missing, invalid, duplicated, or out of order.';
     case 'context_ineligible':
@@ -280,6 +304,8 @@ function limitForReason(
     date = firstMissingConfirmationDate(entries, result, true);
   } else if (reason === 'not_observed') {
     date = firstMissingConfirmationDate(entries, result, false);
+  } else if (reason === 'incomplete_observation') {
+    date = firstIncompleteConfirmationDate(entries, result);
   } else if (reason === 'earlier_gap_limits_boundary') {
     date = firstEarlierBoundaryLimitDate(entries, result);
   } else if (reason === 'bleeding_mucus_ambiguity') {
@@ -311,7 +337,7 @@ function withheldPresentation(
   const copy = (() => {
     if (reason === 'bleeding_mucus_ambiguity') {
       return {
-        heading: 'Mucus and light bleeding were recorded together',
+        heading: 'Mucus and light menstrual flow were recorded together',
         body:
           'Both observations remain on your chart. Because they were recorded together, Well Within leaves the possible-pattern boundary open for review.',
       };

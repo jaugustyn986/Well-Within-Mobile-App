@@ -217,6 +217,8 @@ Missing days must be supported.
 
 Each day must be converted to an internal numeric mucus rank (0–3) from `sensation` and `appearances`, using the **maximum** across sensation, appearance boosts, and the lubricative promotion rule. The app and PDF export show **qualitative labels** (Dry, Damp, Wet, Peak-type), not the raw numbers.
 
+A stored entry with neither a sensation nor an appearance has no rank and is not inferred to be dry. Explicit dry is rank 0.
+
 **Canonical logic:** [RULES_ENGINE_SPEC.md](RULES_ENGINE_SPEC.md#mucus-rank-mapping) (single source of truth).
 
 **Rank precedence (summary)**
@@ -224,15 +226,16 @@ Each day must be converted to an internal numeric mucus rank (0–3) from `sensa
 - If multiple signals apply, the **highest** internal rank wins.  
   - Example: wet sensation + clear appearance → peak-type strength (internal rank 3).
 
-#### Rules Engine Step 2 — Fertile Window Start
+#### Rules Engine Step 2 — Possible-pattern opening
 
-The fertile window begins at the first day where mucusRank ≥ 1.
+For the narrow Action 5 chart explanation, the internal opening is the first complete mucus observation with rank ≥ 1 after Cycle Day 1 that is not on heavy/moderate/light menstrual flow. This is not presented as a complete or predictive fertile-window determination.
 
 **Algorithm**
 
 - Iterate through entries.
-- If rank ≥ 1: fertileStartIndex = current index.
-- If no such day exists: fertile window does not open.
+- If rank ≥ 1 and menstrual flow does not block the row: `fertileStartIndex = current index`.
+- Spotting or brown preserves the completed underlying observation rather than blocking it.
+- If no such day exists: the internal possible-pattern interval does not open.
 
 #### Rules Engine Step 3 — Peak Identification
 
@@ -240,7 +243,7 @@ Peak day is defined as the last day of highest quality mucus before a sustained 
 
 **Candidate rule**
 
-- Any day where mucusRank = 3.
+- Any complete day where mucusRank = 3 and bleeding is not heavy, moderate, or light. Spotting/brown may coexist with the Peak-type observation.
 
 **Confirmation rule**
 
@@ -257,12 +260,14 @@ Example:
 
 **Missing Day Rule**
 
-- If any of the confirmation days (P+1, P+2, P+3) are missing: peak cannot be confirmed; peak remains unconfirmed.
+- If any of the confirmation days (P+1, P+2, P+3) are missing or incomplete: peak cannot be confirmed; peak remains unconfirmed.
+- A complete lower-rank spotting/brown observation may carry P+1, P+2, or P+3. Spotting/brown alone does not extend or reopen a completed count.
 
-#### Rules Engine Step 4 — Fertile Window End
+#### Rules Engine Step 4 — Retrospective possible-pattern boundary
 
-- Fertile window ends on: Peak + 3.  
-  - Example: Peak = Day 10 → Fertile window end = Day 13
+- The narrow possible-pattern presentation may be bounded through P+3 only after the Action 5 support and Cycle Day 1 gates pass.
+  - Example: Peak = Day 10 → P+3 = Day 13
+- User-facing copy says `Possible fertile pattern` and `through P+3`; it does not claim fertility ended, identify infertile days, or provide pregnancy-avoidance guidance.
 
 #### Phase Labels
 
@@ -541,6 +546,7 @@ Log of implemented features and doc updates for traceability.
 | 2026-03-05 | Transparent logo background | Removed opaque beige background from logo PNG so the logo overlays the app's background color seamlessly on onboarding and in the main header. Asset remains at `apps/mobile/assets/logo.png`. |
 | 2026-03-05 | Clock icon refinement | Clock icon (onboarding slide 3, Cycle History toggle) finalized: hands at 10:30 and 4:30 with center dot, same stroke as circle, centered in frame. Implemented in `LineIcon` clock variant. |
 | 2026-03-30 | Help & onboarding — engine-aligned copy | Understanding Your Chart: status messages as seven titled sections from `HELP_STATUS_MESSAGE_SECTIONS` (`observationEducationCopy.ts`); sensation/appearance and Peak Day bodies refreshed; onboarding slide 3 adds de-emphasized “Consistency matters” footer. Premium visual-composition skill: `skills/ux_visual_composition_premium.md`; registered in `.cursor/rules/skills-reference.mdc`. |
+| 2026-07-14 | Spotting/brown observation layers | Calendar, Today, Daily Log, recorded-pattern chart, Help, and export preserve spotting/brown with the completed underlying observation. `S`/`B` and P+ markers are independent; brown + dry remains dry; incomplete combined rows never infer dry. See the Action 5 working decision addendum. |
 
 ---
 
@@ -559,7 +565,7 @@ Log of implemented features and doc updates for traceability.
 - Daily entry structure: bleeding, ESQ (sensation/appearance/quantity), intercourse boolean, notes.
 - Deterministic mucus rank (0–3) internally; user-facing labels without numeric ranks.
 - Peak detection algorithm: candidate + confirmation after 3 lower-quality days.
-- Fertile window starts first mucus day after bleeding, ends at P+3 inclusive.
+- Qualified retrospective `Possible fertile pattern` uses the first eligible mucus observation through P+3 only after Action 5 support/boundary gates pass; no safe/infertile or predictive claim.
 - Recompute entire cycle on any edit.
 - Unit tests covering edge cases.
 - Minimal Expo app demonstrating daily entry UI + timeline + partner view stub.

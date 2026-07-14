@@ -4,6 +4,8 @@ import {
   buildCalendarAlignedCycleDays,
   mucusChartStrengthLabel,
   type CycleSlice,
+  type DailyEntry,
+  type PrimaryDayClass,
 } from 'core-rules-engine';
 import {
   BG_BLEEDING, BG_CARD, BG_DRY, BG_MISSING, BG_PEAK_TYPE, BG_POST_PEAK,
@@ -22,9 +24,14 @@ interface Props {
   showDerivedMarkers?: boolean;
 }
 
-function getDayCircleColor(evidence: DayPresentationEvidence, bleeding: boolean): string {
+function getDayCircleColor(
+  evidence: DayPresentationEvidence,
+  primaryDayClass: PrimaryDayClass,
+): string {
+  if (primaryDayClass === 'menstrual_flow' || primaryDayClass === 'spotting') {
+    return BG_BLEEDING;
+  }
   if (evidence.recordedState === 'missing') return BG_MISSING;
-  if (bleeding) return BG_BLEEDING;
   if (
     evidence.derivedMarker === 'p_plus_1' ||
     evidence.derivedMarker === 'p_plus_2' ||
@@ -45,6 +52,28 @@ function getRankLabel(rank: number | null): string {
   return mucusChartStrengthLabel(rank, '--');
 }
 
+function bleedingObservationLabel(entry: DailyEntry): string | null {
+  if (entry.bleeding === 'spotting') return 'Spotting';
+  if (entry.bleeding === 'brown') return 'Brown';
+  if (entry.bleeding && entry.bleeding !== 'none') return `Bleeding (${entry.bleeding})`;
+  return null;
+}
+
+function dailyObservationLabel(entry: DailyEntry | null, rank: number | null): string {
+  if (!entry) return 'No entry';
+  const bleedingLabel = bleedingObservationLabel(entry);
+  const layeredBleeding = entry.bleeding === 'spotting' || entry.bleeding === 'brown';
+
+  if (rank === null) {
+    return bleedingLabel ? `${bleedingLabel} · Observation incomplete` : 'Observation incomplete';
+  }
+  if (!layeredBleeding && bleedingLabel) return bleedingLabel;
+  if (rank >= 1 && bleedingLabel) return `${getRankLabel(rank)} · ${bleedingLabel}`;
+  if (entry.bleeding === 'spotting') return 'Spotting';
+  if (entry.bleeding === 'brown') return 'Dry · Brown';
+  return getRankLabel(rank);
+}
+
 export function DailyLogList({ cycle, showDerivedMarkers = false }: Props): React.JSX.Element {
   const days = buildCalendarAlignedCycleDays(cycle);
 
@@ -54,16 +83,14 @@ export function DailyLogList({ cycle, showDerivedMarkers = false }: Props): Reac
       <View style={styles.card}>
         {days.map((day) => {
           const { entry, phaseLabel: phase, mucusRank: rank } = day;
-          const bleeding = entry?.bleeding !== undefined && entry.bleeding !== 'none';
-          const spottingWithMucus = entry?.bleeding === 'spotting' && rank !== null && rank >= 1;
           const evidence = getDayPresentationEvidence({
             mucusRank: rank,
             phaseLabel: phase,
             showDerivedMarkers,
           });
           const isPeak = evidence.derivedMarker === 'peak_day';
-          const circleColor = getDayCircleColor(evidence, bleeding);
-          const dotColor = !bleeding && evidence.recordedState === 'mucus'
+          const circleColor = getDayCircleColor(evidence, day.primaryDayClass);
+          const dotColor = evidence.recordedState === 'mucus'
             ? FERTILE_ACCENT
             : null;
           const markerLabel = derivedPatternMarkerLabel(evidence.derivedMarker);
@@ -77,14 +104,8 @@ export function DailyLogList({ cycle, showDerivedMarkers = false }: Props): Reac
               <View style={styles.rowContent}>
                 <Text style={styles.dateText}>{formatDate(day.date)}</Text>
                 <Text style={styles.rankText}>
-                  {!entry
-                    ? 'No entry'
-                    : spottingWithMucus
-                      ? `Spotting + ${getRankLabel(rank)}`
-                      : bleeding
-                        ? `Bleeding (${entry.bleeding})`
-                        : getRankLabel(rank)}
-                  {!bleeding && entry?.frequency
+                  {dailyObservationLabel(entry, rank)}
+                  {rank !== null && rank >= 1 && entry?.frequency
                     ? ` ${entry.frequency === 'all_day' ? 'AD' : `x${entry.frequency}`}`
                     : ''}
                 </Text>

@@ -105,8 +105,11 @@ export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNex
                 {presentation.indicatorColor && (
                   <View style={[styles.babyDot, { backgroundColor: presentation.indicatorColor }]} />
                 )}
-                {presentation.showsSpottingMarker ? (
-                  <Text style={styles.spottingMarker}>S</Text>
+                {presentation.bleedingMarker ? (
+                  <Text style={styles.bleedingMarker}>{presentation.bleedingMarker}</Text>
+                ) : null}
+                {presentation.patternMarkerLabel ? (
+                  <Text style={styles.patternMarker}>{presentation.patternMarkerLabel}</Text>
                 ) : null}
                 {cell.intercourse && (
                   <Text style={styles.roseIcon}>{INTERCOURSE_ICON}</Text>
@@ -132,8 +135,8 @@ export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNex
       </View>
       <Text style={styles.legendKey}>
         {showDerivedLegend
-          ? 'Gray = Peak-type sign · outline = Peak Day · dot = mucus · S = spotting'
-          : 'Gray = Peak-type sign · dot = mucus · S = spotting'}
+          ? 'Gray = Peak-type sign · outline = Peak Day · dot = mucus · S/B = spotting or brown'
+          : 'Gray = Peak-type sign · dot = mucus · S/B = spotting or brown'}
       </Text>
     </View>
   );
@@ -190,14 +193,23 @@ const styles = StyleSheet.create({
     width: 7, height: 7, borderRadius: 4,
     position: 'absolute', top: 3, right: 3,
   },
-  spottingMarker: {
+  bleedingMarker: {
     position: 'absolute',
-    bottom: 2,
+    top: 2,
     left: 4,
     fontSize: 9,
     lineHeight: 11,
     fontWeight: '700',
     color: TEXT_PRIMARY,
+  },
+  patternMarker: {
+    position: 'absolute',
+    bottom: 2,
+    left: 3,
+    fontSize: 8,
+    lineHeight: 10,
+    fontWeight: '600',
+    color: TEXT_MUTED,
   },
   roseIcon: {
     position: 'absolute', bottom: 1, right: 1,

@@ -12,7 +12,7 @@ import {
   calendarSpanLength,
   cycleDayForEntryIndex,
 } from './calendar';
-import { CycleResult, DailyEntry, PhaseLabel } from './types';
+import { CycleResult, DailyEntry, PhaseLabel, PrimaryDayClass } from './types';
 
 export interface CycleSlice {
   cycleNumber: number;
@@ -44,6 +44,7 @@ export interface CalendarAlignedCycleDay {
   entry: DailyEntry | null;
   mucusRank: number | null;
   phaseLabel: PhaseLabel;
+  primaryDayClass: PrimaryDayClass;
 }
 
 /** True when a completed cycle is eligible for derived history aggregates. */
@@ -72,6 +73,7 @@ export function buildCalendarAlignedCycleDays(
       entry,
       mucusRank: cycle.result.mucusRanks[entryIndex] ?? null,
       phaseLabel: cycle.result.phaseLabels[entryIndex] ?? 'missing',
+      primaryDayClass: cycle.result.primaryDayClassByDay[entryIndex] ?? 'missing',
     }));
   }
 
@@ -90,6 +92,7 @@ export function buildCalendarAlignedCycleDays(
         entry: null,
         mucusRank: null,
         phaseLabel: 'missing' as const,
+        primaryDayClass: 'missing' as const,
       };
     }
     return {
@@ -99,6 +102,7 @@ export function buildCalendarAlignedCycleDays(
       entry: cycle.entries[entryIndex],
       mucusRank: cycle.result.mucusRanks[entryIndex] ?? null,
       phaseLabel: cycle.result.phaseLabels[entryIndex] ?? 'missing',
+      primaryDayClass: cycle.result.primaryDayClassByDay[entryIndex] ?? 'missing',
     };
   });
 }

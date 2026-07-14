@@ -15,6 +15,14 @@ export function computeMucusRank(entry: DailyEntry | null): number | null {
     return Math.max(...entry.observations.map((obs) => computeObservationRank(obs)));
   }
 
+  // A stored row proves that something was charted, but it does not prove the
+  // user observed no mucus. New entries require an explicit sensation choice;
+  // legacy rows with neither sensation nor appearance remain unanswered so
+  // they cannot silently satisfy a Peak follow-up day as "dry".
+  if (entry.sensation === undefined && entry.appearances === undefined) {
+    return null;
+  }
+
   return computeObservationRank({
     sensation: entry.sensation ?? 'dry',
     appearances: entry.appearances ?? [],

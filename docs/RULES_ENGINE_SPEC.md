@@ -43,6 +43,8 @@ The rank is the **maximum** across all applicable signals:
 
 If multiple observations exist in one day, daily rank is the `max(observationRanks)`.
 
+An entry that has neither a sensation nor an appearance is **not** inferred to be dry. Its rank is `null` until the observation is completed. Explicit `dry` has rank 0 and may participate in a later retrospective P+ count.
+
 ## Observation Fields
 
 The system captures three observation dimensions per day:
@@ -95,12 +97,12 @@ This specification describes the **standard Creighton-style cycle** (dry → muc
 
 **Intent:** Fertile opening is tied to **observed mucus** after the menstrual flow phase, not to a raw rank threshold alone.
 
-**Blocking bleeding:** Days with `bleeding` in `heavy`, `moderate`, `light`, or `spotting` are treated as **flow** days for this rule. Fertile start is **not** assigned on a flow day even if mucus rank would otherwise be ≥ 1 (see verification case 7B).
+**Blocking menstrual flow:** Days with `bleeding` in `heavy`, `moderate`, or `light` are treated as **flow** days for this rule. Fertile start is **not** assigned on a flow day even if mucus rank would otherwise be ≥ 1 (see verification case 7B). Spotting and brown are observation layers: when the row has an explicit mucus rank ≥ 1, that underlying observation remains eligible for opening; explicit brown + dry remains dry.
 
 **Rule:** `fertileStartIndex` is the first index `i` at or after `cycleStartIndex` such that:
 
 1. `mucusRanks[i] >= 1` (observed mucus present for ranking), and  
-2. `entries[i].bleeding` is **not** one of `heavy` | `moderate` | `light` | `spotting` (treat `undefined` / `none` / `brown` as non-flow for opening).
+2. `entries[i].bleeding` is **not** one of `heavy` | `moderate` | `light` (treat `undefined` / `none` / `spotting` / `brown` as non-flow for opening).
 
 If no such day exists, `fertileStartIndex` is `null`.
 
@@ -111,12 +113,12 @@ If no such day exists, `fertileStartIndex` is `null`.
 
 ## Peak candidate and confirmation (calendar P+3, standard cycle)
 
-**Peak-type day:** `mucusRanks[i] === 3` (peak-type mucus per rank mapping above) and the row is not missing.
+**Peak-type day:** `mucusRanks[i] === 3` (peak-type mucus per rank mapping above), the row is not missing, and the row does not contain heavy/moderate/light menstrual flow. Spotting or brown recorded on the same day does not erase the Peak-type observation.
 
 **Calendar confirmation:** Peak is **not** confirmed by slice index adjacency alone. Let `D` be the calendar date (`YYYY-MM-DD`) of a peak-type day. Peak is **confirmed** at that day only if the **next three consecutive calendar days** `D+1`, `D+2`, `D+3` each:
 
 1. **Exist** as a stored row in the same recalculation array (no calendar gap).  
-2. Are **not** `missing: true` and have non-null rank.  
+2. Are **not** `missing: true` and have non-null rank. Spotting or brown may be present; the observation must still be complete.
 3. Have ranks **strictly lower** than the candidate rank (for rank `3` followers, ranks must be `< 3`).  
 4. Contain **no** peak-type observation on those days (already enforced by rank &lt; 3 when candidate rank is 3).
 
@@ -137,7 +139,7 @@ If no such day exists, `fertileStartIndex` is `null`.
 
 ## Missing data and interpretation warnings
 
-- Missing rows **block** peak confirmation when they fall in the P+1–P+3 **calendar** window for the active candidate.  
+- Missing rows and stored rows with an incomplete observation **block** peak confirmation when they fall in the P+1–P+3 **calendar** window for the active candidate.
 - Interior calendar gaps (a skipped date before a later recorded row) are treated like missing for confirmation. Dates beyond the last recorded row mean the pattern is still developing, not that the user missed a day.
 - Missing **after** Peak is confirmed does **not** by itself invalidate the confirmed peak; a later Peak-type observation does supersede it under the latest-candidate rule above.
 - **`dataComplete`** — `true` iff **`interpretationWarnings`** is empty. (Calendar completeness for the banner—explicit missing rows, interior gaps, trailing gaps—is a separate **`buildCurrentCycleSummary`** calculation; it does not flip `dataComplete` on `CycleResult`.)  
@@ -193,10 +195,11 @@ Each day in the slice has derived:
 ### Bleeding override consistency
 
 - **Menstrual flow days** (`bleedingClassByDay` = `cycle_start_flow` or `continuing_menses`) map to **`menstrual_flow`**. Heavy/moderate/light during menses are not interpreted as Peak-type for candidacy or user-facing “peak fertility” copy on that day.  
-- **Peak-type candidacy** (`detectPeak`): indices with **flow bleeding** (`heavy` \| `moderate` \| `light` \| `spotting` per `blocksFertileOpening` in `flowBleeding.ts`) **cannot** be peak-type candidates, even if `mucusRanks[i] === 3`.  
+- **Peak-type candidacy** (`detectPeak`): indices with **flow bleeding** (`heavy` \| `moderate` \| `light` per `blocksFertileOpening` in `flowBleeding.ts`) **cannot** be peak-type candidates, even if `mucusRanks[i] === 3`. Spotting and brown do not block a complete rank-3 observation.
 - **Phase labels**: if a flow day would otherwise carry a fertile/peak sticker phase (`fertile_open`, `fertile_unconfirmed_peak`, `peak_confirmed`, `p_plus_1`–`p_plus_3`), it is coerced to **`dry`** for sticker semantics (not applied to `post_peak`).  
-- **Post-peak spotting** (`post_peak_spotting`): if mucus rank ≥ 1, **`primaryDayClass`** follows mucus tier (`mucus_observed` or `peak_type`); calendar uses the softened sage/warm-grey/butter phase colors, **not** the dusty-magenta menstrual color.
-- **Draft entry preview** (`derivePrimaryDayClassFromEntry`): uses bleeding + rank only; heavy/moderate/light → **`menstrual_flow`** for preview; spotting uses mucus tier when rank ≥ 1.
+- **Spotting and brown observation layers:** rank ≥ 1 follows the underlying mucus tier (`mucus_observed` or `peak_type`). Spotting + explicit dry remains a spotting-colored observation; brown + explicit dry remains dry. A complete lower-rank spotting/brown observation may carry P+1, P+2, or P+3. The calendar and recorded-pattern chart preserve `S`/`B` markers independently from the observation fill and retrospective P+ marker.
+- **Incomplete spotting/brown rows:** a stored legacy row with no sensation or appearance has null rank, is presented as incomplete, and cannot count toward Peak confirmation until completed.
+- **Draft entry preview** (`derivePrimaryDayClassFromEntry`): uses bleeding + rank only; heavy/moderate/light → **`menstrual_flow`** for preview; spotting/brown follow the completed underlying observation rules above.
 
 ## Current cycle summary (calendar banner)
 
@@ -220,12 +223,14 @@ The mobile calendar header shows a deterministic **`CurrentCycleSummary`** from 
 
 **Headline priority (deterministic)**
 
-1. `review_recommended` → **Your chart shows more than one possible Peak pattern**.
-2. `blocked_by_missing` → **A few days need context**.
-3. Missing data at the focus row (`missing: true` or phase `missing`) → **This day was marked not observed**.
-4. **`primaryClass`** from `primaryDayClassByDay[focusIndex]` — **`menstrual_flow`** → **Menstrual flow recorded**; **`spotting`** → **Spotting recorded**.
-5. **`phase === 'fertile_unconfirmed_peak'`** with a Peak-type candidate → **Your chart shows a possible Peak Day**; without one → **Your chart shows mucus signs**.
-6. Otherwise the observation-specific phase headline from `buildCurrentCycleSummary`.
+1. A supported retrospective Peak/P+ focus → **Your chart marks Cycle Day N as Peak Day** or **Your chart shows a post-Peak pattern**.
+2. `review_recommended` → the specific held/review heading, currently light-menstrual-flow-plus-mucus or unresolved date chronology.
+3. A focused spotting/brown row with no sensation/appearance → **Spotting recorded** or **Brown recorded**, plus the action needed to complete it—even when that row blocks P+ confirmation.
+4. Other `blocked_by_missing` states → **A few days need context**.
+5. A focus row explicitly marked `missing: true` → **This day was marked not observed**.
+6. **`primaryClass`** from `primaryDayClassByDay[focusIndex]` — **`menstrual_flow`** → **Menstrual flow recorded**; **`spotting`** → **Spotting recorded**.
+7. **`phase === 'fertile_unconfirmed_peak'`** with a Peak-type candidate → **Your chart shows a possible Peak Day**; without one → **Your chart shows mucus signs**.
+8. Otherwise the observation-specific phase headline from `buildCurrentCycleSummary`.
 
 Full table: [docs/CURRENT_CYCLE_SUMMARY_MATRIX.md](CURRENT_CYCLE_SUMMARY_MATRIX.md).
 
@@ -517,9 +522,9 @@ These examples serve as canonical test cases. The engineering implementation mus
 
 ---
 
-### Example 7B — Flow bleeding blocks fertile opening
+### Example 7B — Menstrual flow blocks fertile opening
 
-**Purpose:** Verify that **flow** bleeding (`heavy`, `moderate`, `light`, or `spotting`) prevents assigning **`fertileStartIndex`** on that day even when mucus rank ≥ 1; fertile opening is the first non-flow day with mucus after cycle start.
+**Purpose:** Verify that **menstrual flow** (`heavy`, `moderate`, or `light`) prevents assigning **`fertileStartIndex`** on that day even when mucus rank ≥ 1; fertile opening is the first non-flow day with mucus after cycle start. Separate regressions verify that spotting/brown preserve complete underlying observations.
 
 **Input (ISO dates; ranks via `mucusRankOverride` in tests)**
 

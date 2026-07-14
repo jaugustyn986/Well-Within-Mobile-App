@@ -220,6 +220,8 @@ function missingSupportLine(reason: InterpretationSupportReason): string {
       return 'An open date falls within the three days Well Within uses to mark a Peak Day, so no Peak Day is shown from this pattern.';
     case 'not_observed':
       return 'A day marked not observed falls within the three days Well Within uses to mark a Peak Day, so no Peak Day is shown from this pattern.';
+    case 'incomplete_observation':
+      return 'A recorded day in the three-day Peak follow-up is missing a sensation or appearance, so no Peak Day is shown until that observation is complete.';
     case 'earlier_gap_limits_boundary':
       return 'An earlier open or not-observed day makes where this pattern begins less clear, so no phase summary is shown from it.';
     default:
@@ -289,12 +291,24 @@ export function buildCurrentCycleSummary(
   const phase = result.phaseLabels[focusIndex] ?? 'dry';
   const primaryClass: PrimaryDayClass =
     result.primaryDayClassByDay[focusIndex] ?? 'dry';
+  const focusEntry = entries[focusIndex];
+  const focusRank = result.mucusRanks[focusIndex] ?? null;
+  const focusLayeredBleeding = focusEntry?.bleeding === 'spotting'
+    ? 'Spotting'
+    : focusEntry?.bleeding === 'brown'
+      ? 'Brown'
+      : null;
+  const focusObservationIncomplete =
+    focusLayeredBleeding !== null &&
+    focusRank === null &&
+    focusEntry?.missing !== true;
   const missingCount = countCompletenessMissing({
     entries,
     status,
     calendarAsOfDate,
   });
-  const focusMissing = isFocusMissing(entries, focusIndex, phase);
+  const focusMissing =
+    primaryClass === 'missing' && isFocusMissing(entries, focusIndex, phase);
   const recentWindowMissing = recentWindowHasGap(entries, result, focusIndex);
   const interpretationSupport = evaluateInterpretationSupport(entries, result);
 
@@ -352,6 +366,12 @@ export function buildCurrentCycleSummary(
       'Keep charting; we’ll check again whenever you add or update an observation.';
     summaryTone = 'caution';
     explanationTarget = 'status_messages';
+  } else if (focusObservationIncomplete) {
+    headline = `${focusLayeredBleeding} recorded`;
+    statusLine = 'Choose a sensation—including Dry—to complete this observation.';
+    guidance =
+      'The day stays on your chart, but it will not count toward the three-day Peak follow-up until the observation is complete.';
+    summaryTone = 'caution';
   } else if (interpretationSupport.status === 'blocked_by_missing') {
     headline = 'A few days need context';
     statusLine = missingSupportLine(interpretationSupport.reason);
@@ -374,9 +394,9 @@ export function buildCurrentCycleSummary(
     summaryTone = 'neutral';
   } else if (primaryClass === 'spotting') {
     headline = 'Spotting recorded';
-    statusLine = 'This day is recorded as light bleeding or spotting.';
+    statusLine = 'You recorded spotting with a dry observation.';
     guidance =
-      'Your mucus signs remain part of the day’s observation.';
+      'Spotting stays visible on the day and does not replace the observation you recorded.';
     summaryTone = 'neutral';
   } else if (
     possibleFertilePattern.state === 'developing' &&
@@ -418,6 +438,18 @@ export function buildCurrentCycleSummary(
       guidance =
         'Keep charting daily. This card will update as your observations change.';
     }
+  }
+
+  if (
+    focusLayeredBleeding !== null &&
+    !focusObservationIncomplete &&
+    primaryClass !== 'menstrual_flow' &&
+    primaryClass !== 'spotting'
+  ) {
+    const bleedingContext = `${focusLayeredBleeding} was also recorded on this day.`;
+    supportingContext = supportingContext
+      ? `${bleedingContext} ${supportingContext}`
+      : bleedingContext;
   }
 
   let completeness: string;

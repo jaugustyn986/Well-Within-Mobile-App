@@ -29,7 +29,7 @@ describe('two gray, two yellow, then mucus regression', () => {
     expect(result.primaryDayClassByDay[5]).toBe('mucus_observed');
   });
 
-  it('preserves spotting plus mucus and routes the summary to review', () => {
+  it('preserves spotting plus mucus as the qualifying P+3 observation', () => {
     const entries = sequence('spotting');
     const result = recalculateCycle(entries);
     const summary = buildCurrentCycleSummary({
@@ -48,12 +48,12 @@ describe('two gray, two yellow, then mucus regression', () => {
       'peak_confirmed',
       'p_plus_1',
       'p_plus_2',
-      'dry',
+      'p_plus_3',
     ]);
     expect(result.primaryDayClassByDay[5]).toBe('mucus_observed');
-    expect(summary.interpretationStatus).toBe('review_recommended');
-    expect(summary.interpretationReason).toBe('bleeding_mucus_ambiguity');
-    expect(summary.headline).toBe('Mucus and light bleeding were recorded together');
-    expect(summary.statusLine).toContain('leaves the possible-pattern boundary open for review');
+    expect(summary.interpretationStatus).toBe('summary_available');
+    expect(summary.interpretationReason).toBe('retrospective_summary_available');
+    expect(summary.headline).toBe('Your chart shows a post-Peak pattern');
+    expect(summary.supportingContext).toContain('Spotting was also recorded');
   });
 });

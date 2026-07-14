@@ -81,6 +81,7 @@ const SECTIONS: AccordionItemData[] = [
     icon: 'chart',
     content:
       'A possible fertile pattern is retrospective chart context based on your logged observations. While a pattern is developing, Well Within shows no dates. If an eligible completed chart can be bounded, the app may show the first recorded mucus sign through P+3. If an observation or chart context is unresolved, no exact boundary is shown.\n\n' +
+      'Spotting or brown can share a day with its dry, non-Peak, or Peak-type observation. A completed non-Peak day can carry a P+ marker; spotting or brown alone does not extend or reopen a completed pattern. A later Peak-type sign does.\n\n' +
       'This first release does not ask about or account for the special contexts listed below. A possible-pattern date may still appear because Well Within cannot detect them from the chart alone. Treat it only as chart context; a qualified practitioner can help interpret these situations.\n\n' +
       POSSIBLE_FERTILE_PATTERN_LIMITATION,
   },
@@ -94,8 +95,13 @@ const SECTIONS: AccordionItemData[] = [
 
 type HelpNav = NativeStackNavigationProp<RootStackParamList, 'Help'>;
 
-function SwatchRow({ bg, dotColor, markerText, borderColor, label }: {
-  bg: string; dotColor?: string; markerText?: string; borderColor?: string; label: string;
+function SwatchRow({ bg, dotColor, markerText, markerPosition = 'observation', borderColor, label }: {
+  bg: string;
+  dotColor?: string;
+  markerText?: string;
+  markerPosition?: 'observation' | 'pattern';
+  borderColor?: string;
+  label: string;
 }): React.JSX.Element {
   return (
     <View style={swatchStyles.row}>
@@ -105,7 +111,16 @@ function SwatchRow({ bg, dotColor, markerText, borderColor, label }: {
         borderColor ? { borderWidth: 2, borderColor } : { borderWidth: 1, borderColor: BORDER_CARD },
       ]}>
         {dotColor && <View style={[swatchStyles.dot, { backgroundColor: dotColor }]} />}
-        {markerText ? <Text style={swatchStyles.marker}>{markerText}</Text> : null}
+        {markerText ? (
+          <Text style={[
+            swatchStyles.marker,
+            markerPosition === 'pattern'
+              ? swatchStyles.patternMarker
+              : swatchStyles.observationMarker,
+          ]}>
+            {markerText}
+          </Text>
+        ) : null}
       </View>
       <Text style={swatchStyles.label}>{label}</Text>
     </View>
@@ -184,12 +199,19 @@ function ColorGuideSwatches(): React.JSX.Element {
       <SwatchRow
         bg={BG_DRY}
         dotColor={FERTILE_ACCENT}
-        markerText="S"
-        label="Spotting and mucus recorded together"
+        markerText="S/B"
+        label="Spotting or brown recorded with mucus"
       />
+      <SwatchRow bg={BG_DRY} markerText="B" label="Dry observation with brown recorded" />
+      <SwatchRow bg={BG_BLEEDING} markerText="S" label="Dry observation with spotting recorded" />
       <SwatchRow bg={BG_PEAK_TYPE} label={HELP_COLOR_GUIDE_PEAK_TYPE_MUCUS} />
       <SwatchRow bg={BG_PEAK_TYPE} borderColor={PEAK_BORDER} label="Peak marker identified retrospectively" />
-      <SwatchRow bg={BG_POST_PEAK} label="Post-Peak (P+1, P+2, P+3)" />
+      <SwatchRow
+        bg={BG_POST_PEAK}
+        markerText="P+1"
+        markerPosition="pattern"
+        label="Retrospective P+1 marker"
+      />
       <SwatchRow bg={BG_NO_ENTRY} borderColor={BORDER_TODAY} label="Today" />
       <View style={swatchStyles.row}>
         <View style={[swatchStyles.swatch, { borderWidth: 1, borderColor: BORDER_CARD, justifyContent: 'center', alignItems: 'center' }]}>
@@ -198,7 +220,7 @@ function ColorGuideSwatches(): React.JSX.Element {
         <Text style={swatchStyles.label}>Intercourse recorded</Text>
       </View>
       <Text style={swatchStyles.note}>
-        Color shows the chart state. A dot preserves a mucus observation; S preserves spotting recorded on the same day.
+        Color shows the strongest recorded observation. A dot preserves non-Peak mucus; S/B preserves spotting or brown; P+ labels are retrospective markers that can share the same day.
       </Text>
     </View>
   );
@@ -213,9 +235,11 @@ const swatchStyles = StyleSheet.create({
   },
   dot: { width: 8, height: 8, borderRadius: 4, position: 'absolute', top: 4, right: 4 },
   marker: {
-    position: 'absolute', bottom: 2, left: 4,
-    fontSize: 9, lineHeight: 11, fontWeight: '700', color: TEXT_PRIMARY,
+    position: 'absolute', left: 4,
+    fontSize: 8, lineHeight: 10, fontWeight: '700', color: TEXT_PRIMARY,
   },
+  observationMarker: { top: 2 },
+  patternMarker: { bottom: 2 },
   label: { fontSize: 14, color: TEXT_SECONDARY, flex: 1 },
   note: { fontSize: 13, color: TEXT_MUTED, lineHeight: 19, marginTop: 2 },
 });

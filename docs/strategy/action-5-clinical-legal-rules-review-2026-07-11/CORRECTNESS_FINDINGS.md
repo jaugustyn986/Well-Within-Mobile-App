@@ -56,7 +56,9 @@ Before this correction, `detectPeak()` iterated candidates in date order and ret
 
 ### F-06: Flow interpretation conflicts with recorded observations
 
-The engine blocks light and spotting rows from fertile opening and Peak candidacy, even though mucus is intentionally captured on those rows and method material calls out observation on L/VL days.
+**Status:** partially corrected under the July 14 working product decision. Spotting/brown now preserve a complete underlying dry, non-Peak, or Peak-type observation; qualifying lower observations can carry P+1–P+3. Brown + explicit dry remains dry, spotting + explicit dry remains spotting-colored, and an unanswered legacy observation stays incomplete. Heavy/moderate/light menstrual flow remain blocked from Peak candidacy, and light-flow-plus-mucus continues to route to review.
+
+The broader clinical treatment of mucus recorded with menstrual flow and unusual-bleeding rules remains unresolved. This increment must not be described as implementing a complete Creighton bleeding interpretation.
 
 ### F-07: Cycle boundary and continuing-flow logic use row adjacency
 

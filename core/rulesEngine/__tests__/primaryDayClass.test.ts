@@ -42,9 +42,16 @@ describe('derivePrimaryDayClassFromEntry (draft / form preview)', () => {
     ).toBe('menstrual_flow');
   });
 
-  it('spotting with rank 0 stays spotting; brown follows mucus tier', () => {
+  it('keeps spotting as bleeding at rank 0 while brown follows the mucus tier', () => {
     expect(derivePrimaryDayClassFromEntry({ bleeding: 'spotting' }, 0)).toBe('spotting');
+    expect(derivePrimaryDayClassFromEntry({ bleeding: 'brown' }, 0)).toBe('dry');
     expect(derivePrimaryDayClassFromEntry({ bleeding: 'brown' }, 3)).toBe('peak_type');
+  });
+
+  it('keeps unanswered spotting visible but does not infer dry for unanswered brown', () => {
+    expect(derivePrimaryDayClassFromEntry({ bleeding: 'spotting' }, null)).toBe('spotting');
+    expect(derivePrimaryDayClassFromEntry({ bleeding: 'brown' }, null)).toBe('missing');
+    expect(derivePrimaryDayClassFromEntry({ bleeding: 'none' }, null)).toBe('missing');
   });
 
   it('treats no bleeding like mucus-only for preview', () => {
@@ -61,6 +68,9 @@ describe('derivePrimaryDayClassAtIndex', () => {
     expect(
       derivePrimaryDayClassAtIndex(0, entries, [2], ['intermenstrual' as BleedingClass]),
     ).toBe('mucus_observed');
+    expect(
+      derivePrimaryDayClassAtIndex(0, entries, [0], ['brown_discharge' as BleedingClass]),
+    ).toBe('dry');
   });
 
   it('post_peak_spotting with rank 0 stays spotting', () => {

@@ -1,5 +1,5 @@
 import { findConfirmedPeakSequenceIndices } from './peak';
-import { calendarDaysBetween, compareIsoDate } from './calendar';
+import { addDaysIso, calendarDaysBetween, compareIsoDate } from './calendar';
 import type { CycleResult, DailyEntry, InterpretationWarningId } from './types';
 
 export type InterpretationSupportStatus =
@@ -13,6 +13,7 @@ export type InterpretationSupportReason =
   | 'retrospective_summary_available'
   | 'calendar_gap'
   | 'not_observed'
+  | 'incomplete_observation'
   | 'earlier_gap_limits_boundary'
   | 'later_peak_type_reopens_pattern'
   | 'bleeding_mucus_ambiguity'
@@ -44,7 +45,7 @@ function hasBleedingWithMucusRequiringReview(
     if (entries[i]?.missing) continue;
     const bleeding = entries[i]?.bleeding;
     const rank = result.mucusRanks[i];
-    if ((bleeding === 'light' || bleeding === 'spotting') && rank !== null && rank >= 1) {
+    if (bleeding === 'light' && rank !== null && rank >= 1) {
       return true;
     }
   }
@@ -63,6 +64,30 @@ function hasResolvedCurrentCycleDates(
     previousDate = date;
   }
   return true;
+}
+
+function hasIncompletePeakFollowUpObservation(
+  entries: DailyEntry[],
+  result: CycleResult,
+): boolean {
+  if (result.peakCandidateIndex === null) return false;
+  const candidateDate = entries[result.peakCandidateIndex]?.date;
+  if (!candidateDate) return false;
+  const indexByDate = new Map<string, number>();
+  entries.forEach((entry, index) => {
+    if (entry.date) indexByDate.set(entry.date, index);
+  });
+  for (let offset = 1; offset <= 3; offset += 1) {
+    const index = indexByDate.get(addDaysIso(candidateDate, offset));
+    if (
+      index !== undefined &&
+      entries[index]?.missing !== true &&
+      result.mucusRanks[index] === null
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -96,7 +121,9 @@ export function evaluateInterpretationSupport(
       blockingWarning === 'calendar_gap_blocks_peak_confirmation'
         ? 'calendar_gap'
         : blockingWarning === 'missing_blocks_peak_confirmation'
-          ? 'not_observed'
+          ? hasIncompletePeakFollowUpObservation(entries, result)
+            ? 'incomplete_observation'
+            : 'not_observed'
           : 'earlier_gap_limits_boundary';
     return {
       status: 'blocked_by_missing',

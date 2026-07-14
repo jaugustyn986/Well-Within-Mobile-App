@@ -33,10 +33,11 @@ describe('getCalendarDayPresentation', () => {
     expect(presentation.backgroundColor).toBe(BG_POST_PEAK);
     expect(presentation.indicatorColor).toBe(FERTILE_ACCENT);
     expect(presentation.showsSpottingMarker).toBe(false);
+    expect(presentation.patternMarkerLabel).toBe('P+3');
     expect(presentation.stateLabel).toBe('P+3, Damp mucus recorded');
   });
 
-  it('preserves spotting and mucus when the engine withholds a P+3 display', () => {
+  it('preserves spotting alongside a non-Peak mucus observation', () => {
     const presentation = getCalendarDayPresentation({
       ...base,
       phaseLabel: 'dry',
@@ -48,7 +49,87 @@ describe('getCalendarDayPresentation', () => {
     expect(presentation.backgroundColor).toBe(BG_DRY);
     expect(presentation.indicatorColor).toBe(FERTILE_ACCENT);
     expect(presentation.showsSpottingMarker).toBe(true);
-    expect(presentation.stateLabel).toBe('Spotting and damp mucus recorded');
+    expect(presentation.bleedingMarker).toBe('S');
+    expect(presentation.stateLabel).toBe('Damp mucus recorded; spotting also recorded');
+  });
+
+  it('keeps brown plus dry visually dry while preserving a B marker', () => {
+    const presentation = getCalendarDayPresentation({
+      ...base,
+      phaseLabel: 'dry',
+      primaryDayClass: 'dry',
+      mucusRank: 0,
+      bleeding: 'brown',
+    });
+
+    expect(presentation.backgroundColor).toBe(BG_DRY);
+    expect(presentation.indicatorColor).toBeNull();
+    expect(presentation.bleedingMarker).toBe('B');
+    expect(presentation.stateLabel).toBe('Dry observation; brown also recorded');
+  });
+
+  it('layers P+ over spotting without replacing a bleeding-only observation', () => {
+    const presentation = getCalendarDayPresentation({
+      ...base,
+      phaseLabel: 'p_plus_1',
+      primaryDayClass: 'spotting',
+      mucusRank: 0,
+      bleeding: 'spotting',
+      showDerivedMarkers: true,
+    });
+
+    expect(presentation.bleedingMarker).toBe('S');
+    expect(presentation.patternMarkerLabel).toBe('P+1');
+    expect(presentation.stateLabel).toBe('P+1, Spotting recorded');
+  });
+
+  it('layers P+ over brown plus dry while keeping the day visually dry-derived', () => {
+    const presentation = getCalendarDayPresentation({
+      ...base,
+      phaseLabel: 'p_plus_2',
+      primaryDayClass: 'dry',
+      mucusRank: 0,
+      bleeding: 'brown',
+      showDerivedMarkers: true,
+    });
+
+    expect(presentation.backgroundColor).toBe(BG_POST_PEAK);
+    expect(presentation.indicatorColor).toBeNull();
+    expect(presentation.bleedingMarker).toBe('B');
+    expect(presentation.patternMarkerLabel).toBe('P+2');
+    expect(presentation.stateLabel).toBe('P+2, Dry observation; brown also recorded');
+  });
+
+  it('layers P+ over spotting plus non-Peak mucus without losing either sign', () => {
+    const presentation = getCalendarDayPresentation({
+      ...base,
+      phaseLabel: 'p_plus_3',
+      primaryDayClass: 'mucus_observed',
+      mucusRank: 1,
+      bleeding: 'spotting',
+      showDerivedMarkers: true,
+    });
+
+    expect(presentation.backgroundColor).toBe(BG_POST_PEAK);
+    expect(presentation.indicatorColor).toBe(FERTILE_ACCENT);
+    expect(presentation.bleedingMarker).toBe('S');
+    expect(presentation.patternMarkerLabel).toBe('P+3');
+    expect(presentation.stateLabel).toBe('P+3, Damp mucus recorded; spotting also recorded');
+  });
+
+  it('shows spotting plus Peak-type as a Peak-type observation', () => {
+    const presentation = getCalendarDayPresentation({
+      ...base,
+      phaseLabel: 'fertile_unconfirmed_peak',
+      primaryDayClass: 'peak_type',
+      mucusRank: 3,
+      bleeding: 'spotting',
+    });
+
+    expect(presentation.backgroundColor).toBe(BG_PEAK_TYPE);
+    expect(presentation.bleedingMarker).toBe('S');
+    expect(presentation.showsPeakMarker).toBe(false);
+    expect(presentation.stateLabel).toBe('Peak-type mucus recorded; spotting also recorded');
   });
 
   it('does not label later mucus as one of the three P+ days', () => {

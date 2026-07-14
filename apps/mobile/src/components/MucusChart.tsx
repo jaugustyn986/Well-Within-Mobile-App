@@ -80,6 +80,11 @@ export function MucusChart({
             const color = getBarColor(rank, day.phaseLabel, showDerivedMarkers);
             const isPeak = evidence.derivedMarker === 'peak_day';
             const hasIntercourse = !!day.entry?.intercourse;
+            const bleedingMarker = day.entry?.bleeding === 'spotting'
+              ? 'S'
+              : day.entry?.bleeding === 'brown'
+                ? 'B'
+                : null;
 
             return (
               <View
@@ -111,6 +116,16 @@ export function MucusChart({
                 >
                   {day.cycleDay}
                 </Text>
+                <Text
+                  style={[
+                    styles.bleedingDayMarker,
+                    !bleedingMarker && styles.bleedingDayMarkerPlaceholder,
+                  ]}
+                  accessibilityElementsHidden={!bleedingMarker}
+                  importantForAccessibility={bleedingMarker ? 'auto' : 'no-hide-descendants'}
+                >
+                  {bleedingMarker ?? '\u00A0'}
+                </Text>
               </View>
             );
           })}
@@ -127,6 +142,7 @@ export function MucusChart({
         ) : null}
         {showDerivedMarkers ? <LegendDot color={BG_POST_PEAK} label="P+1–P+3" /> : null}
       </View>
+      <Text style={styles.legendNote}>S/B preserves spotting or brown recorded with that day.</Text>
     </View>
   );
 }
@@ -167,7 +183,7 @@ const styles = StyleSheet.create({
   },
   yLabel: { fontSize: 9, color: TEXT_MUTED },
   scrollArea: { marginLeft: 50 },
-  chartRow: { flexDirection: 'row', alignItems: 'flex-end', height: BAR_HEIGHT + 32 },
+  chartRow: { flexDirection: 'row', alignItems: 'flex-end', height: BAR_HEIGHT + 44 },
   barCol: { alignItems: 'center', marginHorizontal: 2, width: 24 },
   barColCompact: { marginHorizontal: 1, width: 11 },
   barArea: { height: BAR_HEIGHT, justifyContent: 'flex-end' },
@@ -178,6 +194,8 @@ const styles = StyleSheet.create({
   dayLabel: { fontSize: 10, color: TEXT_MUTED, marginTop: 4 },
   dayLabelCompact: { fontSize: 8 },
   peakDayLabel: { color: PEAK_BORDER, fontWeight: '600' },
+  bleedingDayMarker: { fontSize: 8, lineHeight: 10, color: TEXT_SUBTLE, fontWeight: '600' },
+  bleedingDayMarkerPlaceholder: { opacity: 0 },
   legend: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -189,4 +207,5 @@ const styles = StyleSheet.create({
   legendItem: { flexDirection: 'row', alignItems: 'center' },
   legendDot: { width: 10, height: 10, borderRadius: 5, marginRight: 4, borderWidth: 1, borderColor: BORDER_CARD },
   legendText: { fontSize: 11, color: TEXT_SUBTLE },
+  legendNote: { fontSize: 10, lineHeight: 14, color: TEXT_MUTED, textAlign: 'center', marginTop: 8 },
 });

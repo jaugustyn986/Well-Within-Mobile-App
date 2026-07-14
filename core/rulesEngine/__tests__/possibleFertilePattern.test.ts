@@ -292,7 +292,30 @@ describe('Phase 1C Possible fertile pattern presentation', () => {
     expect(presentation.limit?.date).toBe('2026-06-04');
   });
 
-  it('PFP-05 routes light/spotting plus mucus to review instead of a silent band', () => {
+  it('PFP-04 distinguishes an incomplete combined observation from not observed', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-06-10', bleeding: 'heavy', sensation: 'dry' },
+      { date: '2026-06-11', bleeding: 'none', sensation: 'stretchy' },
+      { date: '2026-06-12', bleeding: 'brown' },
+      { date: '2026-06-13', bleeding: 'none', sensation: 'dry' },
+      { date: '2026-06-14', bleeding: 'none', sensation: 'dry' },
+    ];
+    const presentation = buildPossibleFertilePatternPresentation(
+      entries,
+      recalculateCycle(entries),
+      ELIGIBLE,
+    );
+
+    expect(presentation.state).toBe('withheld');
+    expect(presentation.reason).toBe('incomplete_observation');
+    expect(presentation.limit).toMatchObject({
+      date: '2026-06-12',
+      cycleDay: 3,
+    });
+    expect(presentation.limit?.detail).toContain('needs a sensation or appearance');
+  });
+
+  it('PFP-05 routes light menstrual flow plus mucus to review instead of a silent band', () => {
     const entries = simpleCompleteEntries('2026-07-01');
     entries[1] = { ...entries[1], bleeding: 'light', mucusRankOverride: 1 };
     const result = recalculateCycle(entries);
@@ -303,8 +326,30 @@ describe('Phase 1C Possible fertile pattern presentation', () => {
     const presentation = buildPossibleFertilePatternPresentation(entries, result, ELIGIBLE);
     expect(presentation.state).toBe('withheld');
     expect(presentation.reason).toBe('bleeding_mucus_ambiguity');
-    expect(presentation.heading).toBe('Mucus and light bleeding were recorded together');
+    expect(presentation.heading).toBe('Mucus and light menstrual flow were recorded together');
     expect(presentation.limit?.date).toBe('2026-07-02');
+  });
+
+  it('allows spotting and brown observations to retain Peak/P+ markers', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-07-10', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-07-11', bleeding: 'spotting', mucusRankOverride: 1 },
+      { date: '2026-07-12', bleeding: 'brown', mucusRankOverride: 3 },
+      { date: '2026-07-13', bleeding: 'spotting', mucusRankOverride: 2 },
+      { date: '2026-07-14', bleeding: 'brown', mucusRankOverride: 1 },
+      { date: '2026-07-15', bleeding: 'spotting', mucusRankOverride: 0 },
+    ];
+    const result = recalculateCycle(entries);
+    const presentation = buildPossibleFertilePatternPresentation(entries, result, ELIGIBLE);
+
+    expect(presentation).toMatchObject({
+      state: 'bounded',
+      interpretationStatus: 'summary_available',
+      peak: { date: '2026-07-12' },
+      pPlus1: { date: '2026-07-13' },
+      pPlus2: { date: '2026-07-14' },
+      pPlus3: { date: '2026-07-15' },
+    });
   });
 
   it('PFP-05 lets an explicit unsupported context withhold even a developing pattern', () => {

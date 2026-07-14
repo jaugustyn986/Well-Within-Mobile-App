@@ -287,8 +287,34 @@ describe('buildCurrentCycleSummary', () => {
       todayIndex: 0,
     });
     expect(s.headline).toBe('Spotting recorded');
-    expect(s.statusLine).toContain('light bleeding or spotting');
-    expect(s.guidance).toContain('mucus signs remain part');
+    expect(s.statusLine).toContain('spotting with a dry observation');
+    expect(s.guidance).toContain('does not replace');
+    expect(s.explanationTarget).toBeNull();
+  });
+
+  it('asks for the missing sensation when an incomplete spotting day blocks P+ follow-up', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-01-03', bleeding: 'spotting' },
+      { date: '2026-01-04', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-05', bleeding: 'none', mucusRankOverride: 0 },
+    ];
+    const result = sliceResult(entries);
+    const s = buildCurrentCycleSummary({
+      entries,
+      result,
+      status: 'in_progress',
+      todayIndex: 2,
+    });
+
+    expect(s.interpretationStatus).toBe('blocked_by_missing');
+    expect(s.interpretationReason).toBe('incomplete_observation');
+    expect(s.headline).toBe('Spotting recorded');
+    expect(s.statusLine).toBe(
+      'Choose a sensation—including Dry—to complete this observation.',
+    );
+    expect(s.guidance).toContain('will not count toward the three-day Peak follow-up');
     expect(s.explanationTarget).toBeNull();
   });
 
