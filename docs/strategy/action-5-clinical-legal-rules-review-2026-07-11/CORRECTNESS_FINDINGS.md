@@ -32,6 +32,8 @@ Use exact ISO-calendar differences from the clinically approved cycle start date
 
 ### F-03: Standard-cycle-only engine is presented as broad fertile-window interpretation
 
+**Status:** conservatively corrected for the Phase 1C surfaces. Broad `Fertile Window`, `Fertile Start`, `Fertile End`, and `Total fertile days` wording was removed from Cycle Detail, history, onboarding, and default PDF output. One centralized `Possible fertile pattern` model suppresses exact boundaries unless the existing support checks and Cycle Day 1 eligibility pass. Production now resolves Cycle Day 1 from confirmed true flow or unambiguous moderate/heavy flow. Special contexts are not detected or interpreted and are disclosed as unsupported.
+
 The specification excludes BIP and alternate interpretations. Calendar, onboarding, Cycle Detail, and PDF nevertheless use broad `Fertile Window`, `Fertile End`, `Total fertile days`, and `Past the fertile window` language without an unsupported state.
 
 **Required correction:** add an approved support-state model before broad claims.
@@ -44,9 +46,11 @@ The internal method reference calls 0–4 non-mucus; the engine treats 2/2W/4 as
 
 ### F-05: Later separated Peak-type sequences can be ignored
 
-`detectPeak()` iterates candidates in date order and returns the first candidate that satisfies P+3. A later Peak-type sequence after that candidate can remain unrepresented even though repeated/double Peak is not supported.
+**Status:** corrected for Phase 1C and regression-tested. The engine now treats the latest Peak-type observation as the active candidate. A later candidate immediately removes the earlier derived Peak/P+ presentation; after the latest candidate's own three qualifying lower-observation calendar days, the app recalculates Peak Day and P+1 through P+3 from that latest candidate. Earlier Peak-type observations remain visible as recorded facts. This is an accepted Well Within working product rule, not independent validation of the exact implementation or a proprietary alternate-pattern rule.
 
-**Required correction:** define clinically approved behavior: later Peak, explicit double/repeated-Peak review, or unsupported state.
+Before this correction, `detectPeak()` iterated candidates in date order and returned the first candidate that satisfied P+3. A later Peak-type sequence after that candidate could remain unrepresented.
+
+**Required correction:** resolved for the accepted normal-context product scope by the latest-candidate rule. Formal practitioner approval records and special/alternate-pattern rules remain outside this implementation.
 
 ## P1 — resolve in the correctness/claim phase
 
@@ -56,9 +60,13 @@ The engine blocks light and spotting rows from fertile opening and Peak candidac
 
 ### F-07: Cycle boundary and continuing-flow logic use row adjacency
 
-Heavy/moderate is considered continuing when the previous stored row is heavy/moderate, even if a calendar date is absent between them. Leading light/spotting rows are also merged into the first H/M cycle while the engine's internal start points later.
+**Status:** corrected for the Phase 1C exact-date path. A centralized resolver now uses consecutive ISO calendar dates, explicit true-flow confirmation for potentially leading light, and fail-closed boundary evidence. Missing preceding dates, ambiguous/uncertain light, invalid markers, duplicate confirmations, and invalid/duplicate/out-of-order dates do not open exact output.
+
+Before correction, heavy/moderate was considered continuing when the previous stored row was heavy/moderate even if a calendar date was absent between them. Leading light/spotting rows were also merged into the first H/M cycle while the engine's internal start pointed later.
 
 ### F-08: `High/Moderate/Low confidence` is not a calibrated measure
+
+**Status:** corrected in Phase 1B user-facing summary copy. The confidence tiers were replaced with product-capability/support states. Continue to prohibit calibrated-confidence implications in Phase 1C copy.
 
 The label is a deterministic status based on recent gaps and Peak confirmation. It has no measured probability, sensitivity/specificity, or external validation, yet users may interpret it as clinical certainty.
 
@@ -67,6 +75,8 @@ The label is a deterministic status based on recent gaps and Peak confirmation. 
 Length ±2 days, Peak ±1 day, luteal ±1 day, and variation ranges of 3/7 days are not clinically sourced. `usual`, `consistent`, and `significant variation` may imply normative meaning.
 
 ### F-10: Current-cycle historical baselines can act as forecasts
+
+**Status:** suppressed in Phase 1B for non-eligible active states. Phase 1C keeps exact historical ranges in retrospective History only and prohibits active/future calendar projection.
 
 Showing “fertile signs typically start around day X” or “Peak usually occurs around day X” before the current event can influence timing decisions even if the sentence is historically true.
 

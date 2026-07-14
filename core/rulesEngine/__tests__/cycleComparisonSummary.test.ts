@@ -19,12 +19,19 @@ function makeSlice(
     result: emptyResult,
     peakDay: 14,
     lutealPhase: 14,
+    cycleBoundary: {
+      index: 0,
+      date: '2025-01-01',
+      source: 'inferred_heavy_moderate',
+      eligibility: 'eligible',
+      reason: 'unambiguous_heavy_moderate_start',
+    },
     ...overrides,
   };
 }
 
 describe('getPriorCompleted', () => {
-  it('excludes a review-recommended completed cycle from comparison baselines', () => {
+  it('includes a completed cycle using its latest qualifying Peak sequence', () => {
     const cycles = splitIntoCycles([
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 3 },
@@ -37,7 +44,9 @@ describe('getPriorCompleted', () => {
       { date: '2026-01-09', bleeding: 'none', mucusRankOverride: 0 },
       { date: '2026-02-01', bleeding: 'heavy', mucusRankOverride: 0 },
     ]);
-    expect(getPriorCompleted(cycles[1], cycles)).toEqual([]);
+    const priors = getPriorCompleted(cycles[1], cycles);
+    expect(priors.map((cycle) => cycle.cycleNumber)).toEqual([1]);
+    expect(priors[0].peakDay).toBe(6);
   });
 
   it('returns only completed cycles before current', () => {

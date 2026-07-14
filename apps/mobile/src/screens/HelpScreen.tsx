@@ -17,6 +17,7 @@ import {
   HELP_TRYING_TO_CONCEIVE_BODY,
   HELP_WHAT_IS_PEAK_DAY_BODY,
   HELP_WHAT_IS_PEAK_DAY_TITLE,
+  POSSIBLE_FERTILE_PATTERN_LIMITATION,
 } from 'core-rules-engine';
 import { useResetOnboarding } from '../navigation/AppNavigator';
 import { FeedbackModal } from '../components/feedback/FeedbackModal';
@@ -75,6 +76,15 @@ const SECTIONS: AccordionItemData[] = [
     renderContent: () => <StatusMessageSections />,
   },
   {
+    id: 'possible_fertile_pattern',
+    title: 'What does “possible fertile pattern” mean?',
+    icon: 'chart',
+    content:
+      'A possible fertile pattern is retrospective chart context based on your logged observations. While a pattern is developing, Well Within shows no dates. If an eligible completed chart can be bounded, the app may show the first recorded mucus sign through P+3. If an observation or chart context is unresolved, no exact boundary is shown.\n\n' +
+      'This first release does not ask about or account for the special contexts listed below. A possible-pattern date may still appear because Well Within cannot detect them from the chart alone. Treat it only as chart context; a qualified practitioner can help interpret these situations.\n\n' +
+      POSSIBLE_FERTILE_PATTERN_LIMITATION,
+  },
+  {
     id: 'calendar_colors',
     title: 'Calendar color guide',
     icon: 'grid',
@@ -84,8 +94,8 @@ const SECTIONS: AccordionItemData[] = [
 
 type HelpNav = NativeStackNavigationProp<RootStackParamList, 'Help'>;
 
-function SwatchRow({ bg, dotColor, borderColor, label }: {
-  bg: string; dotColor?: string; borderColor?: string; label: string;
+function SwatchRow({ bg, dotColor, markerText, borderColor, label }: {
+  bg: string; dotColor?: string; markerText?: string; borderColor?: string; label: string;
 }): React.JSX.Element {
   return (
     <View style={swatchStyles.row}>
@@ -95,6 +105,7 @@ function SwatchRow({ bg, dotColor, borderColor, label }: {
         borderColor ? { borderWidth: 2, borderColor } : { borderWidth: 1, borderColor: BORDER_CARD },
       ]}>
         {dotColor && <View style={[swatchStyles.dot, { backgroundColor: dotColor }]} />}
+        {markerText ? <Text style={swatchStyles.marker}>{markerText}</Text> : null}
       </View>
       <Text style={swatchStyles.label}>{label}</Text>
     </View>
@@ -170,8 +181,14 @@ function ColorGuideSwatches(): React.JSX.Element {
       <SwatchRow bg={BG_BLEEDING} label="Bleeding day" />
       <SwatchRow bg={BG_DRY} label="Dry day (no mucus)" />
       <SwatchRow bg={BG_DRY} dotColor={FERTILE_ACCENT} label={HELP_COLOR_GUIDE_NON_PEAK_MUCUS} />
+      <SwatchRow
+        bg={BG_DRY}
+        dotColor={FERTILE_ACCENT}
+        markerText="S"
+        label="Spotting and mucus recorded together"
+      />
       <SwatchRow bg={BG_PEAK_TYPE} label={HELP_COLOR_GUIDE_PEAK_TYPE_MUCUS} />
-      <SwatchRow bg={BG_PEAK_TYPE} borderColor={PEAK_BORDER} label="Confirmed Peak Day" />
+      <SwatchRow bg={BG_PEAK_TYPE} borderColor={PEAK_BORDER} label="Peak marker identified retrospectively" />
       <SwatchRow bg={BG_POST_PEAK} label="Post-Peak (P+1, P+2, P+3)" />
       <SwatchRow bg={BG_NO_ENTRY} borderColor={BORDER_TODAY} label="Today" />
       <View style={swatchStyles.row}>
@@ -180,6 +197,9 @@ function ColorGuideSwatches(): React.JSX.Element {
         </View>
         <Text style={swatchStyles.label}>Intercourse recorded</Text>
       </View>
+      <Text style={swatchStyles.note}>
+        Color shows the chart state. A dot preserves a mucus observation; S preserves spotting recorded on the same day.
+      </Text>
     </View>
   );
 }
@@ -192,7 +212,12 @@ const swatchStyles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
   },
   dot: { width: 8, height: 8, borderRadius: 4, position: 'absolute', top: 4, right: 4 },
+  marker: {
+    position: 'absolute', bottom: 2, left: 4,
+    fontSize: 9, lineHeight: 11, fontWeight: '700', color: TEXT_PRIMARY,
+  },
   label: { fontSize: 14, color: TEXT_SECONDARY, flex: 1 },
+  note: { fontSize: 13, color: TEXT_MUTED, lineHeight: 19, marginTop: 2 },
 });
 
 function AccordionItem({ item, initialOpen }: {

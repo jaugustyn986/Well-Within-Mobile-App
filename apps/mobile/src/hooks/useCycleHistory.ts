@@ -1,34 +1,26 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   CycleSlice,
-  CycleSummary,
+  PossibleFertilePatternHistoryPresentation,
+  buildFirstReleasePossibleFertilePatternEligibility,
+  buildPossibleFertilePatternHistoryPresentation,
   splitIntoCycles,
-  computeCycleSummary,
-  generateInsights,
 } from 'core-rules-engine';
 import { getAllEntries, entriesToSortedArray } from '../services/storageV2';
 
 interface CycleHistoryData {
   cycles: CycleSlice[];
-  summary: CycleSummary;
-  insights: string[];
+  possibleFertilePatternHistory: PossibleFertilePatternHistoryPresentation;
   loading: boolean;
   refresh: () => Promise<void>;
 }
 
-const EMPTY_SUMMARY: CycleSummary = {
-  cyclesTracked: 0,
-  avgLength: null,
-  shortestLength: null,
-  longestLength: null,
-  avgPeakDay: null,
-  avgLutealPhase: null,
-};
+const EMPTY_HISTORY = buildPossibleFertilePatternHistoryPresentation([]);
 
 export function useCycleHistory(): CycleHistoryData {
   const [cycles, setCycles] = useState<CycleSlice[]>([]);
-  const [summary, setSummary] = useState<CycleSummary>(EMPTY_SUMMARY);
-  const [insights, setInsights] = useState<string[]>([]);
+  const [possibleFertilePatternHistory, setPossibleFertilePatternHistory] =
+    useState<PossibleFertilePatternHistoryPresentation>(EMPTY_HISTORY);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -37,8 +29,17 @@ export function useCycleHistory(): CycleHistoryData {
     const sorted = entriesToSortedArray(stored);
     const slices = splitIntoCycles(sorted);
     setCycles(slices);
-    setSummary(computeCycleSummary(slices));
-    setInsights(generateInsights(slices));
+    const eligibilityByCycleNumber = Object.fromEntries(
+      slices.map((cycle) => [
+        cycle.cycleNumber,
+        buildFirstReleasePossibleFertilePatternEligibility(cycle.cycleBoundary),
+      ]),
+    );
+    setPossibleFertilePatternHistory(
+      buildPossibleFertilePatternHistoryPresentation(slices, {
+        eligibilityByCycleNumber,
+      }),
+    );
     setLoading(false);
   }, []);
 
@@ -46,5 +47,5 @@ export function useCycleHistory(): CycleHistoryData {
     refresh();
   }, [refresh]);
 
-  return { cycles, summary, insights, loading, refresh };
+  return { cycles, possibleFertilePatternHistory, loading, refresh };
 }

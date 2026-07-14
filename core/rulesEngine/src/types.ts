@@ -3,6 +3,7 @@ export type Sensation = 'dry' | 'damp' | 'wet' | 'shiny' | 'sticky' | 'tacky' | 
 export type Appearance = 'none' | 'brown' | 'cloudy' | 'cloudy_clear' | 'gummy' | 'clear' | 'lubricative' | 'pasty' | 'red' | 'yellow';
 export type Frequency = 1 | 2 | 3 | 'all_day';
 export type FertilityClassification = 'dry' | 'early_fertile' | 'fertile' | 'peak_type';
+export type MenstrualFlowStart = 'confirmed' | 'not_start' | 'uncertain';
 
 export type PhaseLabel =
   | 'dry'
@@ -24,6 +25,8 @@ export interface Observation {
 export interface DailyEntry {
   date?: string;
   bleeding?: BleedingType;
+  /** User assessment of whether this date is the first day of true menstrual flow. */
+  menstrualFlowStart?: MenstrualFlowStart;
   sensation?: Sensation;
   appearances?: Appearance[];
   intercourse?: boolean;

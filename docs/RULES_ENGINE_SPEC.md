@@ -120,7 +120,7 @@ If no such day exists, `fertileStartIndex` is `null`.
 3. Have ranks **strictly lower** than the candidate rank (for rank `3` followers, ranks must be `< 3`).  
 4. Contain **no** peak-type observation on those days (already enforced by rank &lt; 3 when candidate rank is 3).
 
-**Later peak-type overrides:** Process days in **chronological order** by date. The active **peak candidate** is the latest peak-type day encountered. If confirmation is not yet satisfied and a **new** peak-type day appears on a later calendar day, the candidate **resets** to that day (verification 1B).
+**Later peak-type overrides:** Process days in **chronological order** by date. The active **peak candidate** is always the latest peak-type day encountered. A new peak-type day resets the candidate even if an earlier candidate previously completed a three-day count. The engine does not fall back to that earlier count while the latest candidate is forming. If the latest candidate independently satisfies calendar confirmation, it becomes `peakIndex` and P+1 through P+3 are recalculated from it (verification 1B plus the Action 5 latest-candidate regression).
 
 **Insufficient future days:** If `D+1`, `D+2`, or `D+3` are not all present in the chart, peak is **not** confirmed (verification 1D).
 
@@ -130,7 +130,7 @@ If no such day exists, `fertileStartIndex` is `null`.
 
 **Outputs:**
 
-- `peakCandidateIndex` — index of the **current** peak-type candidate (latest peak-type day in chronological order when unconfirmed); `null` if no peak-type day exists in the cycle.  
+- `peakCandidateIndex` — index of the **current** peak-type candidate (always the latest peak-type day in chronological order); `null` if no peak-type day exists in the cycle.
 - `peakIndex` — index of **confirmed** Peak Day, or `null`.  
 - `peakConfirmed` — `true` iff `peakIndex !== null`.  
 - `fertileEndIndex` — `peakIndex + 3` when confirmed, else `null`.
@@ -139,7 +139,7 @@ If no such day exists, `fertileStartIndex` is `null`.
 
 - Missing rows **block** peak confirmation when they fall in the P+1–P+3 **calendar** window for the active candidate.  
 - Interior calendar gaps (a skipped date before a later recorded row) are treated like missing for confirmation. Dates beyond the last recorded row mean the pattern is still developing, not that the user missed a day.
-- Missing **after** Peak is confirmed does **not** invalidate the confirmed peak; it may reduce certainty in the banner (see Current cycle summary).  
+- Missing **after** Peak is confirmed does **not** by itself invalidate the confirmed peak; a later Peak-type observation does supersede it under the latest-candidate rule above.
 - **`dataComplete`** — `true` iff **`interpretationWarnings`** is empty. (Calendar completeness for the banner—explicit missing rows, interior gaps, trailing gaps—is a separate **`buildCurrentCycleSummary`** calculation; it does not flip `dataComplete` on `CycleResult`.)  
 - **`interpretationWarnings`** — deterministic `InterpretationWarningId[]` (closed set):
 

@@ -23,7 +23,8 @@ export function DailyEntryScreen(): React.JSX.Element {
   const route = useRoute<ScreenRoute>();
   const navigation = useNavigation<Nav>();
   const sync = useSync();
-  const { date } = route.params;
+  const { date, intent } = route.params;
+  const confirmingCycleStart = intent === 'confirm_cycle_start';
 
   const [existing, setExisting] = useState<DailyEntry | null>(null);
   const [previousDayEntry, setPreviousDayEntry] = useState<DailyEntry | null>(null);
@@ -31,13 +32,14 @@ export function DailyEntryScreen(): React.JSX.Element {
 
   useLayoutEffect(() => {
     navigation.setOptions({
+      title: confirmingCycleStart ? 'Confirm Cycle Start' : 'New Entry',
       headerRight: () => (
         <Pressable onPress={() => navigation.goBack()} hitSlop={8} style={{ paddingHorizontal: 4, paddingVertical: 8 }}>
           <Text style={{ fontSize: 16, fontWeight: '500', color: TEXT_SECONDARY }}>Cancel</Text>
         </Pressable>
       ),
     });
-  }, [navigation]);
+  }, [confirmingCycleStart, navigation]);
 
   useEffect(() => {
     Promise.all([
@@ -71,6 +73,8 @@ export function DailyEntryScreen(): React.JSX.Element {
       date={date}
       onSave={handleSave}
       onDelete={existing ? handleDelete : undefined}
+      cycleStartReview={confirmingCycleStart}
+      saveLabel={confirmingCycleStart ? 'Save cycle start' : undefined}
     />
   );
 }

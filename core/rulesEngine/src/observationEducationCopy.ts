@@ -147,11 +147,6 @@ export const HELP_STATUS_MESSAGE_SECTIONS: readonly HelpStatusMessageSection[] =
       'An open calendar date or a day marked not observed falls within a part of the chart Well Within uses to mark Peak or show a phase summary. If you remember an open date, add it; a not-observed day can stay as it is. Either way, keep charting.',
   },
   {
-    title: 'Your chart shows more than one possible Peak pattern',
-    body:
-      'More than one Peak-type day is followed by the three-day pattern Well Within looks for, so the app does not choose one Peak Day from these observations. Charting and editing remain available, and the app checks again after entries change. This describes what the app can interpret, not a diagnosis. Optional outside charting support is available from Find Care.',
-  },
-  {
     title: 'This day was marked not observed',
     body:
       'There is no observation for Well Within to interpret on this day. That is okay. Keep charting, and add an observation later only if you remember it.',

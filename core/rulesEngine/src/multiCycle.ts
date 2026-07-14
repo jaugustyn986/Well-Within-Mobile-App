@@ -1,7 +1,12 @@
 import { recalculateCycle } from './recalc';
 import { evaluateInterpretationSupport } from './interpretationSupport';
 import {
+  resolveCycleBoundaries,
+  type CycleBoundaryAssessment,
+} from './cycleBoundary';
+import {
   addDaysIso,
+  calendarDayNumber,
   calendarDatesInclusive,
   calendarDaysBetween,
   calendarSpanLength,
@@ -19,6 +24,8 @@ export interface CycleSlice {
   peakDay: number | null;
   lutealPhase: number | null;
   status: 'complete' | 'in_progress' | 'no_peak';
+  /** Evidence and first-release eligibility for this cycle's Cycle Day 1. */
+  cycleBoundary: CycleBoundaryAssessment;
 }
 
 export interface CycleSummary {
@@ -97,51 +104,19 @@ export function buildCalendarAlignedCycleDays(
 }
 
 /**
- * First slice has no heavy/moderate bleeding (preamble before first period day).
- * Drop the next boundary so those days merge into the cycle that starts with H/M.
- */
-function leadingSliceHasNoHeavyModerate(
-  entries: DailyEntry[],
-  boundaries: number[],
-): boolean {
-  if (boundaries.length < 2) return false;
-  const start = boundaries[0];
-  const endExclusive = boundaries[1];
-  for (let i = start; i < endExclusive; i++) {
-    const b = entries[i]?.bleeding;
-    if (b === 'heavy' || b === 'moderate') return false;
-  }
-  return true;
-}
-
-/**
  * Splits a sorted array of DailyEntry into individual cycles.
- * A new cycle starts on the first day of heavy/moderate bleeding that
- * is NOT preceded by another heavy/moderate day.
+ * A new legacy cycle starts on the first H/M day not preceded by H/M.
+ * An explicit confirmed true-flow day can establish an earlier light-flow
+ * boundary and suppress a later H/M reset in that same flow run.
  *
- * Leading days with no heavy/moderate bleeding before the first such day are merged
- * into that cycle (avoids a bogus 1-day "cycle" from spotting/light before flow).
+ * Unmarked leading days preserve their legacy grouping; boundary eligibility
+ * separately records whether an exact Cycle Day 1 is supported.
  */
 export function splitIntoCycles(entries: DailyEntry[]): CycleSlice[] {
   if (entries.length === 0) return [];
 
-  const boundaries: number[] = [0];
-
-  for (let i = 1; i < entries.length; i++) {
-    const bleeding = entries[i].bleeding;
-    if (bleeding === 'heavy' || bleeding === 'moderate') {
-      const prevBleeding = entries[i - 1].bleeding;
-      const prevIsHeavyOrModerate =
-        prevBleeding === 'heavy' || prevBleeding === 'moderate';
-      if (!prevIsHeavyOrModerate) {
-        boundaries.push(i);
-      }
-    }
-  }
-
-  while (leadingSliceHasNoHeavyModerate(entries, boundaries)) {
-    boundaries.splice(1, 1);
-  }
+  const resolution = resolveCycleBoundaries(entries);
+  const boundaries = resolution.groups.map((group) => group.groupStartIndex);
 
   const slices: CycleSlice[] = [];
 
@@ -152,14 +127,25 @@ export function splitIntoCycles(entries: DailyEntry[]): CycleSlice[] {
 
     if (cycleEntries.length === 0) continue;
 
+    const resolvedBoundary = resolution.groups[b].boundary;
+    const localBoundaryIndex = Math.max(0, resolvedBoundary.index - start);
     const result = recalculateCycle(cycleEntries);
-    const peakDay = result.peakIndex !== null
-      ? cycleDayForEntryIndex(cycleEntries, result.peakIndex)
-      : null;
     const isLastCycle = b === boundaries.length - 1;
-    const startDate = cycleEntries[0].date ?? '';
+    const startDate = resolvedBoundary.date ?? cycleEntries[0].date ?? '';
+    const peakDate = result.peakIndex !== null
+      ? cycleEntries[result.peakIndex]?.date ?? ''
+      : '';
+    const anchoredPeakDay = peakDate
+      ? calendarDayNumber(startDate, peakDate)
+      : null;
+    const peakDay = result.peakIndex !== null
+      ? anchoredPeakDay ?? cycleDayForEntryIndex(cycleEntries, result.peakIndex)
+      : null;
     const lastLoggedDate = cycleEntries[cycleEntries.length - 1].date ?? '';
-    const nextStartDate = !isLastCycle ? entries[end]?.date ?? '' : '';
+    const nextGroup = !isLastCycle ? resolution.groups[b + 1] : null;
+    const nextStartDate = nextGroup
+      ? nextGroup.boundary.date ?? entries[nextGroup.groupStartIndex]?.date ?? ''
+      : '';
     const canUseNextBoundary =
       nextStartDate.length > 0 &&
       calendarDaysBetween(startDate, nextStartDate) !== null;
@@ -171,7 +157,6 @@ export function splitIntoCycles(entries: DailyEntry[]): CycleSlice[] {
 
     let lutealPhase: number | null = null;
     if (result.peakIndex !== null && peakDay !== null && !isLastCycle) {
-      const peakDate = cycleEntries[result.peakIndex]?.date ?? '';
       const daysToNextCycle = calendarDaysBetween(peakDate, nextStartDate);
       lutealPhase = daysToNextCycle !== null
         ? Math.max(0, daysToNextCycle - 1)
@@ -197,6 +182,10 @@ export function splitIntoCycles(entries: DailyEntry[]): CycleSlice[] {
       peakDay,
       lutealPhase,
       status,
+      cycleBoundary: {
+        ...resolvedBoundary,
+        index: localBoundaryIndex,
+      },
     });
   }
 

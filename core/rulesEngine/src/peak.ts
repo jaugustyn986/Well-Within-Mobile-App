@@ -43,9 +43,9 @@ function candidateHasThreeLowerCalendarDays(
 }
 
 /**
- * Returns every Peak-type row that independently satisfies the engine's existing
- * three-lower-calendar-days rule. More than one is a product support limitation;
- * this helper does not decide which clinical Peak is correct.
+ * Returns every Peak-type row that independently satisfies the engine's
+ * three-lower-calendar-days rule. This is diagnostic metadata only; detectPeak
+ * applies the latest-candidate rule used by the product presentation.
  */
 export function findConfirmedPeakSequenceIndices(
   entries: DailyEntry[],
@@ -83,23 +83,33 @@ export function detectPeak(
 
   const peakTypeIndices = peakTypeIndicesFrom(entries, ranks, startIndex);
 
-  let peakCandidateIndex: number | null =
+  const peakCandidateIndex =
     peakTypeIndices.length > 0 ? peakTypeIndices[peakTypeIndices.length - 1] : null;
 
-  for (const cand of peakTypeIndices) {
-    peakCandidateIndex = cand;
-    const D = entryDateOrSynthetic(entries[cand]?.date, cand);
-    const ok = candidateHasThreeLowerCalendarDays(entries, ranks, dateToIndex, cand);
-    if (ok) {
-      const endIdx = dateToIndex.get(addDaysIso(D, 3));
-      if (endIdx === undefined) {
-        return { peakCandidateIndex: cand, peakIndex: null, fertileEndIndex: null };
+  // Peak is retrospective and the product's accepted normal-context behavior
+  // is that a later Peak-type observation supersedes an earlier candidate. Do
+  // not fall back to an earlier completed count while the latest candidate is
+  // still forming; that would leave a stale Peak/P+ presentation on the chart.
+  if (peakCandidateIndex !== null) {
+    const candidateDate = entryDateOrSynthetic(
+      entries[peakCandidateIndex]?.date,
+      peakCandidateIndex,
+    );
+    const qualifies = candidateHasThreeLowerCalendarDays(
+      entries,
+      ranks,
+      dateToIndex,
+      peakCandidateIndex,
+    );
+    if (qualifies) {
+      const endIdx = dateToIndex.get(addDaysIso(candidateDate, 3));
+      if (endIdx !== undefined) {
+        return {
+          peakCandidateIndex,
+          peakIndex: peakCandidateIndex,
+          fertileEndIndex: endIdx,
+        };
       }
-      return {
-        peakCandidateIndex: cand,
-        peakIndex: cand,
-        fertileEndIndex: endIdx,
-      };
     }
   }
 

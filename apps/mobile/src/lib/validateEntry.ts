@@ -7,6 +7,7 @@ const appearance = z.enum([
   'none', 'brown', 'cloudy', 'cloudy_clear', 'gummy', 'clear', 'lubricative', 'pasty', 'red', 'yellow',
 ]);
 const frequency = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal('all_day')]);
+const menstrualFlowStart = z.enum(['confirmed', 'not_start', 'uncertain']);
 
 const observationSchema = z.object({
   sensation: sensation,
@@ -24,6 +25,7 @@ export const dailyEntrySchema = z.object({
   missing: z.boolean().optional(),
   observations: z.array(observationSchema).optional(),
   mucusRankOverride: z.number().optional(),
+  menstrualFlowStart: menstrualFlowStart.optional(),
 });
 
 export type DailyEntryValidated = z.infer<typeof dailyEntrySchema>;

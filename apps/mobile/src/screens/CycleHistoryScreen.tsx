@@ -5,8 +5,6 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useCycleHistory } from '../hooks/useCycleHistory';
 import { CycleSummaryPanel } from '../components/CycleSummaryPanel';
-import { PatternInsights } from '../components/PatternInsights';
-import { PeakAlignedOverlay } from '../components/PeakAlignedOverlay';
 import { CycleCard } from '../components/CycleCard';
 import { LineIcon } from '../components/LineIcon';
 import { BG_PAGE, TEXT_MUTED, TEXT_PRIMARY } from '../theme/colors';
@@ -15,12 +13,20 @@ type Nav = NativeStackNavigationProp<RootStackParamList, 'CycleHistory'>;
 
 export function CycleHistoryScreen(): React.JSX.Element {
   const navigation = useNavigation<Nav>();
-  const { cycles, summary, insights, loading, refresh } = useCycleHistory();
+  const { cycles, possibleFertilePatternHistory, loading, refresh } = useCycleHistory();
 
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
 
   const goToDetail = useCallback(
     (cycleNumber: number) => navigation.navigate('CycleDetail', { cycleNumber }),
+    [navigation],
+  );
+  const resolveCycleStart = useCallback(
+    (date: string) => navigation.navigate('DailyEntry', {
+      date,
+      existingEntry: true,
+      intent: 'confirm_cycle_start',
+    }),
     [navigation],
   );
 
@@ -53,9 +59,9 @@ export function CycleHistoryScreen(): React.JSX.Element {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <CycleSummaryPanel summary={summary} />
-        <PatternInsights insights={insights} />
-        <PeakAlignedOverlay cycles={cycles} onCyclePress={goToDetail} />
+        {possibleFertilePatternHistory.sampleSize > 0 ? (
+          <CycleSummaryPanel history={possibleFertilePatternHistory} />
+        ) : null}
 
         <View style={styles.cardsSection}>
           <Text style={styles.cardsHeading}>Your Cycles</Text>
@@ -65,6 +71,7 @@ export function CycleHistoryScreen(): React.JSX.Element {
               cycle={c}
               allCycles={cycles}
               onPress={() => goToDetail(c.cycleNumber)}
+              onResolveCycleStart={resolveCycleStart}
             />
           ))}
         </View>

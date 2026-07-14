@@ -6,17 +6,20 @@ import * as Print from 'expo-print';
 import { shareAsync } from 'expo-sharing';
 import {
   buildCalendarAlignedCycleDays,
-  buildCycleComparisonNarrative,
-  cycleDayForEntryIndex,
-  evaluateInterpretationSupport,
+  buildFirstReleasePossibleFertilePatternEligibility,
+  buildPossibleFertilePatternPresentation,
 } from 'core-rules-engine';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useCycleHistory } from '../hooks/useCycleHistory';
 import { MucusChart } from '../components/MucusChart';
 import { FertileTimeline } from '../components/FertileTimeline';
 import { DailyLogList } from '../components/DailyLogList';
+import { shouldShowRetrospectivePeakMarkers } from '../components/dayPresentationContract';
+import { CycleStartResolutionCard } from '../components/CycleStartResolutionCard';
+import { findCycleStartResolution } from '../components/cycleStartResolution';
 import { buildCyclePdfHtml } from '../utils/exportCyclePdf';
 import { formatCyclePrimarySecondary } from '../utils/cycleDisplay';
+import { formatPossibleFertilePatternLimit } from '../utils/dateDisplay';
 import {
   BG_CARD, BG_PAGE,
   TEXT_PRIMARY, TEXT_MUTED, TEXT_SECONDARY,
@@ -44,18 +47,27 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
     [cycle, cycles],
   );
 
-  const comparisonNarrative = useMemo(
-    () => (cycle ? buildCycleComparisonNarrative(cycle, cycles) : ''),
-    [cycle, cycles],
-  );
-
   const alignedDays = useMemo(
     () => (cycle ? buildCalendarAlignedCycleDays(cycle) : []),
     [cycle],
   );
+  const cycleDayByDate = useMemo(
+    () => Object.fromEntries(alignedDays.map((day) => [day.date, day.cycleDay])),
+    [alignedDays],
+  );
 
-  const interpretation = useMemo(
-    () => (cycle ? evaluateInterpretationSupport(cycle.entries, cycle.result) : null),
+  const possibleFertilePattern = useMemo(
+    () => (cycle
+      ? buildPossibleFertilePatternPresentation(
+          cycle.entries,
+          cycle.result,
+          buildFirstReleasePossibleFertilePatternEligibility(cycle.cycleBoundary),
+        )
+      : null),
+    [cycle],
+  );
+  const cycleStartResolution = useMemo(
+    () => (cycle ? findCycleStartResolution(cycle) : null),
     [cycle],
   );
 
@@ -64,7 +76,9 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
     setExporting(true);
     try {
       const { primary, secondary } = formatCyclePrimarySecondary(cycle, cycles);
-      const headerSubtitle = `${primary} · ${secondary} · ${cycle.length} days`;
+      const headerSubtitle = cycleStartResolution
+        ? `${secondary} · Start date needs confirmation`
+        : `${primary} · ${secondary} · ${cycle.length} days`;
       const html = buildCyclePdfHtml(cycle, includeIntercourse, { headerSubtitle });
       const { uri } = await Print.printToFileAsync({ html });
       await shareAsync(uri, { mimeType: 'application/pdf' });
@@ -74,7 +88,7 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
     } finally {
       setExporting(false);
     }
-  }, [cycle, cycles]);
+  }, [cycle, cycles, cycleStartResolution]);
 
   const queueExport = useCallback((includeIntercourse: boolean) => {
     setPendingIncludeIntercourse(includeIntercourse);
@@ -106,13 +120,42 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
     );
   }
 
-  const fertileEndLabel =
-    cycle.result.fertileEndIndex !== null
-      ? `Day ${cycleDayForEntryIndex(cycle.entries, cycle.result.fertileEndIndex)}`
-      : '--';
   const interpretationLimited =
-    interpretation?.status === 'blocked_by_missing' ||
-    interpretation?.status === 'review_recommended';
+    possibleFertilePattern?.interpretationStatus === 'blocked_by_missing' ||
+    possibleFertilePattern?.interpretationStatus === 'review_recommended';
+  const showDerivedMarkers = possibleFertilePattern
+    ? shouldShowRetrospectivePeakMarkers(possibleFertilePattern)
+    : false;
+  const showFindCareNearTop =
+    possibleFertilePattern?.interpretationStatus === 'review_recommended';
+  const cycleStatusLabel = cycle.status === 'complete' ? 'Complete' : 'In progress';
+  const headerPrimary = cycleStartResolution
+    ? `Cycle ${cycle.cycleNumber}`
+    : headerLabels.primary;
+  const headerSecondary = cycleStartResolution
+    ? `${cycleStatusLabel} · Start date needs confirmation`
+    : `${headerLabels.secondary} · ${cycle.length} days · ${cycleStatusLabel}`;
+
+  const findCareCard = (
+    <Pressable
+      style={({ pressed }) => [styles.findCareCard, pressed && styles.findCareCardPressed]}
+      onPress={() => navigation.navigate('FindCare')}
+      accessibilityRole="button"
+      accessibilityLabel="Find care resources"
+    >
+      <View style={styles.findCareText}>
+        <Text style={styles.findCareTitle}>
+          {showFindCareNearTop ? 'Find charting support' : 'Find care'}
+        </Text>
+        <Text style={styles.findCareBody}>
+          NaPro, NFP, and restorative care resources outside Well Within.
+        </Text>
+      </View>
+      <View style={styles.findCareButton}>
+        <Text style={styles.findCareButtonText}>Open</Text>
+      </View>
+    </Pressable>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -121,8 +164,8 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
           <Text style={styles.backArrow}>{'‹'}</Text>
         </Pressable>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerPrimary} numberOfLines={2}>{headerLabels.primary}</Text>
-          <Text style={styles.headerSecondary}>{headerLabels.secondary}</Text>
+          <Text style={styles.headerPrimary} numberOfLines={2}>{headerPrimary}</Text>
+          <Text style={styles.headerSecondary}>{headerSecondary}</Text>
         </View>
         <View style={[styles.headerSide, styles.headerSideRight]}>
           <Pressable
@@ -139,15 +182,17 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
         {interpretationLimited ? (
           <View style={styles.interpretationNotice}>
             <Text style={styles.interpretationNoticeTitle}>
-              {interpretation?.status === 'review_recommended'
-                ? 'Your chart shows more than one possible Peak pattern'
-                : 'A few days need context'}
+              {possibleFertilePattern?.heading ?? 'A few days need context'}
             </Text>
             <Text style={styles.interpretationNoticeBody}>
-              {interpretation?.status === 'review_recommended'
-                ? 'More than one Peak-type day is followed by the three-day pattern Well Within looks for, so the app isn’t choosing one Peak Day. Keep charting; we’ll check again whenever your observations change.'
-                : 'Keep charting. If you remember an open day, you can add it; days marked not observed stay part of your record.'}
+              {possibleFertilePattern?.body
+                ?? 'Keep charting. If you remember an open day, you can add it; days marked not observed stay part of your record.'}
             </Text>
+            {possibleFertilePattern?.limit ? (
+              <Text style={styles.interpretationNoticeDetail}>
+                {formatPossibleFertilePatternLimit(possibleFertilePattern.limit)}
+              </Text>
+            ) : null}
             <View style={styles.interpretationActions}>
               <Pressable
                 onPress={() =>
@@ -156,56 +201,50 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
               >
                 <Text style={styles.interpretationActionText}>Learn what this means</Text>
               </Pressable>
-              {interpretation?.status === 'review_recommended' ? (
+              {possibleFertilePattern?.interpretationStatus === 'review_recommended' ? (
                 <Pressable onPress={() => navigation.navigate('FindCare')}>
                   <Text style={styles.interpretationActionText}>Find charting support</Text>
                 </Pressable>
               ) : null}
             </View>
           </View>
-        ) : (
-          <>
-            <View style={styles.statsRow}>
-              <StatBox label="Length" value={`${cycle.length}d`} />
-              <StatBox label="Peak Day" value={cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--'} />
-              <StatBox label="Fertile End" value={fertileEndLabel} />
-            </View>
-
-            <View style={styles.comparisonCard}>
-              <Text style={styles.comparisonText}>{comparisonNarrative}</Text>
-            </View>
-          </>
-        )}
-
-        <Pressable
-          style={({ pressed }) => [styles.findCareCard, pressed && styles.findCareCardPressed]}
-          onPress={() => navigation.navigate('FindCare')}
-          accessibilityRole="button"
-          accessibilityLabel="Find care resources"
-        >
-          <View style={styles.findCareText}>
-            <Text style={styles.findCareTitle}>
-              {interpretation?.status === 'review_recommended' ? 'Find charting support' : 'Find care'}
-            </Text>
-            <Text style={styles.findCareBody}>
-              NaPro, NFP, and restorative care resources outside Well Within.
-            </Text>
-          </View>
-          <View style={styles.findCareButton}>
-            <Text style={styles.findCareButtonText}>Open</Text>
-          </View>
-        </Pressable>
-
-        {!interpretationLimited ? (
-          <>
-            <MucusChart
-              days={alignedDays}
-              title="Your pattern this cycle"
-            />
-            <FertileTimeline cycle={cycle} />
-          </>
         ) : null}
-        <DailyLogList cycle={cycle} showInterpretation={!interpretationLimited} />
+
+        {showFindCareNearTop ? findCareCard : null}
+
+        {cycleStartResolution ? (
+          <CycleStartResolutionCard
+            resolution={cycleStartResolution}
+            onResolve={() => navigation.navigate('DailyEntry', {
+              date: cycleStartResolution.date,
+              existingEntry: true,
+              intent: 'confirm_cycle_start',
+            })}
+          />
+        ) : null}
+
+        <MucusChart
+          days={alignedDays}
+          title="Recorded mucus pattern"
+          showDerivedMarkers={showDerivedMarkers}
+        />
+        {!interpretationLimited && possibleFertilePattern && !cycleStartResolution ? (
+          <FertileTimeline
+            presentation={possibleFertilePattern}
+            isCurrentCycle={cycle.cycleNumber === cycles[cycles.length - 1]?.cycleNumber}
+            cycleStatus={cycle.status}
+            cycleDayByDate={cycleDayByDate}
+            onLearnMore={() =>
+              navigation.navigate('Help', {
+                initialSection: possibleFertilePattern.reason === 'later_peak_type_reopens_pattern'
+                  ? 'peak_day'
+                  : 'possible_fertile_pattern',
+              })
+            }
+          />
+        ) : null}
+        <DailyLogList cycle={cycle} showDerivedMarkers={showDerivedMarkers} />
+        {!showFindCareNearTop ? findCareCard : null}
       </ScrollView>
 
       <Modal visible={showIntercoursePrompt} transparent animationType="fade" onDismiss={handlePromptDismiss}>
@@ -234,15 +273,6 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
         </View>
       </Modal>
     </SafeAreaView>
-  );
-}
-
-function StatBox({ label, value }: { label: string; value: string }): React.JSX.Element {
-  return (
-    <View style={styles.statBox}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
   );
 }
 
@@ -283,7 +313,12 @@ const styles = StyleSheet.create({
   },
   exportBtnDisabled: { opacity: 0.5 },
   exportBtnText: { color: BG_CARD, fontWeight: '600', fontSize: 13 },
-  scrollContent: { paddingBottom: 32 },
+  scrollContent: {
+    width: '100%',
+    maxWidth: 960,
+    alignSelf: 'center',
+    paddingBottom: 32,
+  },
   interpretationNotice: {
     marginHorizontal: 16,
     marginTop: 8,
@@ -305,24 +340,14 @@ const styles = StyleSheet.create({
     color: TEXT_SECONDARY,
     lineHeight: 21,
   },
+  interpretationNoticeDetail: {
+    fontSize: 13,
+    color: TEXT_MUTED,
+    lineHeight: 19,
+    marginTop: 8,
+  },
   interpretationActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 14 },
   interpretationActionText: { fontSize: 13, fontWeight: '600', color: TEXT_PRIMARY },
-  comparisonCard: {
-    marginHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 4,
-    backgroundColor: BG_CARD,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: BORDER_CARD,
-  },
-  comparisonText: {
-    fontSize: 15,
-    fontWeight: '400',
-    color: TEXT_SECONDARY,
-    lineHeight: 22,
-  },
   findCareCard: {
     marginHorizontal: 16,
     marginTop: 8,
@@ -361,23 +386,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   findCareButtonText: { color: BG_CARD, fontWeight: '600', fontSize: 14 },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginHorizontal: 16,
-    marginTop: 8,
-  },
-  statBox: {
-    flex: 1,
-    backgroundColor: BG_CARD,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: BORDER_CARD,
-  },
-  statValue: { fontSize: 22, fontWeight: '600', color: TEXT_PRIMARY },
-  statLabel: { fontSize: 11, color: TEXT_MUTED, marginTop: 2 },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.35)',

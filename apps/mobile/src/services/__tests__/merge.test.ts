@@ -29,6 +29,21 @@ describe('mergeOne', () => {
     expect(result?.deleted).toBe(false);
   });
 
+  test('preserves a remote light-flow start marker', () => {
+    const remote: RemoteRow = {
+      entry_date: date,
+      entry_payload: {
+        date,
+        bleeding: 'light',
+        menstrualFlowStart: 'confirmed',
+      },
+      client_updated_at: '2025-01-15T12:00:00Z',
+      deleted_at: null,
+    };
+    const result = mergeOne(date, undefined, remote);
+    expect(result?.entry.menstrualFlowStart).toBe('confirmed');
+  });
+
   test('only remote exists and deleted - tombstone', () => {
     const remote: RemoteRow = {
       entry_date: date,

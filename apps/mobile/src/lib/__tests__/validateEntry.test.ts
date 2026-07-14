@@ -17,6 +17,19 @@ describe('validateEntry', () => {
     expect(result.success).toBe(false);
   });
 
+  test('validates the light-flow start marker without stripping it', () => {
+    const result = validateDailyEntry({
+      date: '2025-01-01',
+      bleeding: 'light',
+      menstrualFlowStart: 'uncertain',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.menstrualFlowStart).toBe('uncertain');
+    }
+    expect(isValidDailyEntry({ menstrualFlowStart: 'invalid' })).toBe(false);
+  });
+
   test('isValidDailyEntry type guard', () => {
     expect(isValidDailyEntry({})).toBe(true);
     expect(isValidDailyEntry({ bleeding: 'heavy' })).toBe(true);

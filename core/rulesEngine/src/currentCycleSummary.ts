@@ -6,6 +6,11 @@ import {
   type InterpretationSupportStatus,
 } from './interpretationSupport';
 import {
+  buildPossibleFertilePatternPresentation,
+  type PossibleFertilePatternEligibilityOptions,
+  type PossibleFertilePatternPresentation,
+} from './possibleFertilePattern';
+import {
   CycleResult,
   DailyEntry,
   InterpretationWarningId,
@@ -52,6 +57,8 @@ export interface CurrentCycleSummary {
   interpretationReason: InterpretationSupportReason;
   /** Contextual Help destination, or null when the compact card is self-contained. */
   explanationTarget: SummaryExplanationTarget;
+  /** Central Phase 1C model shared with detail, history, accessibility, and export. */
+  possibleFertilePattern: PossibleFertilePatternPresentation;
 }
 
 export interface BuildCurrentCycleSummaryParams {
@@ -67,6 +74,8 @@ export interface BuildCurrentCycleSummaryParams {
   calendarAsOfDate?: string;
   /** Prior-cycle comparison data; enables baseline context lines. */
   baselineComparison?: CycleComparisonStructured;
+  /** Explicit eligibility gate for exact Phase 1C boundaries. */
+  possibleFertilePatternEligibility?: PossibleFertilePatternEligibilityOptions;
 }
 
 const FOCUS_QUALIFICATION =
@@ -218,46 +227,6 @@ function missingSupportLine(reason: InterpretationSupportReason): string {
   }
 }
 
-function buildBaselineContext(
-  phase: PhaseLabel,
-  cycleDay: number,
-  comparison?: CycleComparisonStructured,
-): string | null {
-  if (!comparison) return null;
-  if (comparison.priorSampleSize < 2) return null;
-
-  switch (phase) {
-    case 'dry':
-    case 'previous_cycle': {
-      const avg = comparison.avgFertileStartDay;
-      if (avg !== null && cycleDay < avg) {
-        return `Your cycles have typically shown fertile signs starting around day ${avg}.`;
-      }
-      return null;
-    }
-    case 'fertile_open': {
-      const avg = comparison.avgPeakDay;
-      if (avg !== null) {
-        return `Peak has usually occurred around day ${avg} in your previous cycles.`;
-      }
-      return null;
-    }
-    case 'peak_confirmed':
-    case 'post_peak': {
-      if (
-        comparison.peakVsPrior !== 'similar' &&
-        comparison.peakVsPrior !== 'not_comparable'
-      ) {
-        const dir = comparison.peakVsPrior === 'later' ? 'later' : 'earlier';
-        return `Peak occurred ${dir} than your usual pattern.`;
-      }
-      return null;
-    }
-    default:
-      return null;
-  }
-}
-
 function resolveCompactSupportField(
   interpretationLimited: boolean,
   focusMissing: boolean,
@@ -278,7 +247,19 @@ function resolveCompactSupportField(
 export function buildCurrentCycleSummary(
   params: BuildCurrentCycleSummaryParams,
 ): CurrentCycleSummary {
-  const { entries, result, status, todayIndex, calendarAsOfDate, baselineComparison } = params;
+  const {
+    entries,
+    result,
+    status,
+    todayIndex,
+    calendarAsOfDate,
+    possibleFertilePatternEligibility,
+  } = params;
+  const possibleFertilePattern = buildPossibleFertilePatternPresentation(
+    entries,
+    result,
+    possibleFertilePatternEligibility,
+  );
 
   if (entries.length === 0) {
     return {
@@ -296,6 +277,7 @@ export function buildCurrentCycleSummary(
       interpretationStatus: 'forming',
       interpretationReason: 'insufficient_pattern_data',
       explanationTarget: null,
+      possibleFertilePattern,
     };
   }
 
@@ -362,11 +344,10 @@ export function buildCurrentCycleSummary(
     summaryTone = showsPostPeak ? 'positive' : 'neutral';
     explanationTarget = 'peak_day';
   } else if (interpretationSupport.status === 'review_recommended') {
-    headline = 'Your chart shows more than one possible Peak pattern';
-    statusLine =
-      'More than one Peak-type day is followed by the three-day pattern Well Within looks for.';
-    supportingContext =
-      'Well Within isn’t choosing one Peak Day from these observations.';
+    headline = possibleFertilePattern.heading ?? 'A possible pattern cannot be bounded from this chart';
+    statusLine = possibleFertilePattern.body ??
+      'An unresolved observation or chart context limits the boundary Well Within can show.';
+    supportingContext = possibleFertilePattern.limit?.detail ?? '';
     guidance =
       'Keep charting; we’ll check again whenever you add or update an observation.';
     summaryTone = 'caution';
@@ -397,6 +378,17 @@ export function buildCurrentCycleSummary(
     guidance =
       'Your mucus signs remain part of the day’s observation.';
     summaryTone = 'neutral';
+  } else if (
+    possibleFertilePattern.state === 'developing' &&
+    possibleFertilePattern.reason === 'later_peak_type_reopens_pattern'
+  ) {
+    headline = possibleFertilePattern.heading ?? 'Possible fertile pattern may be developing';
+    statusLine = possibleFertilePattern.body ??
+      'A later Peak-type sign was recorded. Keep charting while the new three-day follow-up develops.';
+    supportingContext = '';
+    guidance = 'Keep charting daily. This card updates when your observations change.';
+    summaryTone = 'caution';
+    explanationTarget = 'status_messages';
   } else if (phase === 'fertile_unconfirmed_peak') {
     if (peakCandidateCycleDay !== null) {
       headline = 'Your chart shows a possible Peak Day';
@@ -441,17 +433,9 @@ export function buildCurrentCycleSummary(
     interpretationSupport.status === 'blocked_by_missing' ||
     interpretationSupport.status === 'review_recommended' ||
     recentWindowMissing;
-  const suppressBaseline =
-    focusMissing ||
-    primaryClass === 'menstrual_flow' ||
-    interpretationSupport.status !== 'summary_available';
-  const baselineContext = suppressBaseline
-    ? null
-    : buildBaselineContext(
-        phase,
-        cycleDay,
-        baselineComparison,
-      );
+  // Phase 1C keeps history retrospective. Average/usually context is not
+  // placed on an active cycle, even when the underlying historical fact exists.
+  const baselineContext = null;
 
   const compactSupportField = resolveCompactSupportField(
     interpretationLimited,
@@ -482,5 +466,6 @@ export function buildCurrentCycleSummary(
     interpretationStatus: interpretationSupport.status,
     interpretationReason: interpretationSupport.reason,
     explanationTarget,
+    possibleFertilePattern,
   };
 }

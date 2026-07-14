@@ -30,6 +30,7 @@ import {
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_SUBTLE,
   BORDER_CARD, ACCENT_WARM, ACCENT_WARM_TINT, BRAND_NAME, ACCENT_RED,
 } from '../theme/colors';
+import { formatFullDate } from '../utils/dateDisplay';
 import {
   canSaveObservationEntry,
   initialSensationForEntry,
@@ -38,6 +39,11 @@ import {
   applyEntryDeleteChoice,
   type EntryDeleteChoice,
 } from './entryDeleteConfirmation';
+import {
+  menstrualFlowStartForSavedEntry,
+  shouldShowMenstrualFlowStartQuestion,
+  type MenstrualFlowStartChoice,
+} from './entryMenstrualFlowStart';
 
 interface Props {
   initialEntry?: DailyEntry | null;
@@ -47,6 +53,7 @@ interface Props {
   onDelete?: () => void | Promise<void>;
   saveLabel?: string;
   showMarkMissingButton?: boolean;
+  cycleStartReview?: boolean;
 }
 
 const SENSATION_OPTIONS: { value: Sensation; label: string; desc: string }[] = [
@@ -77,6 +84,15 @@ const FREQUENCY_OPTIONS: { value: Frequency; label: string }[] = [
   { value: 2, label: 'Twice' },
   { value: 3, label: 'Three times' },
   { value: 'all_day', label: 'All day' },
+];
+
+const MENSTRUAL_FLOW_START_OPTIONS: Array<{
+  value: MenstrualFlowStartChoice;
+  label: string;
+}> = [
+  { value: 'confirmed', label: 'Yes — my period began today' },
+  { value: 'not_start', label: 'No — this was not the start' },
+  { value: 'uncertain', label: "I'm not sure" },
 ];
 
 const CLASSIFICATION_LABELS: Record<string, { title: string; desc: string; hint: string }> = {
@@ -110,9 +126,12 @@ export function EntryForm({
   onDelete,
   saveLabel = 'Save Entry',
   showMarkMissingButton = false,
+  cycleStartReview = false,
 }: Props): React.JSX.Element {
   const [missing, setMissing] = useState(initialEntry?.missing ?? false);
   const [bleeding, setBleeding] = useState<BleedingType>(initialEntry?.bleeding ?? 'none');
+  const [menstrualFlowStart, setMenstrualFlowStart] =
+    useState<MenstrualFlowStartChoice | null>(initialEntry?.menstrualFlowStart ?? null);
   const [sensation, setSensation] = useState<Sensation | null>(
     initialSensationForEntry(initialEntry),
   );
@@ -183,6 +202,12 @@ export function EntryForm({
     [bleeding],
   );
 
+  const showMenstrualFlowStartQuestion = shouldShowMenstrualFlowStartQuestion({
+    bleeding,
+    previousDayEntry,
+    existingMarker: initialEntry?.menstrualFlowStart,
+  });
+
   const classInfo = useMemo(() => {
     if (missing || sensation === null || rank === null) return null;
     const draft: DailyEntry = { bleeding, sensation, appearances };
@@ -205,11 +230,7 @@ export function EntryForm({
     return CLASSIFICATION_LABELS[classification] ?? null;
   }, [missing, rank, bleeding, sensation, appearances]);
 
-  const displayDate = new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  const displayDate = formatFullDate(date);
 
   const toggleAppearance = (value: Appearance) => {
     if (value === 'none') {
@@ -223,6 +244,13 @@ export function EntryForm({
       }
       return [...filtered, value];
     });
+  };
+
+  const selectBleeding = (value: BleedingType) => {
+    if (value !== 'light' || bleeding !== 'light') {
+      setMenstrualFlowStart(null);
+    }
+    setBleeding(value);
   };
 
   const saveEntry = useCallback(async (entry: DailyEntry) => {
@@ -241,9 +269,16 @@ export function EntryForm({
       return;
     }
     if (sensation === null) return;
+    const savedMenstrualFlowStart = menstrualFlowStartForSavedEntry({
+      showQuestion: showMenstrualFlowStartQuestion,
+      selected: menstrualFlowStart,
+    });
     void saveEntry({
       date,
       bleeding,
+      ...(savedMenstrualFlowStart
+        ? { menstrualFlowStart: savedMenstrualFlowStart }
+        : {}),
       sensation,
       appearances: appearances.length > 0 ? appearances : undefined,
       frequency,
@@ -289,6 +324,16 @@ export function EntryForm({
         </View>
       </View>
 
+      {cycleStartReview ? (
+        <View style={styles.cycleStartReviewCard}>
+          <Text style={styles.cycleStartReviewTitle}>Confirm this cycle’s start</Text>
+          <Text style={styles.cycleStartReviewBody}>
+            Review the bleeding entry below, then answer “Did your period begin today?”
+            Saving this day updates the cycle automatically.
+          </Text>
+        </View>
+      ) : null}
+
       <View style={styles.missingRow}>
         <Text style={styles.missingLabel}>Did you observe today?</Text>
         <Switch value={!missing} onValueChange={(v) => setMissing(!v)} />
@@ -330,7 +375,7 @@ export function EntryForm({
                 <Pressable
                   key={opt.value}
                   style={[styles.pill, bleeding === opt.value && styles.pillSelected]}
-                  onPress={() => setBleeding(opt.value)}
+                  onPress={() => selectBleeding(opt.value)}
                   accessibilityRole="radio"
                   accessibilityLabel={opt.code ? `${opt.label}, ${opt.code}` : opt.label}
                   accessibilityState={{ selected: bleeding === opt.value }}
@@ -363,6 +408,34 @@ export function EntryForm({
                 <Text style={styles.bleedingGuideNote}>{BLEEDING_EDUCATION_NOTE}</Text>
               </View>
             )}
+            {showMenstrualFlowStartQuestion ? (
+              <View style={styles.flowStartCard}>
+                <Text style={styles.flowStartTitle}>Did your period begin today?</Text>
+                <Text style={styles.flowStartHelp}>
+                  Choose Yes only if this was the first day of true menstrual flow—not isolated spotting or brown discharge.
+                </Text>
+                <View style={styles.flowStartOptions} accessibilityRole="radiogroup">
+                  {MENSTRUAL_FLOW_START_OPTIONS.map((option) => {
+                    const selected = menstrualFlowStart === option.value;
+                    return (
+                      <Pressable
+                        key={option.value}
+                        style={styles.flowStartOption}
+                        onPress={() => setMenstrualFlowStart(option.value)}
+                        accessibilityRole="radio"
+                        accessibilityState={{ selected }}
+                        accessibilityLabel={option.label}
+                      >
+                        <View style={[styles.radioOuter, selected && styles.radioOuterSelected]}>
+                          {selected ? <View style={styles.radioInner} /> : null}
+                        </View>
+                        <Text style={styles.flowStartOptionText}>{option.label}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : null}
           </View>
 
           <View style={styles.mostFertileNote}>
@@ -593,6 +666,21 @@ const styles = StyleSheet.create({
     padding: 12, marginTop: 8,
   },
   dateText: { fontSize: 15, fontWeight: '400', color: TEXT_PRIMARY },
+  cycleStartReviewCard: {
+    marginTop: 12,
+    padding: 13,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: ACCENT_WARM,
+    backgroundColor: ACCENT_WARM_TINT,
+  },
+  cycleStartReviewTitle: { fontSize: 15, fontWeight: '600', color: TEXT_PRIMARY },
+  cycleStartReviewBody: {
+    marginTop: 4,
+    fontSize: 13,
+    lineHeight: 19,
+    color: TEXT_SECONDARY,
+  },
   fieldLabel: { fontSize: 14, fontWeight: '600', color: TEXT_SECONDARY, marginBottom: 8 },
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pill: {
@@ -619,6 +707,31 @@ const styles = StyleSheet.create({
     marginTop: 8,
     gap: 10,
   },
+  flowStartCard: {
+    backgroundColor: BG_PAGE,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    padding: 12,
+    marginTop: 12,
+  },
+  flowStartTitle: { fontSize: 14, fontWeight: '600', color: TEXT_PRIMARY },
+  flowStartHelp: { fontSize: 12, color: TEXT_SUBTLE, lineHeight: 18, marginTop: 4 },
+  flowStartOptions: { marginTop: 10, gap: 10 },
+  flowStartOption: { flexDirection: 'row', alignItems: 'center', minHeight: 30 },
+  flowStartOptionText: { flex: 1, fontSize: 14, color: TEXT_SECONDARY, lineHeight: 20 },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: BORDER_CARD,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  radioOuterSelected: { borderColor: ACCENT_WARM },
+  radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: ACCENT_WARM },
   bleedingGuideItem: { gap: 2 },
   bleedingGuideTitle: { fontSize: 13, fontWeight: '600', color: TEXT_PRIMARY },
   bleedingGuideDescription: { fontSize: 12, color: TEXT_SECONDARY, lineHeight: 18 },

@@ -150,11 +150,17 @@ describe('rules engine edge cases', () => {
     expect(result.phaseLabels).toEqual(['dry']);
   });
 
-  it('late-cycle mucus reappearance after confirmed P+3 is ignored', () => {
+  it('moves Peak and P+3 to a later qualifying Peak-type sequence', () => {
     const result = recalculateCycle(byRanks([0, 1, 3, 1, 0, 0, 0, 0, 3, 1, 0, 0]));
-    expect(result.peakIndex).toBe(2);
-    expect(result.fertileEndIndex).toBe(5);
-    expect(result.phaseLabels[8]).toBe('post_peak');
+    expect(result.peakIndex).toBe(8);
+    expect(result.fertileEndIndex).toBe(11);
+    expect(result.phaseLabels[2]).toBe('fertile_open');
+    expect(result.phaseLabels.slice(8)).toEqual([
+      'peak_confirmed',
+      'p_plus_1',
+      'p_plus_2',
+      'p_plus_3',
+    ]);
   });
 
   it('empty entries array', () => {

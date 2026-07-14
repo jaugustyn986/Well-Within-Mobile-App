@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { CurrentCycleSummary, SummaryTone } from 'core-rules-engine';
 import {
   BG_CARD_GRADIENT_START,
@@ -9,6 +9,8 @@ import {
   TEXT_SECONDARY,
   TEXT_SUBTLE,
   TEXT_MUTED,
+  ACCENT_WARM,
+  BORDER_CARD,
 } from '../theme/colors';
 
 interface Props {
@@ -45,6 +47,10 @@ export function StatusBanner({
     completenessLabel.length > 0 ? completenessLabel : null,
   ].filter((value): value is string => value !== null).join(' · ');
   const showStatusActions = summary.explanationTarget !== null;
+  const supportingContext =
+    summary.interpretationReason === 'bleeding_mucus_ambiguity'
+      ? ''
+      : summary.supportingContext;
   const understandLabel =
     summary.explanationTarget === 'peak_day' &&
     summary.interpretationStatus === 'summary_available'
@@ -52,41 +58,48 @@ export function StatusBanner({
       : summary.explanationTarget === 'peak_day'
         ? 'How Peak Day is identified'
         : 'Learn what this means';
+  const showSupportLine = supportLine.length > 0 && !showStatusActions;
 
   return (
     <View style={[styles.container, { backgroundColor: bg }]}>
       <View style={styles.content}>
+        {metadata ? (
+          <Text style={styles.metadata}>{metadata}</Text>
+        ) : null}
         {summary.focusQualification ? (
           <Text style={styles.focusQualification}>{summary.focusQualification}</Text>
         ) : null}
         <Text style={styles.headline}>{summary.headline}</Text>
         <Text style={styles.statusLine}>{summary.statusLine}</Text>
-        {summary.supportingContext ? (
-          <Text style={styles.supportingContext}>{summary.supportingContext}</Text>
+        {supportingContext ? (
+          <Text style={styles.supportingContext}>{supportingContext}</Text>
         ) : null}
-        {metadata ? (
-          <Text style={styles.metadata}>{metadata}</Text>
-        ) : null}
-        {supportLine ? (
-          <Text style={styles.supportLine}>{supportLine}</Text>
+        {showSupportLine ? (
+          <View style={styles.footer}>
+            <Text style={styles.supportLine}>{supportLine}</Text>
+          </View>
         ) : null}
         {showStatusActions && onUnderstandStatus ? (
-          <View style={styles.actions}>
-            <Text
+          <View style={[styles.footer, styles.actions]}>
+            <Pressable
               accessibilityRole="button"
               onPress={onUnderstandStatus}
-              style={styles.actionText}
+              hitSlop={6}
+              style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
             >
-              {understandLabel}
-            </Text>
+              <Text style={styles.actionText}>{understandLabel}</Text>
+              <Text style={styles.actionArrow}>{'›'}</Text>
+            </Pressable>
             {summary.interpretationStatus === 'review_recommended' && onFindChartingSupport ? (
-              <Text
+              <Pressable
                 accessibilityRole="button"
                 onPress={onFindChartingSupport}
-                style={styles.actionText}
+                hitSlop={6}
+                style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
               >
-                Find charting support
-              </Text>
+                <Text style={styles.actionText}>Find charting support</Text>
+                <Text style={styles.actionArrow}>{'›'}</Text>
+              </Pressable>
             ) : null}
           </View>
         ) : null}
@@ -110,14 +123,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '400',
     color: TEXT_MUTED,
-    marginBottom: 6,
+    marginTop: 5,
     lineHeight: 16,
   },
   headline: {
-    fontSize: 21,
+    fontSize: 19,
     fontWeight: '600',
     color: TEXT_PRIMARY,
     letterSpacing: -0.2,
+    lineHeight: 24,
+    marginTop: 7,
   },
   statusLine: {
     fontSize: 14,
@@ -134,19 +149,46 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
   metadata: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500',
-    color: TEXT_SUBTLE,
-    marginTop: 10,
-    lineHeight: 18,
+    color: TEXT_MUTED,
+    lineHeight: 16,
   },
   supportLine: {
-    fontSize: 14,
+    flex: 1,
+    fontSize: 13,
     fontWeight: '400',
-    color: TEXT_SECONDARY,
-    marginTop: 10,
-    lineHeight: 22,
+    color: TEXT_SUBTLE,
+    lineHeight: 19,
   },
-  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 14 },
-  actionText: { fontSize: 13, fontWeight: '600', color: TEXT_PRIMARY },
+  footer: {
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: BORDER_CARD,
+  },
+  actions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 18,
+  },
+  action: {
+    minHeight: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionPressed: {
+    opacity: 0.55,
+  },
+  actionText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: ACCENT_WARM,
+  },
+  actionArrow: {
+    marginLeft: 4,
+    fontSize: 18,
+    lineHeight: 18,
+    color: ACCENT_WARM,
+  },
 });

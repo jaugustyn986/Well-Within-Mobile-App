@@ -4,7 +4,6 @@ import {
   buildCalendarAlignedCycleDays,
   mucusChartStrengthLabel,
   type CycleSlice,
-  type PhaseLabel,
 } from 'core-rules-engine';
 import {
   BG_BLEEDING, BG_CARD, BG_DRY, BG_MISSING, BG_PEAK_TYPE, BG_POST_PEAK,
@@ -12,35 +11,29 @@ import {
   TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
   BORDER_CARD, INTERCOURSE_ICON,
 } from '../theme/colors';
+import {
+  derivedPatternMarkerLabel,
+  getDayPresentationEvidence,
+  type DayPresentationEvidence,
+} from './dayPresentationContract';
 
 interface Props {
   cycle: CycleSlice;
-  showInterpretation?: boolean;
+  showDerivedMarkers?: boolean;
 }
 
-function getDayCircleColor(phase: PhaseLabel, rank: number | null, bleeding: boolean): string {
-  if (phase === 'missing' || rank === null) return BG_MISSING;
+function getDayCircleColor(evidence: DayPresentationEvidence, bleeding: boolean): string {
+  if (evidence.recordedState === 'missing') return BG_MISSING;
   if (bleeding) return BG_BLEEDING;
-  if (phase === 'p_plus_1' || phase === 'p_plus_2' || phase === 'p_plus_3') return BG_POST_PEAK;
-  if (phase === 'peak_confirmed') return BG_PEAK_TYPE;
-  if ((phase === 'fertile_open' || phase === 'fertile_unconfirmed_peak') && rank !== null && rank >= 3) return BG_PEAK_TYPE;
-  if (rank !== null && rank >= 1) return BG_DRY;
-  return BG_DRY;
-}
-
-function getPhaseShortLabel(phase: PhaseLabel): string {
-  switch (phase) {
-    case 'dry': return 'Dry';
-    case 'fertile_open': return 'Fertile';
-    case 'fertile_unconfirmed_peak': return 'Fertile';
-    case 'peak_confirmed': return 'Peak';
-    case 'p_plus_1': return 'P+1';
-    case 'p_plus_2': return 'P+2';
-    case 'p_plus_3': return 'P+3';
-    case 'post_peak': return 'Post-Peak';
-    case 'missing': return 'Missing';
-    default: return '';
+  if (
+    evidence.derivedMarker === 'p_plus_1' ||
+    evidence.derivedMarker === 'p_plus_2' ||
+    evidence.derivedMarker === 'p_plus_3'
+  ) {
+    return BG_POST_PEAK;
   }
+  if (evidence.recordedState === 'peak_type') return BG_PEAK_TYPE;
+  return BG_DRY;
 }
 
 function formatDate(dateStr: string): string {
@@ -52,7 +45,7 @@ function getRankLabel(rank: number | null): string {
   return mucusChartStrengthLabel(rank, '--');
 }
 
-export function DailyLogList({ cycle, showInterpretation = true }: Props): React.JSX.Element {
+export function DailyLogList({ cycle, showDerivedMarkers = false }: Props): React.JSX.Element {
   const days = buildCalendarAlignedCycleDays(cycle);
 
   return (
@@ -62,17 +55,18 @@ export function DailyLogList({ cycle, showInterpretation = true }: Props): React
         {days.map((day) => {
           const { entry, phaseLabel: phase, mucusRank: rank } = day;
           const bleeding = entry?.bleeding !== undefined && entry.bleeding !== 'none';
-          const isPeak = showInterpretation && phase === 'peak_confirmed';
-          const circleColor = showInterpretation
-            ? getDayCircleColor(phase, rank, bleeding)
-            : bleeding ? BG_BLEEDING : entry ? BG_CARD : BG_MISSING;
-          const dotColor =
-            !showInterpretation ? null
-            :
-            phase === 'peak_confirmed' ? null
-            : (phase === 'fertile_open' || phase === 'fertile_unconfirmed_peak') && rank !== null && rank >= 3 ? null
-            : (phase === 'fertile_open' || phase === 'fertile_unconfirmed_peak') && rank !== null && rank >= 1 ? FERTILE_ACCENT
+          const spottingWithMucus = entry?.bleeding === 'spotting' && rank !== null && rank >= 1;
+          const evidence = getDayPresentationEvidence({
+            mucusRank: rank,
+            phaseLabel: phase,
+            showDerivedMarkers,
+          });
+          const isPeak = evidence.derivedMarker === 'peak_day';
+          const circleColor = getDayCircleColor(evidence, bleeding);
+          const dotColor = !bleeding && evidence.recordedState === 'mucus'
+            ? FERTILE_ACCENT
             : null;
+          const markerLabel = derivedPatternMarkerLabel(evidence.derivedMarker);
 
           return (
             <View key={day.date} style={[styles.row, isPeak && styles.peakRow]}>
@@ -83,7 +77,13 @@ export function DailyLogList({ cycle, showInterpretation = true }: Props): React
               <View style={styles.rowContent}>
                 <Text style={styles.dateText}>{formatDate(day.date)}</Text>
                 <Text style={styles.rankText}>
-                  {!entry ? 'No entry' : bleeding ? `Bleeding (${entry.bleeding})` : getRankLabel(rank)}
+                  {!entry
+                    ? 'No entry'
+                    : spottingWithMucus
+                      ? `Spotting + ${getRankLabel(rank)}`
+                      : bleeding
+                        ? `Bleeding (${entry.bleeding})`
+                        : getRankLabel(rank)}
                   {!bleeding && entry?.frequency
                     ? ` ${entry.frequency === 'all_day' ? 'AD' : `x${entry.frequency}`}`
                     : ''}
@@ -93,9 +93,9 @@ export function DailyLogList({ cycle, showInterpretation = true }: Props): React
                 {entry?.intercourse && (
                   <Text style={styles.roseIcon}>{INTERCOURSE_ICON}</Text>
                 )}
-                {showInterpretation ? (
+                {markerLabel ? (
                   <View style={styles.phaseBadge}>
-                    <Text style={styles.phaseBadgeText}>{getPhaseShortLabel(phase)}</Text>
+                    <Text style={styles.phaseBadgeText}>{markerLabel}</Text>
                   </View>
                 ) : null}
               </View>

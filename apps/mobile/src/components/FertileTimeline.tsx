@@ -1,96 +1,157 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { cycleDayForEntryIndex, type CycleSlice } from 'core-rules-engine';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type {
+  PossibleFertilePatternMarker,
+  PossibleFertilePatternPresentation,
+} from 'core-rules-engine';
 import {
-  BG_CARD, BG_DRY, BG_POST_PEAK,
-  FERTILE_ACCENT, PEAK_BORDER,
-  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
+  BG_CARD,
+  BG_POST_PEAK,
+  FERTILE_ACCENT,
+  PEAK_BORDER,
+  TEXT_PRIMARY,
+  TEXT_SECONDARY,
+  TEXT_MUTED,
   BORDER_CARD,
+  ACCENT_WARM,
 } from '../theme/colors';
+import { buildDevelopingPatternCardCopy } from './cycleHistoryPresentation';
+import {
+  formatFullDate,
+  formatPossibleFertilePatternBody,
+} from '../utils/dateDisplay';
 
 interface Props {
-  cycle: CycleSlice;
+  presentation: PossibleFertilePatternPresentation;
+  isCurrentCycle: boolean;
+  cycleStatus: 'complete' | 'in_progress' | 'no_peak';
+  cycleDayByDate?: Readonly<Record<string, number>>;
+  onLearnMore: () => void;
 }
 
 interface Milestone {
   label: string;
-  dayLabel: string;
+  marker: PossibleFertilePatternMarker;
   color: string;
 }
 
-export function FertileTimeline({ cycle }: Props): React.JSX.Element {
-  const { result, peakDay, length } = cycle;
+function displayCycleDay(
+  marker: PossibleFertilePatternMarker,
+  cycleDayByDate: Readonly<Record<string, number>>,
+): number {
+  return marker.date ? cycleDayByDate[marker.date] ?? marker.cycleDay : marker.cycleDay;
+}
 
-  const fertileStartDay =
-    result.fertileStartIndex !== null
-      ? cycleDayForEntryIndex(cycle.entries, result.fertileStartIndex)
-      : null;
-  const fertileEndDay =
-    result.fertileEndIndex !== null
-      ? cycleDayForEntryIndex(cycle.entries, result.fertileEndIndex)
-      : null;
+function markerLabel(
+  marker: PossibleFertilePatternMarker,
+  cycleDayByDate: Readonly<Record<string, number>>,
+): string {
+  const cycleDay = displayCycleDay(marker, cycleDayByDate);
+  return marker.date
+    ? `${formatFullDate(marker.date)} · Cycle Day ${cycleDay}`
+    : `Cycle Day ${cycleDay}`;
+}
+
+/**
+ * Renders only the engine-owned possible-pattern presentation. In particular,
+ * this component never derives a boundary from legacy fertile indices.
+ */
+export function FertileTimeline({
+  presentation,
+  isCurrentCycle,
+  cycleStatus,
+  cycleDayByDate = {},
+  onLearnMore,
+}: Props): React.JSX.Element | null {
+  if (presentation.state === 'hidden' || !presentation.heading || !presentation.body) {
+    return null;
+  }
 
   const milestones: Milestone[] = [];
-
-  if (fertileStartDay !== null) {
-    milestones.push({
-      label: 'Fertile Start',
-      dayLabel: `Day ${fertileStartDay}`,
-      color: FERTILE_ACCENT,
-    });
+  if (presentation.state === 'bounded') {
+    if (presentation.start) {
+      milestones.push({
+        label: 'First recorded mucus sign',
+        marker: presentation.start,
+        color: FERTILE_ACCENT,
+      });
+    }
+    if (presentation.peak) {
+      milestones.push({ label: 'Peak marker', marker: presentation.peak, color: PEAK_BORDER });
+    }
+    if (presentation.pPlus1) {
+      milestones.push({ label: 'P+1', marker: presentation.pPlus1, color: BG_POST_PEAK });
+    }
+    if (presentation.pPlus2) {
+      milestones.push({ label: 'P+2', marker: presentation.pPlus2, color: BG_POST_PEAK });
+    }
+    if (presentation.pPlus3) {
+      milestones.push({ label: 'P+3', marker: presentation.pPlus3, color: BG_POST_PEAK });
+    }
   }
 
-  if (peakDay !== null) {
-    milestones.push({
-      label: 'Peak Day',
-      dayLabel: `Day ${peakDay}`,
-      color: PEAK_BORDER,
-    });
-  }
+  const developingCopy = presentation.state === 'developing'
+    ? buildDevelopingPatternCardCopy({
+        reason: presentation.reason,
+        isCurrentCycle,
+        cycleStatus,
+        observedPeakTypeCycleDays: presentation.observedPeakTypeSigns.map(
+          (marker) => displayCycleDay(marker, cycleDayByDate),
+        ),
+        observedMucusCycleDays: presentation.observedMucusSigns.map(
+          (marker) => displayCycleDay(marker, cycleDayByDate),
+        ),
+      })
+    : null;
 
-  if (fertileEndDay !== null) {
-    milestones.push({
-      label: 'Fertile End (P+3)',
-      dayLabel: `Day ${fertileEndDay}`,
-      color: BG_POST_PEAK,
-    });
-  }
-
-  const totalFertileDays =
-    fertileStartDay !== null && fertileEndDay !== null
-      ? fertileEndDay - fertileStartDay + 1
-      : null;
-
-  if (milestones.length === 0) {
+  if (developingCopy) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.heading}>Fertile Window</Text>
-        <View style={styles.card}>
-          <Text style={styles.emptyText}>No confirmed fertile window in this cycle.</Text>
-        </View>
+      <View style={styles.noteCard}>
+        <Text style={styles.noteEyebrow}>{developingCopy.eyebrow}</Text>
+        <Text style={styles.noteHeading}>{developingCopy.heading}</Text>
+        <Text style={styles.noteBody}>{developingCopy.meaning}</Text>
+        <Text style={styles.noteNextStep}>{developingCopy.nextStep}</Text>
+        <Pressable
+          onPress={onLearnMore}
+          accessibilityRole="button"
+          accessibilityLabel={developingCopy.learnMoreLabel}
+          hitSlop={6}
+          style={({ pressed }) => [styles.learnMore, pressed && styles.learnMorePressed]}
+        >
+          <Text style={styles.learnMoreText}>{developingCopy.learnMoreLabel}</Text>
+          <Text style={styles.learnMoreArrow}>{'›'}</Text>
+        </Pressable>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Fertile Window</Text>
+      <Text style={styles.heading}>{presentation.heading}</Text>
       <View style={styles.card}>
-        {milestones.map((m, idx) => (
-          <View key={idx} style={styles.milestoneRow}>
-            <View style={[styles.dot, { backgroundColor: m.color }]} />
-            {idx < milestones.length - 1 && <View style={styles.line} />}
-            <View style={styles.milestoneContent}>
-              <Text style={styles.milestoneLabel}>{m.label}</Text>
-              <Text style={styles.milestoneDay}>{m.dayLabel}</Text>
-            </View>
+        <Text style={styles.body}>{formatPossibleFertilePatternBody(presentation)}</Text>
+        {presentation.limit ? (
+          <Text style={styles.limit}>{presentation.limit.detail}</Text>
+        ) : null}
+        {milestones.length > 0 ? (
+          <View style={styles.milestones}>
+            {milestones.map((milestone, index) => (
+              <View key={milestone.label} style={styles.milestoneRow}>
+                <View style={[styles.dot, { backgroundColor: milestone.color }]} />
+                {index < milestones.length - 1 ? <View style={styles.line} /> : null}
+                <View style={styles.milestoneContent}>
+                  <Text style={styles.milestoneLabel}>{milestone.label}</Text>
+                  <Text style={styles.milestoneDay}>
+                    {markerLabel(milestone.marker, cycleDayByDate)}
+                  </Text>
+                </View>
+              </View>
+            ))}
           </View>
-        ))}
-        {totalFertileDays !== null && (
-          <Text style={styles.totalText}>
-            Total fertile days: {totalFertileDays}
-          </Text>
-        )}
+        ) : null}
+        {presentation.limitation ? (
+          <Text style={styles.limitation}>{presentation.limitation}</Text>
+        ) : null}
       </View>
     </View>
   );
@@ -98,6 +159,37 @@ export function FertileTimeline({ cycle }: Props): React.JSX.Element {
 
 const styles = StyleSheet.create({
   container: { marginHorizontal: 16, marginTop: 16 },
+  noteCard: {
+    marginHorizontal: 16,
+    marginTop: 10,
+    backgroundColor: '#F7F0E8',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+  },
+  noteEyebrow: {
+    fontSize: 11,
+    lineHeight: 15,
+    fontWeight: '600',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    color: TEXT_MUTED,
+  },
+  noteHeading: {
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: '600',
+    color: TEXT_PRIMARY,
+    marginTop: 4,
+  },
+  noteBody: { fontSize: 14, color: TEXT_SECONDARY, lineHeight: 21, marginTop: 7 },
+  noteNextStep: {
+    fontSize: 13,
+    color: TEXT_SECONDARY,
+    lineHeight: 19,
+    marginTop: 10,
+  },
   heading: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
   card: {
     backgroundColor: BG_CARD,
@@ -106,16 +198,44 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: BORDER_CARD,
   },
-  emptyText: { fontSize: 14, color: TEXT_MUTED, textAlign: 'center' },
-  milestoneRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 16, position: 'relative' },
+  body: { fontSize: 14, color: TEXT_SECONDARY, lineHeight: 21 },
+  learnMore: {
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginTop: 4,
+  },
+  learnMorePressed: { opacity: 0.55 },
+  learnMoreText: { fontSize: 13, fontWeight: '600', color: ACCENT_WARM },
+  learnMoreArrow: { fontSize: 18, lineHeight: 18, color: ACCENT_WARM, marginLeft: 4 },
+  limit: { fontSize: 13, color: TEXT_MUTED, lineHeight: 19, marginTop: 10 },
+  milestones: { marginTop: 16 },
+  milestoneRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 14,
+    position: 'relative',
+  },
   dot: { width: 14, height: 14, borderRadius: 7, marginRight: 12, marginTop: 2 },
   line: {
-    position: 'absolute', left: 6, top: 16,
-    width: 2, height: 24,
+    position: 'absolute',
+    left: 6,
+    top: 16,
+    width: 2,
+    height: 22,
     backgroundColor: BORDER_CARD,
   },
   milestoneContent: { flex: 1 },
   milestoneLabel: { fontSize: 14, fontWeight: '600', color: TEXT_PRIMARY },
   milestoneDay: { fontSize: 13, color: TEXT_SECONDARY, marginTop: 1 },
-  totalText: { fontSize: 13, color: TEXT_MUTED, marginTop: 4, textAlign: 'center', fontWeight: '500' },
+  limitation: {
+    fontSize: 12,
+    color: TEXT_MUTED,
+    lineHeight: 18,
+    marginTop: 4,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: BORDER_CARD,
+  },
 });

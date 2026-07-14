@@ -1,6 +1,6 @@
 # Progressive-Disclosure UX Surfacing Specification
 
-Status: proposed product direction. No clinical terms or example copy in this document is approved until it appears as approved in the claim matrix.
+Status: the narrow Phase 1C slice and Cycle Day 1 increment are implemented and verified locally. The engine-owned presentation model, conservative copy, later-Peak-type invalidation, raw eligible-history model, inline leading-light confirmation, and cross-surface reuse are in place. Production exact retrospective dates are enabled for charts with an eligible boundary and supported pattern. Special contexts are disclosed as unsupported and receive no alternate logic. Usability testing and separate legal/regulatory/advertising review remain open.
 
 ## Core product model
 
@@ -16,21 +16,26 @@ Every surface should preserve this hierarchy:
 3. **Cycle context — surrounding evidence**
    - Exact dates, missing days, pattern boundaries, and retrospective comparison with sample size.
    - Never presented as a future prediction or intercourse instruction.
+   - An eligible `Possible fertile pattern` may summarize an approved opening through P+3 while keeping observed signs and derived boundaries distinct.
 4. **Education/expert detail — user invoked**
    - `Why?`, source/rule explanation, engine version, limitations, advanced codes, and practitioner-oriented export.
 
-The UI should render an engine-owned presentation model rather than independently inventing fertility language. An illustrative future contract:
+The UI now renders an engine-owned presentation model rather than independently inventing fertility language. The implemented contract includes:
 
 ```text
-observationSummary
-derivedMarker
-derivationStatus: forming | identified_retrospectively | blocked_by_gap | unsupported
-contextLines[]
-whyItems[]
-expertDetails?
+state: hidden | developing | bounded | withheld
+heading, body, limitation, reason
+interpretationStatus, interpretationReason
+contextEligibility: eligible | ineligible | unknown
+cycleBoundaryEligibility: eligible | ineligible | unknown
+observedMucusSigns[], observedPeakTypeSigns[]
+start, peak, pPlus1, pPlus2, pPlus3
+limit: reason + optional date/Cycle Day + plain-language detail
 ```
 
-## Current surface map
+Surfaces consume this contract. They do not calculate a possible-pattern boundary themselves.
+
+## Pre-Phase 1C audit surface map
 
 | Surface | Current behavior | Primary concern |
 | --- | --- | --- |
@@ -60,6 +65,7 @@ expertDetails?
 - Preserve a visually distinct no-entry state versus recorded dry.
 - Add non-color day markers and VoiceOver descriptions containing date, observation, derived marker, and action status.
 - Keep everyday legend terms observational; do not expose internal phase enums.
+- When mucus signs are present in a `forming` chart, add at most one line to the existing banner: `Possible fertile pattern may be developing.` Show no start/end dates, duration, or band; do not add future calendar shading or a new legend color.
 
 ### Acceptance criteria
 
@@ -119,22 +125,26 @@ Notes remain user content and must never influence interpretation unless a futur
 6. Daily observations.
 7. Export and Find Care.
 
-Replace the current broad `Fertile Window` timeline with an `Observed pattern markers` card after claim approval. Possible information structure:
+The current timeline location and card styling now render a `Possible fertile pattern` card from the centralized model. Its information structure is:
 
-- first relevant recorded sign after flow — exact date;
+- first approved recorded mucus sign — exact date;
 - Peak-type observation — exact date;
 - Peak marker identified retrospectively — exact date;
-- three-day follow-up completed — exact date;
+- three-day follow-up completed / P+3 recorded — exact date;
 - or boundary uncertain/unsupported with exact reason.
 
-Do not display `Total fertile days` or an unconditional `Fertile End` during the gated phase.
+For a developing chart with mucus signs, say that a possible pattern may be developing but show no exact boundary. For an eligible retrospective chart, show `from {date} through P+3 ({date})` with `Based on your logged observations`. Do not display `Total fertile days`, `Fertile Start`, `Fertile End`, or a settled-looking band while a later Peak-type candidate is unresolved. Preserve the existing missing/review suppression states.
 
 ### Acceptance criteria
 
 - Length, marker days, P+ dates, and luteal duration remain correct with unlogged dates.
 - Every marker can expose its evidence and limitations.
 - Unsupported/BIP-like patterns never silently receive the standard interpretation.
+- Later non-Peak mucus after P+3 remains visible as an observation and does not, by itself, reopen the bounded presentation. A later Peak-type sign immediately reopens it and becomes the displayed Peak only after its own qualifying P+3 count.
 - Editing a prior entry refreshes marker, explanation, status, history eligibility, and export.
+- An unresolved Cycle Day 1 may withhold the possible-pattern interval without suppressing an otherwise supported retrospective Peak/P+ date sequence; do not turn those date markers into Cycle Day statistics or a range.
+- A recoverable leading-light ambiguity names the deciding light-flow date and the following fuller-flow date in History and Cycle Detail and offers one direct `Confirm {date}` or `Review {date}` action. Do not silently fall back to the first bleeding day.
+- Saving `Yes` or `No` from that entry refreshes the cycle boundary, range, and History eligibility. `I'm not sure` retains a calm explanation of what remains visible and what is withheld.
 - No TTC/avoidance instruction appears.
 
 ## History — retrospective learning only
@@ -155,6 +165,7 @@ Do not display `Total fertile days` or an unconditional `Fertile End` during the
 - Replace success/failure tone around “Peak not confirmed” with the actual reason: blocked, unsupported, still forming, or no marker identified.
 - Align overlays by exact date offsets, not entry indexes.
 - Choose one canonical History composition; current inline and separate screens duplicate the same product surface.
+- After the approved minimum of three eligible completed cycles, show raw Cycle Day ranges with `N` for the first recorded mucus sign and Peak marker. Do not project those ranges onto the active or next cycle.
 
 ### Acceptance criteria
 
@@ -170,6 +181,7 @@ Reorganize into:
 
 1. **Recording observations:** how to observe, sensation, appearance, bleeding, missing/not-observed.
 2. **Reading the chart:** observation versus derived marker, Peak-type versus Peak Day, surrounding dates, gaps, and colors/shapes.
+   - Include `Possible fertile pattern`: what opens it, why it stays open while developing, what P+3 means in the display, and why some charts have no exact boundary.
 3. **What Well Within does not determine:** ovulation confirmation, pregnancy probability, contraceptive safety, diagnosis, and unsupported pattern types.
 4. **Advanced chart details:** codes, rules version, export concepts, and practitioner discussion after approval.
 
@@ -189,7 +201,7 @@ Recommended four-screen mandatory flow:
 
 1. Observation-based charting and specific privacy behavior.
 2. Daily action: record what was observed; `not observed` is valid.
-3. Mental model: observation → chart marker → surrounding-date context, including Peak-type versus retrospective Peak marker.
+3. Mental model: observation → chart marker → possible-pattern context, including Peak-type versus retrospective Peak marker and the chart-based limitation.
 4. `Log today`.
 
 Move detailed status, history averages, overlays, and code education into contextual/earned education after relevant data exists.
@@ -209,6 +221,7 @@ Move detailed status, history averages, overlays, and code education into contex
 - recorded observations;
 - explicit no-entry/missing rows;
 - approved observational markers and limitations;
+- for an eligible chart only, the centralized `Possible fertile pattern` dates with the adjacent limitation;
 - optional intercourse only after the existing explicit prompt.
 
 ### Advanced/detailed export
@@ -240,6 +253,7 @@ Only after approval:
 - BIP and alternate interpretation mechanics.
 - TTC/avoidance instructions.
 - `safe`, `infertile`, ovulation timing, pregnancy probability, diagnosis, condition flags, or treatment suggestions.
+- Unqualified `fertile window`, `Fertile Start`, `Fertile End`, `Total fertile days`, `window closed`, or `past the window` language.
 - Creighton/FertilityCare/NaPro compatibility or affiliation language without clearance.
 
 Expert-only is not permission to expose unvalidated output; it remains subject to the same approvals.
@@ -264,13 +278,19 @@ Expert-only is not permission to expose unvalidated output; it remains subject t
 - Implement observation → marker → context hierarchy, `Why?`, exact missing-date actions, and accessibility.
 - Verify with fixture-driven screenshots and journey tests.
 
+Phase 1C subset completed: the existing Calendar banner consumes the centralized possible-pattern context without dates while forming. Broader Day Detail evidence disclosure remains future work.
+
 ### Phase 3 — Cycle Detail + History
 
-- Replace fertile timeline, repair aggregates/overlay, add evidence, gaps, and sample sizes.
+- Repurpose the existing fertile timeline as the eligible `Possible fertile pattern` card; repair aggregates/overlay and add evidence, gaps, sample sizes, and later-Peak-type invalidation.
+
+Phase 1C subset completed: centralized eligible detail markers, later-Peak-type invalidation, boundary-aware production withholding, and raw history ranges with a three-cycle minimum are implemented. Exact ranges appear only from eligible completed cycles.
 
 ### Phase 4 — Help + Onboarding + PDF
 
 - Centralize approved education, shorten onboarding, and separate personal versus advanced export.
+
+Phase 1C subset completed: Help/onboarding use the possible-pattern limitation, the default PDF consumes the same model, and generated method-code columns are absent from the default export. A separate advanced export was not added.
 
 ### Phase 5 — release gate
 
@@ -286,6 +306,7 @@ Expert-only is not permission to expose unvalidated output; it remains subject t
 - All day/duration values remain correct with gaps.
 - Reviewed fixtures produce consistent output across Calendar, Day, Cycle, History, Help, and PDF.
 - No surface predicts future timing or implies ovulation, pregnancy probability, contraceptive safety, diagnosis, certification, or affiliation.
+- Every exact possible-pattern boundary is visibly qualified as based on logged observations, is suppressed outside eligible states, and is revoked or withheld when a later Peak-type sign makes the earlier candidate unsettled.
 - Every derived marker can answer `What observations caused this?`
 - Every uncertainty can answer `What is missing or unsupported?`
 - Everyday UI remains calm and observational; expert mechanics require deliberate disclosure.

@@ -65,13 +65,13 @@ const SLIDES: Slide[] = [
   {
     id: '3',
     headline: 'Structured, rules-based charting',
-    body: 'We follow clear rules based on your observations—no guessing or predictions.',
+    body: 'The chart uses consistent rules based on the observations you record.',
     isStatusList: true,
   },
   {
     id: '4',
-    headline: 'See where you are in your cycle',
-    body: 'The app identifies your fertile window, Peak, and post-Peak phase based on what you record.',
+    headline: 'See how your chart develops',
+    body: 'See mucus signs, a possible fertile pattern, and retrospective Peak context based on what you record.',
     renderPanel: () => <OnboardingStatusBannerPanel />,
   },
   {
@@ -81,12 +81,12 @@ const SLIDES: Slide[] = [
     renderPanel: () => <OnboardingEntryPanel />,
     footerTitle: 'Consistency matters',
     footerBody:
-      'Daily observations help the app interpret your cycle correctly. Missing even one day can delay or prevent confirming Peak.',
+      'Daily observations give the chart more context. An open day can limit which retrospective markers the app can show.',
   },
   {
     id: '6',
-    headline: 'Understand your pattern over time',
-    body: "See how your cycles compare and recognize what's consistent or changing.",
+    headline: 'Review chart history over time',
+    body: 'After enough eligible completed cycles, history can show raw Cycle Day ranges without predicting a future cycle.',
     renderPanel: () => <OnboardingHistoryPanel />,
   },
   {

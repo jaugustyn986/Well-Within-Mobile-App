@@ -25,6 +25,24 @@ describe('detectPeak', () => {
     });
   });
 
+  it('uses the latest Peak-type row when separated sequences both qualify', () => {
+    const ranks = [0, 3, 0, 0, 0, 3, 2, 1, 0];
+    expect(detectPeak(entriesForLength(ranks.length), ranks, 0)).toEqual({
+      peakCandidateIndex: 5,
+      peakIndex: 5,
+      fertileEndIndex: 8,
+    });
+  });
+
+  it('does not fall back to an earlier Peak while the latest candidate is forming', () => {
+    const ranks = [0, 3, 0, 0, 0, 3, 2];
+    expect(detectPeak(entriesForLength(ranks.length), ranks, 0)).toEqual({
+      peakCandidateIndex: 5,
+      peakIndex: null,
+      fertileEndIndex: null,
+    });
+  });
+
   it('does not confirm when P+1..P+3 missing', () => {
     const ranks = [0, 1, 3, null, 1, 0, 0];
     expect(detectPeak(entriesForLength(ranks.length), ranks, 0)).toEqual({

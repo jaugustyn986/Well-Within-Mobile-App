@@ -23,7 +23,7 @@ The app reevaluates after every recalculation. More data or an edit may change t
 | `forming` | Names what is recorded now—no mucus signs, mucus signs without Peak, or a possible Peak Day—then gives one keep-charting next step. | No retrospective summary yet. |
 | `summary_available` | Names the marked Peak Day, the three logged days that support it, the chart-only limitation, and the next step. | Eligible derived summary may appear. |
 | `blocked_by_missing` | **A few days need context** plus the specific effect of the open/not-observed day. | Existing interior-gap/missing warnings suppress affected conclusions. |
-| `review_recommended` | **Your chart shows more than one possible Peak pattern** plus the exact reason the app is not choosing one Peak Day. | The app does not choose between multiple independently confirmed sequences. |
+| `review_recommended` | Names the specific chart context that this release does not automatically summarize. | Derived summary is withheld while recorded observations and charting remain available. |
 
 These are product-capability states, not diagnoses, clinical confidence scores, or labels for a user's health.
 
@@ -40,7 +40,7 @@ The status can change after new observations or edits, but it may also persist. 
 
 - `blocked_by_missing` uses only existing engine warnings for a calendar gap, a not-observed confirmation day, or an earlier gap limiting the opening boundary.
 - Dates beyond the last recorded row are treated as a developing pattern rather than a calendar gap; the confirmation rule itself is unchanged.
-- `review_recommended` currently means that more than one Peak-type row independently satisfies the engine's existing three-lower-calendar-days rule. The app does not decide which one is clinically correct.
+- `review_recommended` is reserved for explicitly detected unsupported ambiguity, currently including mucus recorded with light bleeding or spotting and invalid/unresolved date chronology. A later Peak-type row no longer enters this state; Phase 1C uses the recorded latest-candidate decision.
 - No BIP, postpartum, perimenopause, medication, bleeding, or diagnostic support gate was invented in this phase. Those still require qualified review.
 
 ## Surface behavior

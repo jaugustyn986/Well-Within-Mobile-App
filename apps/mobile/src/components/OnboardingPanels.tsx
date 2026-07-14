@@ -323,64 +323,27 @@ const entry = StyleSheet.create({
 });
 
 /* ─────────────────────────────────────────────────
-   SLIDE 6 — "Understand your pattern over time"
-   Mock data sourced from reference screenshot provided by user.
+   SLIDE 6 — "Review chart history over time"
 ───────────────────────────────────────────────── */
-
-const STAT_CARDS = [
-  { label: 'Complete cycles', value: '3' },
-  { label: 'Avg Cycle (days)', value: '27' },
-  { label: 'Avg Peak Day',     value: 'Day 17' },
-  { label: 'Avg Luteal Phase', value: '11 days' },
-];
-
-const PATTERN_INSIGHTS = [
-  'Peak day has ranged from cycle day 13 to 22.',
-  'Average luteal phase is 11 days.',
-  'Your cycles show significant variation in length.',
-];
 
 export function OnboardingHistoryPanel(): React.JSX.Element {
   return (
-    <View style={{ gap: 10 }}>
-      <PhoneCard>
-        <Text style={hist.heading}>Cycle Summary</Text>
-        <View style={hist.grid}>
-          {STAT_CARDS.map(c => (
-            <View key={c.label} style={hist.card}>
-              <Text style={hist.value}>{c.value}</Text>
-              <Text style={hist.label}>{c.label}</Text>
-            </View>
-          ))}
-        </View>
-      </PhoneCard>
-
-      <PhoneCard>
-        <Text style={hist.heading}>Your Patterns</Text>
-        {PATTERN_INSIGHTS.map((text, i) => (
-          <View key={i} style={hist.bulletRow}>
-            <Text style={hist.bullet}>{'\u2022'}</Text>
-            <Text style={hist.insight}>{text}</Text>
-          </View>
-        ))}
-      </PhoneCard>
-    </View>
+    <PhoneCard>
+      <Text style={hist.heading}>Possible fertile pattern history</Text>
+      <Text style={hist.body}>
+        At least 3 eligible completed cycles are needed before Well Within shows retrospective ranges.
+      </Text>
+      <Text style={hist.note}>
+        Ranges use recorded Cycle Days only. They do not predict a future cycle.
+      </Text>
+    </PhoneCard>
   );
 }
 
 const hist = StyleSheet.create({
   heading: { fontSize: 17, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  card: {
-    backgroundColor: BG_PAGE, borderRadius: 10, padding: 12,
-    width: '48%' as unknown as number, flexGrow: 1,
-    borderWidth: 1, borderColor: BORDER_CARD,
-  },
-  value: { fontSize: 20, fontWeight: '700', color: TEXT_PRIMARY },
-  label: { fontSize: 10, color: TEXT_MUTED, marginTop: 2 },
-  bulletRow: { flexDirection: 'row', marginBottom: 6 },
-  bullet: { fontSize: 13, color: TEXT_SECONDARY, marginRight: 7, lineHeight: 20 },
-  insight: { flex: 1, fontSize: 13, color: TEXT_SECONDARY, lineHeight: 20 },
+  body: { fontSize: 13, color: TEXT_SECONDARY, lineHeight: 20 },
+  note: { fontSize: 12, color: TEXT_MUTED, lineHeight: 18, marginTop: 8 },
 });
 
 /* ─────────────────────────────────────────────────

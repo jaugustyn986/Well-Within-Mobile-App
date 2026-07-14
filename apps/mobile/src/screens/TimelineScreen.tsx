@@ -3,11 +3,16 @@ import { SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { buildCalendarAlignedCycleDays } from 'core-rules-engine';
+import {
+  buildCalendarAlignedCycleDays,
+  buildFirstReleasePossibleFertilePatternEligibility,
+  buildPossibleFertilePatternPresentation,
+} from 'core-rules-engine';
 import { useCycleHistory } from '../hooks/useCycleHistory';
 import { useCurrentCycleSummaryFromCycles } from '../hooks/useCurrentCycleSummary';
 import { MucusChart } from '../components/MucusChart';
 import { StatusBanner } from '../components/StatusBanner';
+import { shouldShowRetrospectivePeakMarkers } from '../components/dayPresentationContract';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'Timeline'>;
@@ -21,6 +26,15 @@ export function TimelineScreen(): React.JSX.Element {
     () => (currentCycle ? buildCalendarAlignedCycleDays(currentCycle) : []),
     [currentCycle],
   );
+  const showDerivedMarkers = useMemo(() => {
+    if (!currentCycle) return false;
+    const presentation = buildPossibleFertilePatternPresentation(
+      currentCycle.entries,
+      currentCycle.result,
+      buildFirstReleasePossibleFertilePatternEligibility(currentCycle.cycleBoundary),
+    );
+    return shouldShowRetrospectivePeakMarkers(presentation);
+  }, [currentCycle]);
 
   useFocusEffect(
     useCallback(() => {
@@ -56,7 +70,7 @@ export function TimelineScreen(): React.JSX.Element {
           }
           onFindChartingSupport={() => navigation.navigate('FindCare')}
         />
-        <MucusChart days={alignedDays} />
+        <MucusChart days={alignedDays} showDerivedMarkers={showDerivedMarkers} />
       </ScrollView>
     </SafeAreaView>
   );

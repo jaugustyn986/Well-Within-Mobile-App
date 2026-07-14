@@ -20,6 +20,13 @@ function makeSlice(
     result: emptyResult,
     peakDay: 14,
     lutealPhase: 14,
+    cycleBoundary: {
+      index: 0,
+      date: '2025-01-01',
+      source: 'inferred_heavy_moderate',
+      eligibility: 'eligible',
+      reason: 'unambiguous_heavy_moderate_start',
+    },
     ...overrides,
   };
 }
@@ -95,7 +102,7 @@ describe('splitIntoCycles', () => {
 });
 
 describe('computeCycleSummary', () => {
-  it('excludes a review-recommended cycle from derived history aggregates', () => {
+  it('includes a completed cycle after the latest separated Peak sequence qualifies', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 3 },
@@ -108,9 +115,10 @@ describe('computeCycleSummary', () => {
       { date: '2026-01-09', bleeding: 'none', mucusRankOverride: 0 },
       { date: '2026-02-01', bleeding: 'heavy', mucusRankOverride: 0 },
     ];
-    const [reviewCycle] = splitIntoCycles(entries);
-    expect(reviewCycle.status).toBe('complete');
-    expect(computeCycleSummary([reviewCycle]).cyclesTracked).toBe(0);
+    const [completedCycle] = splitIntoCycles(entries);
+    expect(completedCycle.status).toBe('complete');
+    expect(completedCycle.peakDay).toBe(6);
+    expect(computeCycleSummary([completedCycle]).cyclesTracked).toBe(1);
   });
 
   it('sets cyclesTracked to completed cycles only, not in-progress', () => {

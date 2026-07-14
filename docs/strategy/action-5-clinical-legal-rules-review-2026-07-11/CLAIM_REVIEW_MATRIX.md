@@ -27,16 +27,19 @@ Initial status definitions:
 | C-12 | Help: app does not confirm ovulation or predict pregnancy chances | Important limitation consistent with current positioning. | High | **Retain for now**, but ensure stronger claims elsewhere do not contradict it. |
 | C-13 | Today card/form: “Peak-type observation/sign” | Describes the observation rather than ovulation when clearly separated from Peak Day. | Medium | **Retain for now** with approved definition and “based on what you recorded.” |
 | C-14 | Daily log badge: `Fertile` | Unqualified patient-specific status. | High | **Revise** toward observation/pattern marker. |
-| C-15 | Cycle Detail: `Fertile Start` | Broad individualized boundary from an incomplete standard-cycle algorithm. | Critical | **Hold.** |
-| C-16 | Cycle Detail: `Fertile End (P+3)` | Implies actual end of fertility; high decision consequence. | Critical | **Hold.** |
+| C-15 | Cycle Detail: `Fertile Start` | Broad individualized boundary from an incomplete standard-cycle algorithm. | Critical | **Hold old phrase.** Phase 1C direction: `First recorded mucus sign` inside an eligible `Possible fertile pattern` card. |
+| C-16 | Cycle Detail: `Fertile End (P+3)` | Implies actual end of fertility; high decision consequence. | Critical | **Hold old phrase.** Phase 1C direction: `P+3 recorded`; never state that fertility ended. |
 | C-17 | Cycle Detail: `Total fertile days` | Treats the interval as fully validated and supported. | Critical | **Remove/Hold.** |
 | C-18 | Cycle Detail: `No confirmed fertile window` | “Confirmed” and “fertile window” can imply clinical validation. | High | **Revise** to no supported marker identified from this chart. |
 | C-19 | Cycle card: `Peak not confirmed` | Can imply user failure/pathology; no reason or unsupported state shown. | Medium/High | **Revise** with reason/status after support model exists. |
 | C-20 | History: “Fertile window typically opens around…” | Value is fabricated as earliest prior Peak minus five. | Critical correctness/FTC | **Remove.** |
 | C-21 | History: “very consistent,” “moderate,” “significant variation” | Thresholds are arbitrary and may imply normative health meaning. | High | **Hold clinical wording; use neutral ranges/sample size.** |
 | C-22 | Comparison: “usual for you” | Retrospective comparison can be useful but needs sample size and calendar-correct inputs. | Medium | **Revise** to “in the last N eligible cycles.” |
-| C-23 | PDF: `Fertile Window`, start/end, Peak, luteal phase | Portable artifact amplifies patient-specific claims and incorrect index-day math. | Critical | **Hold default export fields** until approved. |
+| C-23 | PDF: `Fertile Window`, start/end, Peak, luteal phase | Portable artifact amplifies patient-specific claims and incorrect index-day math. | Critical | **Hold old fields.** An eligible future export may use the centralized `Possible fertile pattern` model with the adjacent limitation after rule alignment and claim review; otherwise remain observation-only. |
 | C-24 | PDF: generated Creighton-compatible code | Raises clinical correctness and IP/provenance issues in every exported row. | Critical clinical/IP | **Move to advanced export only after approval.** |
+| C-25 | Cycle Detail/current context: `Possible fertile pattern` | A qualified chart-based estimate can help users understand their observations; exact dates may still be treated as decision-grade fertility advice. | Critical clinical/FDA/FTC | **Implemented under the recorded working decision.** Exact dates require the existing support checks and an eligible Cycle Day 1. Production uses a disclosed first-release context assumption; it does not screen special contexts. Retain the adjacent limitation and complete claim/usability review. |
+| C-26 | Developing state: `Possible fertile pattern may be developing` with no date | Provides limited current-cycle context without claiming when fertility began or forecasting an end. | High | **Implemented.** Show no start date, end date, Cycle Day boundary, duration, or band while forming. Recalculate after every edit; a later Peak-type observation supersedes an earlier derived marker and must complete its own count before a new bounded result appears. |
+| C-27 | History: raw start/Peak ranges across `N` eligible completed cycles | Retrospective description is lower risk than prediction, but placement and language can imply a forecast. | High | **Revise/allow direction:** exact past ranges and sample size only; no active/future calendar shading, `usual`, `expected`, `likely`, or normative labels. |
 
 ## Method, affiliation, and care claims
 
@@ -103,6 +106,8 @@ These are directions—not approved copy:
 - Prefer `Peak marker identified from recorded observations` over `most fertile day confirmed`.
 - Prefer `recent observations complete` over `high confidence`.
 - Prefer exact dates and `criteria met in this chart` over universal fertility status.
+- Prefer `Possible fertile pattern — based on your logged observations` over `fertile window`, and keep observed signs visually distinct from the derived interval.
+- Use `through P+3` rather than `fertility ended`, `window closed`, or `past the window`.
 - Prefer retrospective `in your last N eligible cycles` over `usually` on the active cycle.
 - Explain product limitations next to the relevant output, not only in a global disclaimer.
 
@@ -115,9 +120,9 @@ These are directions—not approved copy:
 | C-09–C-12 | `core/rulesEngine/src/observationEducationCopy.ts`; `apps/mobile/src/screens/HelpScreen.tsx` |
 | C-13 | `apps/mobile/src/components/EntryForm.tsx`; `TodayEntryCard.tsx` |
 | C-14 | `apps/mobile/src/components/DailyLogList.tsx` |
-| C-15–C-18 | `apps/mobile/src/components/FertileTimeline.tsx`; `CycleDetailScreen.tsx` |
+| C-15–C-18, C-25–C-26 | `apps/mobile/src/components/FertileTimeline.tsx`; `CycleDetailScreen.tsx`; `core/rulesEngine/src/currentCycleSummary.ts` |
 | C-19 | `apps/mobile/src/components/CycleCard.tsx` |
-| C-20–C-22 | `core/rulesEngine/src/multiCycle.ts`; `cycleComparisonSummary.ts`; `PatternInsights.tsx`; `CycleSummaryPanel.tsx` |
+| C-20–C-22, C-27 | `core/rulesEngine/src/multiCycle.ts`; `cycleComparisonSummary.ts`; `PatternInsights.tsx`; `CycleSummaryPanel.tsx` |
 | C-23–C-24 | `apps/mobile/src/utils/exportCyclePdf.ts` |
 | M-01 | `README.md` |
 | M-02 | `apps/mobile/app.config.js` |

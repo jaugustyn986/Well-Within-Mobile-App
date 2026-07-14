@@ -1,26 +1,37 @@
 import {
   buildCalendarAlignedCycleDays,
-  cycleDayForEntryIndex,
+  buildFirstReleasePossibleFertilePatternEligibility,
+  buildPossibleFertilePatternPresentation,
   CycleSlice,
-  evaluateInterpretationSupport,
-  generateCreightonCode,
   mucusChartStrengthLabel,
   PDF_CHART_STRENGTH_HEADER,
   PhaseLabel,
+  PossibleFertilePatternEligibilityOptions,
 } from 'core-rules-engine';
+import {
+  formatFullDate,
+  formatPossibleFertilePatternBody,
+  formatPossibleFertilePatternLimit,
+} from './dateDisplay';
 
-const PHASE_DISPLAY: Record<PhaseLabel, string> = {
-  dry: 'Dry',
-  fertile_open: 'Fertile',
-  peak_confirmed: 'Peak',
-  p_plus_1: 'P+1',
-  p_plus_2: 'P+2',
-  p_plus_3: 'P+3',
-  post_peak: 'Post-Peak',
-  fertile_unconfirmed_peak: 'Fertile (unconf.)',
-  missing: 'Missing',
-  previous_cycle: 'Prev Cycle',
-};
+function phaseDisplay(phase: PhaseLabel, rank: number | null): string {
+  if (phase === 'fertile_open' || phase === 'fertile_unconfirmed_peak') {
+    if (rank !== null && rank >= 3) return 'Peak-type mucus';
+    if (rank !== null && rank >= 1) return 'Mucus sign';
+    return 'Dry observation';
+  }
+  const display: Record<Exclude<PhaseLabel, 'fertile_open' | 'fertile_unconfirmed_peak'>, string> = {
+    dry: 'Dry',
+    peak_confirmed: 'Peak',
+    p_plus_1: 'P+1',
+    p_plus_2: 'P+2',
+    p_plus_3: 'P+3',
+    post_peak: 'Post-Peak',
+    missing: 'Missing',
+    previous_cycle: 'Prev Cycle',
+  };
+  return display[phase];
+}
 
 function phaseBg(phase: PhaseLabel): string {
   switch (phase) {
@@ -34,29 +45,33 @@ function phaseBg(phase: PhaseLabel): string {
 export function buildCyclePdfHtml(
   cycle: CycleSlice,
   includeIntercourse: boolean,
-  options?: { headerSubtitle?: string },
+  options?: {
+    headerSubtitle?: string;
+    possibleFertilePatternEligibility?: PossibleFertilePatternEligibilityOptions;
+  },
 ): string {
-  const interpretation = evaluateInterpretationSupport(cycle.entries, cycle.result);
-  const observationOnly =
-    interpretation.status === 'blocked_by_missing' ||
-    interpretation.status === 'review_recommended';
+  const possibleFertilePattern = buildPossibleFertilePatternPresentation(
+    cycle.entries,
+    cycle.result,
+    options?.possibleFertilePatternEligibility
+      ?? buildFirstReleasePossibleFertilePatternEligibility(cycle.cycleBoundary),
+  );
+  const observationOnly = possibleFertilePattern.state !== 'bounded';
   const headerSubtitle =
     options?.headerSubtitle
-    ?? `${cycle.startDate} – ${cycle.endDate} · ${cycle.length} days`;
-  const fertileStart = cycle.result.fertileStartIndex !== null
-    ? `Day ${cycleDayForEntryIndex(cycle.entries, cycle.result.fertileStartIndex)}`
+    ?? `${formatFullDate(cycle.startDate)} – ${formatFullDate(cycle.endDate)} · ${cycle.length} days`;
+  const peakDay = possibleFertilePattern.peak
+    ? `Day ${possibleFertilePattern.peak.cycleDay}`
     : '--';
-  const fertileEnd = cycle.result.fertileEndIndex !== null
-    ? `Day ${cycleDayForEntryIndex(cycle.entries, cycle.result.fertileEndIndex)}`
-    : '--';
-  const peakDay = cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--';
-  const luteal = cycle.lutealPhase !== null ? `${cycle.lutealPhase} days` : '--';
+  const noticeTitle = possibleFertilePattern.heading ?? 'Recorded observations';
+  const noticeBody = formatPossibleFertilePatternBody(possibleFertilePattern)
+    ?? 'This export focuses on recorded observations and leaves out chart-based pattern boundaries.';
+  const noticeDetail = formatPossibleFertilePatternLimit(possibleFertilePattern.limit);
 
   const intercourseHeader = includeIntercourse ? '<th style="padding:6px 8px;text-align:center;">I/C</th>' : '';
   const interpretationHeaders = observationOnly
     ? ''
     : `<th style="padding:6px 8px;text-align:center;">${PDF_CHART_STRENGTH_HEADER}</th>
-        <th style="padding:6px 8px;">Code</th>
         <th style="padding:6px 8px;">Phase</th>`;
 
   const tableRows = buildCalendarAlignedCycleDays(cycle)
@@ -67,18 +82,16 @@ export function buildCyclePdfHtml(
         ? (entry.frequency === 'all_day' ? 'AD' : `x${entry.frequency}`)
         : '';
       const appearanceList = entry?.appearances?.filter((a) => a !== 'none').join(', ') ?? '';
-      const code = !observationOnly && entry ? generateCreightonCode(entry).fullCode : '';
       const ic = includeIntercourse
         ? `<td style="padding:6px 8px;text-align:center;">${entry?.intercourse ? '🌹' : ''}</td>`
         : '';
       const interpretationCells = observationOnly
         ? ''
         : `<td style="padding:6px 8px;text-align:center;">${mucusChartStrengthLabel(rank, '')}</td>
-        <td style="padding:6px 8px;">${code}</td>
-        <td style="padding:6px 8px;">${PHASE_DISPLAY[phase] ?? phase}</td>`;
+        <td style="padding:6px 8px;">${phaseDisplay(phase, rank)}</td>`;
       return `<tr style="background:${bg};">
         <td style="padding:6px 8px;font-weight:600;">${day.cycleDay}</td>
-        <td style="padding:6px 8px;">${day.date}</td>
+        <td style="padding:6px 8px;">${formatFullDate(day.date)}</td>
         <td style="padding:6px 8px;">${entry?.bleeding && entry.bleeding !== 'none' ? entry.bleeding : ''}</td>
         <td style="padding:6px 8px;">${entry?.sensation ?? ''}</td>
         <td style="padding:6px 8px;">${appearanceList}</td>
@@ -115,14 +128,17 @@ export function buildCyclePdfHtml(
   <h1>Cycle ${cycle.cycleNumber}</h1>
   <div class="subtitle">${headerSubtitle}</div>
 
-  ${observationOnly ? `<div class="notice">
-    <div class="notice-title">${interpretation.status === 'review_recommended' ? 'Your chart shows more than one possible Peak pattern' : 'A few days need context'}</div>
-    <div class="notice-body">This export focuses on recorded observations and leaves out the chart summary. Keep charting; Well Within checks again when entries are added or updated.</div>
-  </div>` : `<div class="stats">
+  <div class="notice">
+    <div class="notice-title">${noticeTitle}</div>
+    <div class="notice-body">${noticeBody}</div>
+    ${noticeDetail ? `<div class="notice-body" style="margin-top:6px;">${noticeDetail}</div>` : ''}
+    ${possibleFertilePattern.limitation ? `<div class="notice-body" style="margin-top:8px;">${possibleFertilePattern.limitation}</div>` : ''}
+    ${observationOnly ? '<div class="notice-body" style="margin-top:8px;">This export focuses on recorded observations and leaves out chart-based pattern boundaries.</div>' : ''}
+  </div>
+
+  ${observationOnly ? '' : `<div class="stats">
     <div class="stat"><div class="stat-value">${cycle.length}d</div><div class="stat-label">Length</div></div>
-    <div class="stat"><div class="stat-value">${peakDay}</div><div class="stat-label">Peak Day</div></div>
-    <div class="stat"><div class="stat-value">${fertileStart}–${fertileEnd}</div><div class="stat-label">Fertile Window</div></div>
-    <div class="stat"><div class="stat-value">${luteal}</div><div class="stat-label">Luteal Phase</div></div>
+    <div class="stat"><div class="stat-value">${peakDay}</div><div class="stat-label">Peak marker</div></div>
   </div>`}
 
   <h2 style="font-size:14px;margin-bottom:8px;">Day-by-Day Observations</h2>

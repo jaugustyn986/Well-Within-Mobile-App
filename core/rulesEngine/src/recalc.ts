@@ -1,5 +1,6 @@
 import { deriveBleedingMetadata } from './bleedingDerive';
 import { addDaysIso, compareIsoDate, entryDateOrSynthetic } from './calendar';
+import { resolveCycleBoundaries } from './cycleBoundary';
 import { blocksFertileOpening } from './flowBleeding';
 import { detectFertileStartDetailed } from './fertileWindow';
 import { deriveMucusDerivedByDay } from './mucusClassification';
@@ -19,22 +20,6 @@ import {
 
 interface RecalcOptions {
   debug?: boolean;
-}
-
-function findCurrentCycleStart(entries: Array<DailyEntry | null>): number {
-  let startIndex = 0;
-  for (let i = 0; i < entries.length; i += 1) {
-    const bleeding = entries[i]?.bleeding;
-    if (bleeding === 'heavy' || bleeding === 'moderate') {
-      const prevBleeding = i > 0 ? entries[i - 1]?.bleeding : undefined;
-      const prevIsHeavyOrModerate =
-        prevBleeding === 'heavy' || prevBleeding === 'moderate';
-      if (!prevIsHeavyOrModerate) {
-        startIndex = i;
-      }
-    }
-  }
-  return startIndex;
 }
 
 function buildDateToIndex(entries: DailyEntry[]): Map<string, number> {
@@ -98,7 +83,7 @@ export function recalculateCycle(
   const phaseLabels: PhaseLabel[] = new Array(safeEntries.length).fill('dry');
   const mucusRanks = safeEntries.map((entry) => computeMucusRank(entry));
   const mucusDerivedByDay = deriveMucusDerivedByDay(safeEntries, mucusRanks);
-  const cycleStartIndex = findCurrentCycleStart(safeEntries);
+  const cycleStartIndex = resolveCycleBoundaries(safeEntries).currentCycleStartIndex;
 
   const { fertileStartIndex, fertileStartReason } = detectFertileStartDetailed(
     safeEntries,

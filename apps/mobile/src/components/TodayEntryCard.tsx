@@ -16,16 +16,31 @@ interface Props {
   onPress: () => void;
 }
 
-function getMucusLabel(rank: number | null, primary: PrimaryDayClass | null | undefined): string {
+function hasSpottingWithMucus(entry: DailyEntry, rank: number | null): boolean {
+  return entry.bleeding === 'spotting' && rank !== null && rank >= 1;
+}
+
+function getMucusLabel(
+  entry: DailyEntry,
+  rank: number | null,
+  primary: PrimaryDayClass | null | undefined,
+): string {
+  if (hasSpottingWithMucus(entry, rank)) {
+    return `Spotting + ${mucusChartStrengthLabel(rank, 'mucus')}`;
+  }
   if (primary === 'menstrual_flow') return 'Menstrual flow';
   if (primary === 'spotting') return 'Spotting';
   return mucusChartStrengthLabel(rank, 'No observation');
 }
 
 function getFertilityHint(
+  entry: DailyEntry,
   rank: number | null,
   primary: PrimaryDayClass | null | undefined,
 ): string {
+  if (hasSpottingWithMucus(entry, rank)) {
+    return 'Spotting and a mucus sign were both recorded. The chart keeps both observations.';
+  }
   if (primary === 'menstrual_flow') {
     return 'Logged as menstrual flow; mucus is not read as Peak-type for this day.';
   }
@@ -54,7 +69,7 @@ export function TodayEntryCard({ entry, mucusRank, primaryDayClass, date, onPres
         <View style={styles.body}>
           <View style={styles.tags}>
             <View style={styles.tag}>
-              <Text style={styles.tagText}>{getMucusLabel(mucusRank, primaryDayClass)}</Text>
+              <Text style={styles.tagText}>{getMucusLabel(entry, mucusRank, primaryDayClass)}</Text>
             </View>
             {entry.intercourse && (
               <View style={[styles.tag, styles.intercourseTag]}>
@@ -62,7 +77,7 @@ export function TodayEntryCard({ entry, mucusRank, primaryDayClass, date, onPres
               </View>
             )}
           </View>
-          <Text style={styles.hint}>{getFertilityHint(mucusRank, primaryDayClass)}</Text>
+          <Text style={styles.hint}>{getFertilityHint(entry, mucusRank, primaryDayClass)}</Text>
           <View style={styles.tapRow}>
             <Text style={styles.tapHint}>Tap to edit your observation</Text>
             <Text style={styles.tapArrow}>{'›'}</Text>

@@ -1,4 +1,5 @@
 import React, { useCallback, createContext, useContext, useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -17,15 +18,22 @@ import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { AuthScreen } from '../screens/AuthScreen';
 import { CatchUpMissingDaysScreen } from '../screens/CatchUpMissingDaysScreen';
+import { TEXT_PRIMARY } from '../theme/colors';
 
 export type RootStackParamList = {
   Calendar: undefined;
   Timeline: undefined;
   CycleHistory: undefined;
   CycleDetail: { cycleNumber: number };
-  DailyEntry: { date: string; existingEntry?: boolean };
+  DailyEntry: {
+    date: string;
+    existingEntry?: boolean;
+    intent?: 'confirm_cycle_start';
+  };
   CatchUpMissingDays: undefined;
-  Help: { initialSection?: 'peak_day' | 'status_messages' } | undefined;
+  Help: {
+    initialSection?: 'peak_day' | 'status_messages' | 'possible_fertile_pattern';
+  } | undefined;
   FindCare: undefined;
   Settings: undefined;
   Auth: undefined;
@@ -38,6 +46,20 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 type OnboardingContextValue = { resetOnboarding: () => void };
 const OnboardingContext = createContext<OnboardingContextValue | null>(null);
+
+function CalendarHeaderAction({ onPress }: { onPress: () => void }): React.JSX.Element {
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={8}
+      accessibilityRole="button"
+      accessibilityLabel="Return to Calendar"
+      style={({ pressed }) => [styles.calendarHeaderAction, pressed && styles.pressed]}
+    >
+      <Text style={styles.calendarHeaderActionText}>{'‹ Calendar'}</Text>
+    </Pressable>
+  );
+}
 
 export function useResetOnboarding(): OnboardingContextValue | null {
   return useContext(OnboardingContext);
@@ -126,12 +148,22 @@ export function AppNavigator(): React.JSX.Element {
         <Stack.Screen
           name="Help"
           component={HelpScreen}
-          options={{ title: 'Understanding Your Chart' }}
+          options={({ navigation }) => ({
+            title: 'Understanding Your Chart',
+            headerLeft: () => (
+              <CalendarHeaderAction onPress={() => navigation.popToTop()} />
+            ),
+          })}
         />
         <Stack.Screen
           name="FindCare"
           component={FindCareScreen}
-          options={{ title: 'Find Care' }}
+          options={({ navigation }) => ({
+            title: 'Find Care',
+            headerLeft: () => (
+              <CalendarHeaderAction onPress={() => navigation.popToTop()} />
+            ),
+          })}
         />
         <Stack.Screen
           name="Settings"
@@ -155,3 +187,17 @@ export function AppNavigator(): React.JSX.Element {
     </AuthProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  calendarHeaderAction: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingRight: 12,
+  },
+  calendarHeaderActionText: {
+    color: TEXT_PRIMARY,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  pressed: { opacity: 0.55 },
+});

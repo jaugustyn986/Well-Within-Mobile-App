@@ -1,17 +1,27 @@
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { evaluateInterpretationSupport, type CycleSlice } from 'core-rules-engine';
+import {
+  buildFirstReleasePossibleFertilePatternEligibility,
+  buildPossibleFertilePatternPresentation,
+  evaluateInterpretationSupport,
+  type CycleSlice,
+} from 'core-rules-engine';
 import { formatCyclePrimarySecondary } from '../utils/cycleDisplay';
 import {
   BG_CARD, BG_DRY, BG_POST_PEAK, BG_MISSING,
-  TEXT_PRIMARY, TEXT_MUTED,
-  BORDER_CARD,
+  TEXT_PRIMARY, TEXT_MUTED, TEXT_SECONDARY,
+  BORDER_CARD, ACCENT_WARM, ACCENT_WARM_TINT,
 } from '../theme/colors';
+import {
+  buildCycleStartResolutionCopy,
+  findCycleStartResolution,
+} from './cycleStartResolution';
 
 interface Props {
   cycle: CycleSlice;
   allCycles: CycleSlice[];
   onPress: () => void;
+  onResolveCycleStart?: (date: string) => void;
 }
 
 function getStatusStyle(status: CycleSlice['status']): { bg: string; text: string; label: string } {
@@ -25,14 +35,30 @@ function getStatusStyle(status: CycleSlice['status']): { bg: string; text: strin
   }
 }
 
-export function CycleCard({ cycle, allCycles, onPress }: Props): React.JSX.Element {
+export function CycleCard({
+  cycle,
+  allCycles,
+  onPress,
+  onResolveCycleStart,
+}: Props): React.JSX.Element {
   const interpretation = useMemo(
     () => evaluateInterpretationSupport(cycle.entries, cycle.result),
     [cycle],
   );
+  const presentation = useMemo(
+    () => buildPossibleFertilePatternPresentation(
+      cycle.entries,
+      cycle.result,
+      buildFirstReleasePossibleFertilePatternEligibility(cycle.cycleBoundary),
+    ),
+    [cycle],
+  );
+  const showDerivedPattern =
+    presentation.state === 'bounded' &&
+    presentation.interpretationStatus === 'summary_available';
   const statusInfo =
     interpretation.status === 'review_recommended'
-      ? { bg: BG_POST_PEAK, text: '#92400e', label: 'Summary open' }
+      ? { bg: BG_POST_PEAK, text: '#92400e', label: 'Needs review' }
       : interpretation.status === 'blocked_by_missing'
         ? { bg: BG_MISSING, text: TEXT_MUTED, label: 'Needs context' }
         : getStatusStyle(cycle.status);
@@ -43,30 +69,79 @@ export function CycleCard({ cycle, allCycles, onPress }: Props): React.JSX.Eleme
     () => formatCyclePrimarySecondary(cycle, allCycles),
     [cycle, allCycles],
   );
+  const cycleStartResolution = useMemo(
+    () => findCycleStartResolution(cycle),
+    [cycle],
+  );
+  const cycleStartCopy = useMemo(
+    () => cycleStartResolution
+      ? buildCycleStartResolutionCopy(cycleStartResolution)
+      : null,
+    [cycleStartResolution],
+  );
+  const displayedPrimary = cycleStartResolution
+    ? `Cycle ${cycle.cycleNumber}`
+    : primary;
+  const displayedSecondary = cycleStartResolution
+    ? 'Start date needs confirmation'
+    : secondary;
 
   return (
-    <Pressable style={styles.container} onPress={onPress}>
-      <View style={styles.topRow}>
-        <Text style={styles.primaryTitle} numberOfLines={2}>{primary}</Text>
-        <View style={[styles.badge, { backgroundColor: statusInfo.bg }]}>
-          <Text style={[styles.badgeText, { color: statusInfo.text }]}>{statusInfo.label}</Text>
+    <View style={styles.container}>
+      <Pressable
+        style={({ pressed }) => [styles.mainPressable, pressed && styles.pressed]}
+        onPress={onPress}
+      >
+        <View style={styles.topRow}>
+          <Text style={styles.primaryTitle} numberOfLines={2}>{displayedPrimary}</Text>
+          <View style={[styles.badge, { backgroundColor: statusInfo.bg }]}>
+            <Text style={[styles.badgeText, { color: statusInfo.text }]}>{statusInfo.label}</Text>
+          </View>
         </View>
-      </View>
-      <Text style={styles.secondaryLine}>{secondary}</Text>
-      {interpretationLimited ? (
-        <Text style={styles.limitationText}>
-          {interpretation.status === 'review_recommended'
-            ? 'More than one possible Peak pattern appears here. Your recorded observations remain available.'
-            : 'A few days need context before this chart can be summarized.'}
-        </Text>
-      ) : (
-        <View style={styles.statsRow}>
-          <StatPill label="Length" value={`${cycle.length}d`} />
-          <StatPill label="Peak" value={cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--'} />
-          <StatPill label="Luteal" value={cycle.lutealPhase !== null ? `${cycle.lutealPhase}d` : '--'} />
+        <Text style={styles.secondaryLine}>{displayedSecondary}</Text>
+        {interpretationLimited ? (
+          <Text style={styles.limitationText}>
+            {interpretation.status === 'review_recommended'
+              ? interpretation.reason === 'bleeding_mucus_ambiguity'
+                ? 'Mucus and light bleeding were recorded together. Both observations remain available.'
+                : 'Some chart details need review before a pattern summary can be shown.'
+              : 'A few days need context before this chart can be summarized.'}
+          </Text>
+        ) : cycleStartResolution ? null : (
+          <View style={styles.statsRow}>
+            <StatPill label="Length" value={`${cycle.length}d`} />
+            {showDerivedPattern ? (
+              <>
+                <StatPill label="Peak" value={cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--'} />
+                <StatPill label="Luteal" value={cycle.lutealPhase !== null ? `${cycle.lutealPhase}d` : '--'} />
+              </>
+            ) : presentation.reason === 'later_peak_type_reopens_pattern' ? (
+              <StatPill
+                label="Peak-type"
+                value={`${presentation.observedPeakTypeSigns.length} ${presentation.observedPeakTypeSigns.length === 1 ? 'sign' : 'signs'}`}
+              />
+            ) : null}
+          </View>
+        )}
+      </Pressable>
+      {cycleStartResolution && cycleStartCopy ? (
+        <View style={styles.cycleStartSection}>
+          <Text style={styles.cycleStartHeading}>{cycleStartCopy.heading}</Text>
+          <Text style={styles.cycleStartText}>{cycleStartCopy.evidence}</Text>
+          {onResolveCycleStart ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={cycleStartCopy.actionLabel}
+              onPress={() => onResolveCycleStart(cycleStartResolution.date)}
+              style={({ pressed }) => [styles.cycleStartAction, pressed && styles.pressed]}
+            >
+              <Text style={styles.cycleStartActionText}>{cycleStartCopy.actionLabel}</Text>
+              <Text style={styles.cycleStartActionArrow}>{'›'}</Text>
+            </Pressable>
+          ) : null}
         </View>
-      )}
-    </Pressable>
+      ) : null}
+    </View>
   );
 }
 
@@ -83,11 +158,13 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: BG_CARD,
     borderRadius: 12,
-    padding: 16,
     marginBottom: 8,
     borderWidth: 1,
     borderColor: BORDER_CARD,
+    overflow: 'hidden',
   },
+  mainPressable: { padding: 16 },
+  pressed: { opacity: 0.6 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 },
   primaryTitle: { fontSize: 16, fontWeight: '600', color: TEXT_PRIMARY, flex: 1 },
   badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, flexShrink: 0 },
@@ -104,4 +181,22 @@ const styles = StyleSheet.create({
   statValue: { fontSize: 14, fontWeight: '600', color: TEXT_PRIMARY },
   statLabel: { fontSize: 10, color: TEXT_MUTED, marginTop: 1 },
   limitationText: { fontSize: 13, color: TEXT_MUTED, lineHeight: 19, marginTop: 10 },
+  cycleStartSection: {
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    borderTopWidth: 1,
+    borderTopColor: BORDER_CARD,
+    backgroundColor: ACCENT_WARM_TINT,
+  },
+  cycleStartHeading: { fontSize: 14, fontWeight: '600', color: TEXT_PRIMARY },
+  cycleStartText: { marginTop: 3, fontSize: 12, lineHeight: 18, color: TEXT_SECONDARY },
+  cycleStartAction: {
+    minHeight: 36,
+    marginTop: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+  },
+  cycleStartActionText: { fontSize: 13, fontWeight: '600', color: ACCENT_WARM },
+  cycleStartActionArrow: { marginLeft: 4, fontSize: 18, lineHeight: 18, color: ACCENT_WARM },
 });

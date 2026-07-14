@@ -401,6 +401,61 @@ describe('buildCurrentCycleSummary', () => {
     expect(s.guidance).toContain('summary updates');
   });
 
+  it('keeps an earlier post-P+3 summary when later non-Peak mucus is recorded', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-02-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-02-02', bleeding: 'none', mucusRankOverride: 1 },
+      { date: '2026-02-03', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-02-04', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-02-05', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-02-06', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-02-07', bleeding: 'none', mucusRankOverride: 1 },
+    ];
+    const s = buildCurrentCycleSummary({
+      entries,
+      result: sliceResult(entries),
+      status: 'in_progress',
+      todayIndex: 6,
+      possibleFertilePatternEligibility: {
+        contextEligibility: 'eligible',
+        cycleBoundaryEligibility: 'eligible',
+      },
+    });
+    expect(s.interpretationStatus).toBe('summary_available');
+    expect(s.interpretationReason).toBe('retrospective_summary_available');
+    expect(s.headline).toBe('Your chart shows a post-Peak pattern');
+    expect(s.possibleFertilePattern.state).toBe('bounded');
+    expect(s.possibleFertilePattern.start?.date).toBe('2026-02-02');
+    expect(s.possibleFertilePattern.pPlus3?.date).toBe('2026-02-06');
+  });
+
+  it('reopens an earlier post-P+3 summary for a later Peak-type sign', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-02-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-02-02', bleeding: 'none', mucusRankOverride: 1 },
+      { date: '2026-02-03', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-02-04', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-02-05', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-02-06', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-02-07', bleeding: 'none', mucusRankOverride: 3 },
+    ];
+    const s = buildCurrentCycleSummary({
+      entries,
+      result: sliceResult(entries),
+      status: 'in_progress',
+      todayIndex: 6,
+      possibleFertilePatternEligibility: {
+        contextEligibility: 'eligible',
+        cycleBoundaryEligibility: 'eligible',
+      },
+    });
+    expect(s.interpretationStatus).toBe('forming');
+    expect(s.interpretationReason).toBe('later_peak_type_reopens_pattern');
+    expect(s.headline).toBe('Possible fertile pattern may be developing');
+    expect(s.statusLine).toContain('later Peak-type sign');
+    expect(s.possibleFertilePattern.state).toBe('developing');
+  });
+
   it('avoids confidence language when a recent observation is missing', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
@@ -518,7 +573,7 @@ describe('compact support field + baseline context', () => {
     expect(s.baselineContext).toBeNull();
   });
 
-  it('uses prior fertile timing as context when reviewing an earlier dry day', () => {
+  it('suppresses prior fertile timing when reviewing an earlier dry day', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 0 },
@@ -538,8 +593,8 @@ describe('compact support field + baseline context', () => {
       baselineComparison: baseComparison,
     });
     expect(s.interpretationStatus).toBe('summary_available');
-    expect(s.baselineContext).toContain('fertile signs starting around day 11');
-    expect(s.compactSupportField).toBe('baselineContext');
+    expect(s.baselineContext).toBeNull();
+    expect(s.compactSupportField).toBe('guidance');
   });
 
   it('omits prior fertile timing when the comparison has no fertile-start average', () => {
@@ -566,7 +621,7 @@ describe('compact support field + baseline context', () => {
     expect(s.compactSupportField).toBe('guidance');
   });
 
-  it('fertile open with baseline: shows avg peak day context', () => {
+  it('fertile open with baseline: suppresses active-cycle average timing', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 1 },
@@ -584,8 +639,8 @@ describe('compact support field + baseline context', () => {
       todayIndex: 1,
       baselineComparison: baseComparison,
     });
-    expect(s.baselineContext).toContain('day 15');
-    expect(s.compactSupportField).toBe('baselineContext');
+    expect(s.baselineContext).toBeNull();
+    expect(s.compactSupportField).toBe('guidance');
   });
 
   it('P+1: clear next step, no baseline', () => {
@@ -658,7 +713,7 @@ describe('compact support field + baseline context', () => {
     expect(s.statusLine).toContain('Peak-type mucus sign on Cycle Day 3');
   });
 
-  it('post-peak with later peak: shows baseline context', () => {
+  it('post-peak with later peak: keeps comparison timing out of the active summary', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 1 },
@@ -681,8 +736,8 @@ describe('compact support field + baseline context', () => {
       todayIndex: 6,
       baselineComparison: laterComparison,
     });
-    expect(s.baselineContext).toContain('later');
-    expect(s.compactSupportField).toBe('baselineContext');
+    expect(s.baselineContext).toBeNull();
+    expect(s.compactSupportField).toBe('guidance');
   });
 
   it('missing day: limited summary, interpretationNote takes priority', () => {
@@ -805,7 +860,7 @@ describe('interpretation support states', () => {
     expect(s.guidance).toContain('Keep charting');
   });
 
-  it('suppresses automatic conclusions when two sequences need optional review', () => {
+  it('summarizes the latest Peak when two separated sequences qualify', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
       { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 3 },
@@ -823,15 +878,10 @@ describe('interpretation support states', () => {
       status: 'in_progress',
       todayIndex: 8,
     });
-    expect(s.interpretationStatus).toBe('review_recommended');
-    expect(s.headline).toBe(
-      'Your chart shows more than one possible Peak pattern',
-    );
-    expect(s.statusLine).toContain('More than one Peak-type day');
-    expect(s.supportingContext).toContain('isn’t choosing one Peak Day');
-    expect(s.guidance).toContain('Keep charting');
-    expect(s.guidance).toContain('check again');
-    expect(s.baselineContext).toBeNull();
-    expect(s.explanationTarget).toBe('status_messages');
+    expect(s.interpretationStatus).toBe('summary_available');
+    expect(s.headline).toBe('Your chart shows a post-Peak pattern');
+    expect(s.statusLine).toContain('Cycle Day 6');
+    expect(s.statusLine).toContain('followed by three days');
+    expect(s.explanationTarget).toBe('peak_day');
   });
 });

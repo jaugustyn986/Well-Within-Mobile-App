@@ -36,8 +36,8 @@ Status meanings:
 | R-13 | Peak-type observation | Rank 3 from clear, cloudy/clear, lubricative, stretchy, or promoted combinations. | Official/public and peer-reviewed sources broadly support clear/stretchy/lubricative as estrogenic/Peak-type; `cloudy_clear` and input-combination behavior need exact review. | **Externally supported in part; needs clinical approval.** |
 | R-14 | Peak Day | Candidate is a non-flow rank-3 day. | External sources define Peak as the last clear/stretchy/lubricative day; app candidate abstraction is internal. | **Needs clinical approval.** |
 | R-15 | Three-day confirmation | Candidate is identified only when the next three consecutive calendar days exist, are observed, and have strictly lower rank. | P+3 framework is publicly described; strict software comparison/transformation lacks documented reviewer approval. | **Externally supported in part; needs clinical approval.** |
-| R-16 | Candidate reset during waiting period | A later rank-3 day before confirmation resets the candidate. | Plausible implementation of “last day,” but not separately sourced. | **Needs clinical approval.** |
-| R-17 | Later separated Peak-type sequence | Algorithm returns the first candidate that independently satisfies P+3, even if a later sequence also does. | Double/repeated Peak is explicitly unsupported. | **Hold:** add unsupported/review state or approved selection rule. |
+| R-16 | Candidate reset during waiting period | A later rank-3 day resets the candidate before or after an earlier completed count. | Consistent with the public retrospective “last Peak-type day” concept, but Well Within's exact mapping and reset algorithm are not separately validated. | **Implemented under the recorded working decision; formal approval record remains open.** |
+| R-17 | Later separated Peak-type sequence | Phase 1C treats the latest Peak-type observation as the active candidate. It immediately returns the presentation to `forming`; after the latest candidate's own qualifying P+3 count, it recalculates Peak and P+1–P+3 from that candidate. Earlier Peak-type rows remain observations only. | Public sources support Peak as the retrospective last Peak-type day, but do not validate Well Within's rank mapping or exact reset/replacement algorithm. | **Implemented under the recorded working decision for the normal-context scope.** This is a versioned Well Within rule, not product-specific clinical validation or a proprietary alternate-pattern rule. |
 | R-18 | Fertile end | P+3 row becomes `fertileEndIndex`. | P+3 is part of public method description; broad patient-specific `Fertile End` meaning needs intended-use review. | **Needs clinical and counsel approval.** |
 | R-19 | Non-Peak-only mucus | No rank-3 day means no Peak and an indefinitely open fertile pattern. | Published cohort work notes some non-Peak-only patterns may use a different Peak interpretation. | **Unsupported:** add gate before broad output. |
 | R-20 | Continuous mucus/BIP | BIP is excluded; unchanged rank-1/2 remains an open fertile pattern. | Official background describes BIP and change-from-pattern handling. | **Unsupported:** suppress standard-cycle conclusion. |
@@ -46,10 +46,10 @@ Status meanings:
 
 | ID | Rule or output | Current implementation | External/provenance state | Status and required decision |
 | --- | --- | --- | --- | --- |
-| R-21 | Cycle start | First heavy/moderate row not adjacent to prior heavy/moderate row. | Public description says cycle begins with onset of menstruation; exact H/M threshold is unsourced. | **Needs clinical approval.** |
-| R-22 | Continuing flow | Stored-row adjacency determines whether heavy/moderate continues. | A missing calendar date can make a later flow row appear adjacent in the array. | **Correctness defect:** date-aware state required. |
-| R-23 | Cycle day/length | `index + 1` and `entries.length`. | These measure stored rows, not elapsed calendar days. | **Correctness defect:** replace with date differences. |
-| R-24 | Peak day/luteal length | Peak index + 1; entry count minus Peak day. | Same compression defect when dates are missing. | **Correctness defect:** replace with date differences. |
+| R-21 | Cycle start | The centralized boundary resolver uses user-confirmed true flow for potentially leading light or an unambiguous moderate/heavy start. Spotting/brown cannot be confirmed as Cycle Day 1; ambiguous light remains unresolved. | Public descriptions support onset of menstruation and distinguish true flow from spotting, but no public evidence validates Well Within's exact prompt/inference implementation. | **Working decision implemented and fixture-tested; still requires practitioner review for a formal approval record.** |
+| R-22 | Continuing flow | Boundary evidence uses consecutive ISO calendar dates; a missing preceding date makes an inferred boundary unknown. | This corrects the stored-row-adjacency defect conservatively without inventing a boundary across a gap. | **Corrected for Cycle Day 1 eligibility and regression-tested.** |
+| R-23 | Cycle day/length | Phase 1A replaced row-index counting with DST-safe ISO-calendar differences and explicit missing-day slots across affected surfaces. | Calendar time is the correct measurement basis; exact clinical cycle boundary remains separate. | **Corrected and regression-tested in Phase 1A.** |
+| R-24 | Peak day/luteal length | Phase 1A now derives displayed Peak day and luteal length from calendar dates rather than stored-row counts. | Calendar time is the correct measurement basis; the clinical meaning of Peak remains separately reviewed. | **Corrected and regression-tested in Phase 1A.** |
 | R-25 | Missing-day Peak blocking | Explicit missing rows and absent consecutive dates block P+3 confirmation. | Conservative and calendar-aware; broad approach aligns with an observation-dependent method. | **Internal verified; include in clinical fixtures.** |
 | R-26 | `dataComplete` | True only when the closed interpretation-warning list is empty. | Does not represent total calendar completeness; separate banner logic counts other gaps. | **Rename/redefine before public exposure.** |
 | R-27 | Synthetic missing dates | Entries without dates receive deterministic synthetic dates. | Useful for tests but masks invalid production data. | **Hold in production:** require valid unique dates at boundary. |
@@ -58,18 +58,29 @@ Status meanings:
 
 | ID | Rule or output | Current implementation | External/provenance state | Status and required decision |
 | --- | --- | --- | --- | --- |
-| R-28 | Historical fertile-opening insight | Earliest prior Peak minus five days. | No engine/source derivation. | **Remove before further UX work.** |
+| R-28 | Historical fertile-opening insight | The fabricated earliest-Peak-minus-five insight was removed in Phase 1A. | No engine/source derivation supported it. | **Removed and regression-tested. Do not restore.** |
 | R-29 | Prior-cycle comparisons | Day thresholds: length ±2, Peak ±1, luteal ±1; variation ranges 3/7. | Thresholds are product inventions without clinical provenance. | **Hold clinical meaning; label purely descriptive or approve thresholds.** |
-| R-30 | Current-cycle baseline timing | Before current event, banner can say when signs/Peak “usually” occurred. | Historical fact is real, but placement can communicate a forecast. | **Move to retrospective History pending claim review.** |
-| R-31 | Confidence tiers | High/Moderate/Low based on Peak status and recent missing rows. | No calibrated probability, accuracy study, or clinical validation. | **Rename to chart/pattern status or completeness; counsel review.** |
-| R-32 | Complete/in-progress/no-Peak | A non-last cycle with a Peak is `complete`; last with Peak is `in_progress`; otherwise `no_peak`. | Product status, not clinically sourced; missing/unsupported patterns are not considered. | **Redesign status model before broader UX.** |
+| R-30 | Current-cycle baseline timing | Phase 1B suppresses anticipatory historical timing outside eligible retrospective context. Phase 1C keeps raw ranges in History and prohibits active/future projection. | Historical fact is real, but placement can communicate a forecast. | **Suppressed for active-cycle guidance; do not restore as a forecast.** |
+| R-31 | Confidence tiers | Phase 1B removed High/Moderate/Low user-facing confidence language and uses capability/support states plus chart completeness. | No calibrated probability, accuracy study, or clinical validation exists. | **User-facing tiers removed. Continue to prohibit confidence implications.** |
+| R-32 | Complete/in-progress/no-Peak and support eligibility | Legacy cycle-slice status remains for lifecycle handling; Phase 1B separately evaluates `forming`, `summary_available`, `blocked_by_missing`, and `review_recommended` for derived-output eligibility. | These are product capability states, not clinical diagnoses or validation. | **Phase 1B support model implemented. Special-context and continuous/BIP-like detection remain unresolved.** |
 
-## Unsupported contexts requiring explicit gates
+## Phase 1C possible-pattern presentation
+
+These rows record the July 13 product/clinical working direction. They do not convert general CrMS evidence into validation of Well Within or replace separate legal/regulatory/IP review.
+
+| ID | Rule or output | Current implementation | External/provenance state | Status and required decision |
+| --- | --- | --- | --- | --- |
+| R-33 | `Possible fertile pattern` interval | One engine-owned presentation model emits `hidden`, `developing`, `bounded`, or `withheld`. Production supplies the first-release context assumption and derives Cycle Day 1 eligibility from confirmed true flow or an unambiguous moderate/heavy start. Supported charts can expose exact start/Peak/P+1/P+2/P+3 dates; raw callers still default to unknown. | The public Saint Paul VI sample describes beginning of mucus through three full days past Peak among days of fertility, while also listing additional bleeding and non-Peak rules. This supports a limited chart explanation, not a complete CrMS determination or validation of Well Within. | **Implemented under the recorded working decision:** exact dates carry the limitation; professional claim/usability review remains open. |
+| R-34 | Developing and later-sign behavior | Developing output contains no dates or band. Later non-Peak mucus remains an observation and does not, by itself, reopen a completed Peak/P+3 presentation. A later Peak-type sign supersedes the earlier candidate and becomes the displayed Peak only after its own qualifying P+3 count. Bleeding-plus-mucus ambiguity continues to withhold the boundary. | Peak is retrospective and multiple mucus patches occur, but no public source validates Well Within's exact reset/replacement rule. | **Implemented under the recorded working decision and fixture-tested.** Do not treat it as validation of Well Within's exact algorithm or of an unsupported alternate-pattern rule. |
+| R-35 | Retrospective possible-pattern history | The centralized history model requires at least three eligible completed cycles and emits only raw start/Peak Cycle Day ranges with `N`. Production uses each cycle's resolved boundary eligibility. | Research supports substantial within-woman variability, not a patient-specific forecast or threshold. | **Implemented under the working decision:** no averages, `usual`, normative labels, active-cycle placement, or future prediction. |
+| R-36 | Peak/P+ dates when Cycle Day 1 is unresolved | When interpretation support is otherwise available, dated observation surfaces may show the retrospective Peak and P+1–P+3 markers even though the exact possible-pattern interval and boundary-derived Cycle Day statistics remain withheld. | Peak/P+ are date-relative to the latest Peak-type observation; no public evidence validates Well Within's overall implementation or authorizes a fertile-window conclusion from these markers. | **Implemented as evidence-layer separation.** Marker display is not interval approval, ovulation confirmation, or safe/infertile guidance. |
+
+## Unsupported contexts outside this increment
 
 The current engine has no approved interpretation path for:
 
 - Basic infertile pattern or unchanging continuous discharge;
-- repeated/double Peak patterns;
+- alternate repeated/double-Peak interpretations beyond the normal-context latest-candidate rule;
 - non-Peak-only mucus ending patterns;
 - postpartum/breastfeeding;
 - perimenopause;
@@ -77,7 +88,9 @@ The current engine has no approved interpretation path for:
 - persistent vaginal discharge or infection-related observations;
 - recent hormonal contraception;
 - drugs or conditions that alter fertility signs;
-- no heavy/moderate cycle boundary;
+- no confirmed or unambiguous true-flow boundary.
+
+The first release does not collect these physiologic/medication contexts and does not apply alternate rules. Any bounded exact-date result states that the listed special contexts are not supported or accounted for. This disclosure is not a detection mechanism and does not make these contexts eligible.
 - invalid, duplicate, missing, or out-of-order dates.
 
 Until reviewed, these contexts need an explicit `unsupported` or `review_recommended` state rather than silent standard-cycle interpretation.
@@ -94,10 +107,10 @@ Until reviewed, these contexts need an explicit `unsupported` or `review_recomme
 | Bleeding and primary class | `flowBleeding.ts`, `bleedingDerive.ts`, `primaryDayClass.ts` | corresponding test files |
 | Cycle assembly and history insights | `core/rulesEngine/src/multiCycle.ts` | `multiCycle.test.ts` |
 | Comparisons | `core/rulesEngine/src/cycleComparisonSummary.ts` | `cycleComparisonSummary.test.ts` |
-| Current summary/copy | `currentCycleSummary.ts`, `observationEducationCopy.ts` | `currentCycleSummary.test.ts`, `observationEducationCopy.test.ts` |
+| Current summary/copy | `currentCycleSummary.ts`, `possibleFertilePattern.ts`, `observationEducationCopy.ts` | `currentCycleSummary.test.ts`, `possibleFertilePattern.test.ts`, `observationEducationCopy.test.ts` |
 | Calendar presentation | `CalendarScreen.tsx`, `CalendarGrid.tsx`, `StatusBanner.tsx`, `TodayEntryCard.tsx` | simulator smoke evidence |
 | Cycle/history presentation | `CycleDetailScreen.tsx`, `FertileTimeline.tsx`, `DailyLogList.tsx`, `CycleCard.tsx`, `PeakAlignedOverlay.tsx` | mobile suite plus manual review |
-| Export | `apps/mobile/src/utils/exportCyclePdf.ts` | no dedicated rendered-PDF claim snapshot gate found |
+| Export | `apps/mobile/src/utils/exportCyclePdf.ts` | `exportCyclePdf.calendarDays.test.ts` verifies production withholding, explicitly eligible output, reason-specific review states, and default code-column removal |
 
 ## Approval ownership
 

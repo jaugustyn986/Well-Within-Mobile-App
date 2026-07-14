@@ -8,9 +8,11 @@ declare const global: { AsyncStorageMock: Record<string, string> };
 jest.mock('../../config/env', () => ({ hasSupabaseEnv: () => true }));
 
 let upsertCallCount = 0;
+let upsertPayloads: Array<Record<string, unknown>> = [];
 const mockFrom = () => ({
-  upsert: (payload: unknown, _opts: unknown) => {
+  upsert: (payload: Record<string, unknown>, _opts: unknown) => {
     upsertCallCount += 1;
+    upsertPayloads.push(payload);
     if (upsertCallCount === 2) {
       return Promise.resolve({ error: { message: 'Conflict' }, data: null });
     }
@@ -23,6 +25,7 @@ jest.mock('../../lib/supabase', () => ({ supabase: mockSupabase }));
 
 beforeEach(() => {
   upsertCallCount = 0;
+  upsertPayloads = [];
   const store = global.AsyncStorageMock;
   for (const key of Object.keys(store)) delete store[key];
 });
@@ -40,7 +43,11 @@ describe('sync - push partial failure only marks successful rows clean', () => {
           clientUpdatedAt: '2025-01-01T10:00:00Z',
           dirty: true,
           deleted: false,
-          entry: { date: '2025-01-01', bleeding: 'light' },
+          entry: {
+            date: '2025-01-01',
+            bleeding: 'light',
+            menstrualFlowStart: 'confirmed',
+          },
         },
         '2025-01-02': {
           clientUpdatedAt: '2025-01-02T10:00:00Z',
@@ -58,5 +65,8 @@ describe('sync - push partial failure only marks successful rows clean', () => {
     const state = await getStoredState();
     expect(state.entriesByDate['2025-01-01'].dirty).toBe(false);
     expect(state.entriesByDate['2025-01-02'].dirty).toBe(true);
+    expect(upsertPayloads[0]?.entry_payload).toMatchObject({
+      menstrualFlowStart: 'confirmed',
+    });
   });
 });

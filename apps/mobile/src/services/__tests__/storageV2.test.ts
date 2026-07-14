@@ -6,6 +6,21 @@ beforeEach(() => {
 });
 
 describe('storageV2 migration and state', () => {
+  test('light-flow start marker survives a local save and read', async () => {
+    const { saveDailyEntry, getDailyEntry } = await import('../storageV2');
+    await saveDailyEntry('2026-01-01', {
+      date: '2026-01-01',
+      bleeding: 'light',
+      sensation: 'dry',
+      menstrualFlowStart: 'confirmed',
+    });
+
+    await expect(getDailyEntry('2026-01-01')).resolves.toMatchObject({
+      bleeding: 'light',
+      menstrualFlowStart: 'confirmed',
+    });
+  });
+
   test('legacy migration succeeds - entries become versioned envelope', async () => {
     const { STORAGE_KEY_V1, getAllEntries, ensureMigrationDone } = await import('../storageV2');
     const store = global.AsyncStorageMock;

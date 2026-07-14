@@ -12,10 +12,13 @@ import { CalendarGrid } from '../components/CalendarGrid';
 import { TodayEntryCard } from '../components/TodayEntryCard';
 import { SegmentedToggle, TabKey } from '../components/SegmentedToggle';
 import { CycleSummaryPanel } from '../components/CycleSummaryPanel';
-import { PatternInsights } from '../components/PatternInsights';
-import { PeakAlignedOverlay } from '../components/PeakAlignedOverlay';
 import { CycleCard } from '../components/CycleCard';
-import { PhaseLabel, PrimaryDayClass } from 'core-rules-engine';
+import {
+  buildFirstReleasePossibleFertilePatternEligibility,
+  buildPossibleFertilePatternPresentation,
+  type PhaseLabel,
+  type PrimaryDayClass,
+} from 'core-rules-engine';
 import { LineIcon } from '../components/LineIcon';
 import { buildCurrentCycleCatchUpDates, formatCatchUpCount } from '../utils/catchUpDays';
 import {
@@ -23,6 +26,7 @@ import {
   TEXT_PRIMARY, TEXT_MUTED, TEXT_SUBTLE, TEXT_SECONDARY,
   BRAND_NAME, ACCENT_WARM, ACCENT_WARM_TINT,
 } from '../theme/colors';
+import { shouldShowRetrospectivePeakMarkers } from '../components/dayPresentationContract';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const logoSource = require('../../assets/icon-1024.png');
@@ -104,16 +108,28 @@ export function CalendarScreen(): React.JSX.Element {
   const dayInfos = useMemo(() => {
     const dateMap = new Map<
       string,
-      { phaseLabel: PhaseLabel; mucusRank: number | null; primaryDayClass: PrimaryDayClass }
+      {
+        phaseLabel: PhaseLabel;
+        mucusRank: number | null;
+        primaryDayClass: PrimaryDayClass;
+        showDerivedMarkers: boolean;
+      }
     >();
 
     for (const slice of cycleHistory.cycles) {
+      const presentation = buildPossibleFertilePatternPresentation(
+        slice.entries,
+        slice.result,
+        buildFirstReleasePossibleFertilePatternEligibility(slice.cycleBoundary),
+      );
+      const showDerivedMarkers = shouldShowRetrospectivePeakMarkers(presentation);
       for (let i = 0; i < slice.entries.length; i++) {
         const date = slice.entries[i].date ?? '';
         dateMap.set(date, {
           phaseLabel: slice.result.phaseLabels[i],
           mucusRank: slice.result.mucusRanks[i],
           primaryDayClass: slice.result.primaryDayClassByDay[i],
+          showDerivedMarkers,
         });
       }
     }
@@ -128,6 +144,8 @@ export function CalendarScreen(): React.JSX.Element {
         isToday: date === today,
         primaryDayClass: cycleInfo?.primaryDayClass ?? result.primaryDayClassByDay[idx],
         mucusRank: cycleInfo?.mucusRank ?? null,
+        showDerivedMarkers: cycleInfo?.showDerivedMarkers ?? false,
+        bleeding: entry.bleeding,
         intercourse: !!entry.intercourse,
       };
     });
@@ -135,6 +153,14 @@ export function CalendarScreen(): React.JSX.Element {
 
   const goToDetail = useCallback(
     (cycleNumber: number) => navigation.navigate('CycleDetail', { cycleNumber }),
+    [navigation],
+  );
+  const resolveCycleStart = useCallback(
+    (date: string) => navigation.navigate('DailyEntry', {
+      date,
+      existingEntry: true,
+      intent: 'confirm_cycle_start',
+    }),
     [navigation],
   );
 
@@ -247,9 +273,7 @@ export function CalendarScreen(): React.JSX.Element {
               </View>
             ) : (
               <View style={styles.historyContent}>
-                <CycleSummaryPanel summary={cycleHistory.summary} />
-                <PatternInsights insights={cycleHistory.insights} />
-                <PeakAlignedOverlay cycles={cycleHistory.cycles} onCyclePress={goToDetail} />
+                <CycleSummaryPanel history={cycleHistory.possibleFertilePatternHistory} />
 
                 <View style={styles.cardsSection}>
                   <Text style={styles.cardsHeading}>Your Cycles</Text>
@@ -259,6 +283,7 @@ export function CalendarScreen(): React.JSX.Element {
                       cycle={c}
                       allCycles={cycleHistory.cycles}
                       onPress={() => goToDetail(c.cycleNumber)}
+                      onResolveCycleStart={resolveCycleStart}
                     />
                   ))}
                 </View>

@@ -1,30 +1,33 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { CycleSummary } from 'core-rules-engine';
-import { BG_CARD, TEXT_PRIMARY, TEXT_MUTED, BORDER_CARD } from '../theme/colors';
+import type { PossibleFertilePatternHistoryPresentation } from 'core-rules-engine';
+import {
+  BG_CARD,
+  BG_MISSING,
+  TEXT_PRIMARY,
+  TEXT_SECONDARY,
+  TEXT_MUTED,
+  BORDER_CARD,
+} from '../theme/colors';
+import { buildCycleHistoryCardCopy } from './cycleHistoryPresentation';
 
 interface Props {
-  summary: CycleSummary;
+  history: PossibleFertilePatternHistoryPresentation;
 }
 
-function StatCard({ label, value }: { label: string; value: string }): React.JSX.Element {
-  return (
-    <View style={styles.card}>
-      <Text style={styles.value}>{value}</Text>
-      <Text style={styles.label}>{label}</Text>
-    </View>
-  );
-}
+export function CycleSummaryPanel({ history }: Props): React.JSX.Element {
+  const copy = buildCycleHistoryCardCopy(history);
 
-export function CycleSummaryPanel({ summary }: Props): React.JSX.Element {
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Cycle Summary</Text>
-      <View style={styles.grid}>
-        <StatCard label="Complete cycles" value={String(summary.cyclesTracked)} />
-        <StatCard label="Avg Cycle (days)" value={summary.avgLength !== null ? String(summary.avgLength) : '--'} />
-        <StatCard label="Avg Peak Day" value={summary.avgPeakDay !== null ? `Day ${summary.avgPeakDay}` : '--'} />
-        <StatCard label="Avg Luteal Phase" value={summary.avgLutealPhase !== null ? `${summary.avgLutealPhase} days` : '--'} />
+      <Text style={styles.heading}>{copy.heading}</Text>
+      <View style={styles.card}>
+        <View style={styles.progressPill}>
+          <Text style={styles.progressText}>{copy.progressLabel}</Text>
+        </View>
+        <Text style={styles.body}>{copy.body}</Text>
+        <Text style={styles.supportingBody}>{copy.benefit}</Text>
+        <Text style={styles.nextStep}>{copy.nextStep}</Text>
       </View>
     </View>
   );
@@ -33,16 +36,36 @@ export function CycleSummaryPanel({ summary }: Props): React.JSX.Element {
 const styles = StyleSheet.create({
   container: { marginHorizontal: 16, marginTop: 16 },
   heading: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   card: {
     backgroundColor: BG_CARD,
     borderRadius: 12,
-    padding: 14,
-    width: '48%' as unknown as number,
-    flexGrow: 1,
+    padding: 16,
     borderWidth: 1,
     borderColor: BORDER_CARD,
   },
-  value: { fontSize: 24, fontWeight: '700', color: TEXT_PRIMARY },
-  label: { fontSize: 12, color: TEXT_MUTED, marginTop: 2 },
+  progressPill: {
+    alignSelf: 'flex-start',
+    backgroundColor: BG_MISSING,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 999,
+    marginBottom: 10,
+  },
+  progressText: { fontSize: 11, fontWeight: '600', color: TEXT_MUTED },
+  body: { fontSize: 14, color: TEXT_SECONDARY, lineHeight: 21 },
+  supportingBody: {
+    fontSize: 13,
+    color: TEXT_SECONDARY,
+    lineHeight: 19,
+    marginTop: 10,
+  },
+  nextStep: {
+    fontSize: 13,
+    color: TEXT_MUTED,
+    lineHeight: 19,
+    marginTop: 8,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: BORDER_CARD,
+  },
 });
