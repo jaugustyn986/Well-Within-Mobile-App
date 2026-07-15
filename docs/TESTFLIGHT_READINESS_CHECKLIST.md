@@ -179,8 +179,8 @@ Recommended location: `Settings -> Support`
 ## Internal Testing
 
 - [x] `[INT-BLOCKER]` build uploaded to App Store Connect
-- [ ] `[INT-BLOCKER]` build processed by Apple (typically 5–10 min; check email)
-- [ ] `[INT-BLOCKER]` internal testers added
+- [x] `[INT-BLOCKER]` build processed by Apple (2.1.1 build 21, `VALID`/`Complete`)
+- [x] `[INT-BLOCKER]` internal testers added (`Team (Expo)` group; one invite shown)
 - [ ] `[INT-BLOCKER]` internal testers can install build
 
 TestFlight build management: https://appstoreconnect.apple.com/apps/6760519448/testflight/ios
@@ -201,18 +201,20 @@ Notes:
 
 # 10. Release Blockers (Populate During Audit)
 
-- First production TestFlight upload succeeded; build is processed by Apple. Record build number/ID in App Store Connect when processing completes if needed for tracking.
-- BLOCKER: App Store Connect reports `REQUIRED_AGREEMENTS_MISSING_OR_EXPIRED`; the Account Holder must resolve this in **Business** before version creation, build lookup, or submission.
-- BLOCKER: publish the prepared privacy-policy and support-page copy, then save their stable public URLs in App Store Connect.
-- READY TO UPLOAD AFTER BLOCKERS: 2.1.1 metadata, privacy answers, six screenshots, and review notes are assembled in the [Action 6 submission packet](strategy/action-6-app-store-story-2026-07-14/APP_STORE_SUBMISSION_PACKET.md).
+- Production TestFlight upload succeeded: version 2.1.1, build 21, Apple build ID `a909ac12-bfc0-4520-92c5-93d3b0f449e5`, EAS build ID `fa460f20-a784-4ddb-9d83-73adbce84256`.
+- Apple agreements are current for this free release; the Free Apps Agreement is active.
+- Public privacy-policy and support URLs are published and saved in App Store Connect.
+- 2.1.1 metadata, reconciled privacy answers, six screenshots, review notes, manual-release setting, and build 21 are saved in App Store Connect.
+- Remaining product validation: complete the short accessibility/comprehension check and confirm that an internal tester can install and smoke-test build 21.
+- FINAL OWNER GATE: the release is stopped at Apple's review confirmation. Do not submit to App Review without a separate owner decision.
 
 ---
 
 # 11. Non-UX Changes Required (Populate During Audit)
 
 - First EAS build and submit to TestFlight completed successfully. For future releases: **`npm run mobile:release:testflight`** (preflight + build + submit), or stepwise `mobile:build:ios:testflight` then `mobile:submit:ios:production` (non-interactive when `.p8` is in `apps/mobile/credentials/` and `eas.json` has `ascAppId` + API key fields).
-- Configure privacy policy URL and support URL values for App Store Connect metadata (before external TestFlight or App Store).
-- Complete App Store Connect privacy details and export compliance questionnaire.
+- Privacy policy URL and support URL are configured in App Store Connect.
+- App Store Connect privacy details are reconciled and published; build 21 processed without an outstanding export-compliance prompt.
 - Run **`git fetch --all --prune`** and **`npm run mobile:preflight:release`** before building. Preflight now checks Expo config, intended feature-branch coverage, and App Store Connect/TestFlight version-train state.
 - Use **`npm run version:ios:bump --workspace well-within-mobile`** when opening a new TestFlight/App Store marketing-version train.
 - Optionally run **`npm run mobile:preflight:release:with-doctor`**; treat **expo-doctor** failures from flaky Expo API or Metro hints as **advisory** unless they indicate a real misconfiguration.

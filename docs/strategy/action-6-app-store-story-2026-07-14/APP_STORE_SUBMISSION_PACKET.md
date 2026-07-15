@@ -5,7 +5,7 @@ Target iOS marketing version: **2.1.1**
 Bundle ID: `com.wellwithin.app`
 Apple ID: `6760519448`
 
-Status: **release-candidate packet; blocked from upload/submission by an expired or missing Apple agreement**
+Status: **staged in App Store Connect for version 2.1.1; build 21 is complete in TestFlight; stopped before review submission**
 
 ## Exact customer-facing fields
 
@@ -131,6 +131,16 @@ No demo account is required because the primary charting flow works signed out. 
 
 App Store Connect requires the existing App Review contact name, email, and phone number. Reuse the account’s verified values; do not invent or replace them in this packet.
 
-## Current external blocker
+## Release execution record
 
-App Store Connect API and the Distribution page are blocked by `FORBIDDEN.REQUIRED_AGREEMENTS_MISSING_OR_EXPIRED`. The Account Holder must open **App Store Connect → Business** and accept or renew the identified agreement. Codex must not accept a legal agreement on the owner’s behalf.
+- Apple Developer Program agreement accepted July 14, 2026; Free Apps Agreement active through March 11, 2027.
+- Public support and privacy URLs are published and saved in App Store Connect.
+- EAS build ID: `fa460f20-a784-4ddb-9d83-73adbce84256`.
+- EAS submission ID: `4fb82e1b-c16b-4f4a-bc62-87ef5738df0f`.
+- Release source commit: `607caec07891bc41bbad7cb6dcd3e863b572d4be`.
+- App Store Connect build: version `2.1.1`, build `21`, Apple build ID `a909ac12-bfc0-4520-92c5-93d3b0f449e5`, processing state `VALID`/`Complete`.
+- App Store Connect version ID: `685b4590-8695-48b1-95a5-e786587e4322`.
+- Six screenshots uploaded in numeric order to the iPhone 6.9-inch screenshot set; all six reached `COMPLETE`.
+- App privacy answers published exactly as listed above. Subtitle, metadata, review notes, manual-release setting, and build 21 are saved on the 2.1.1 release record.
+- Internal TestFlight group: `Team (Expo)`.
+- Final gate: do not continue past Apple's review confirmation or submit the version to App Review without a separate owner decision.
