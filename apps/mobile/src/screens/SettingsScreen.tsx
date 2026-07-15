@@ -27,10 +27,11 @@ import {
 const APP_VERSION = Constants.expoConfig?.version ?? '0.1.0';
 
 const PRIVACY_ITEMS: { icon: IconName; text: string }[] = [
-  { icon: 'device', text: 'Your chart data stays on this device unless you choose to back it up by signing in. If you enable backup, your data is securely sent and stored in the cloud to help restore it on a new device.' },
-  { icon: 'analytics', text: 'The app uses your observations to calculate cycle patterns' },
+  { icon: 'device', text: 'Your chart is stored on this device by default. Sign in only if you want optional cloud backup.' },
+  { icon: 'analytics', text: 'Pattern calculations happen in the app using the observations you record.' },
+  { icon: 'shield', text: 'Feedback is optional. Cycle context is included only when you turn it on.' },
   { icon: 'shield', text: 'No third-party ad tracking is used' },
-  { icon: 'lock', text: 'You can clear or export your data at any time' },
+  { icon: 'lock', text: 'You can clear, delete, or export your data at any time.' },
 ];
 
 type SettingsNav = NativeStackNavigationProp<RootStackParamList, 'Settings'>;
@@ -109,7 +110,7 @@ export function SettingsScreen(): React.JSX.Element {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Backup & Sync</Text>
           <Text style={styles.sectionSubtitle}>
-            Your observations stay private. You can keep using the app without an account.
+            Keep using the app without an account, or sign in if you want optional cloud backup.
           </Text>
           {auth?.user ? (
             <>
@@ -126,6 +127,9 @@ export function SettingsScreen(): React.JSX.Element {
                 style={[styles.actionRow, { marginTop: 12 }]}
                 onPress={() => void sync?.syncNow?.()}
                 disabled={sync?.isSyncing}
+                accessibilityRole="button"
+                accessibilityLabel="Sync now"
+                accessibilityState={{ disabled: sync?.isSyncing }}
               >
                 <View style={styles.actionLeft}>
                   <View style={styles.actionIconCircle}>
@@ -141,6 +145,8 @@ export function SettingsScreen(): React.JSX.Element {
               <Pressable
                 style={[styles.actionRow, styles.dangerRow]}
                 onPress={() => void auth?.signOut?.()}
+                accessibilityRole="button"
+                accessibilityLabel="Sign out"
               >
                 <View style={styles.actionLeft}>
                   <Text style={[styles.actionTitle, styles.dangerText]}>Sign out</Text>
@@ -151,6 +157,8 @@ export function SettingsScreen(): React.JSX.Element {
             <Pressable
               style={styles.actionRow}
               onPress={() => navigation.navigate('Auth')}
+              accessibilityRole="button"
+              accessibilityLabel="Sign in with email for optional cloud backup"
             >
               <View style={styles.actionLeft}>
                 <View style={styles.actionIconCircle}>
@@ -202,7 +210,14 @@ export function SettingsScreen(): React.JSX.Element {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Data Management</Text>
 
-        <Pressable style={styles.actionRow} onPress={handleExportJson} disabled={exporting}>
+        <Pressable
+          style={styles.actionRow}
+          onPress={handleExportJson}
+          disabled={exporting}
+          accessibilityRole="button"
+          accessibilityLabel="Export data as JSON"
+          accessibilityState={{ disabled: exporting }}
+        >
           <View style={styles.actionLeft}>
             <View style={styles.actionIconCircle}>
               <Text style={styles.actionIconText}>{'↓'}</Text>
@@ -292,7 +307,12 @@ export function SettingsScreen(): React.JSX.Element {
       {showBackupSync ? (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Feedback</Text>
-          <Pressable style={styles.actionRow} onPress={() => setShowFeedbackModal(true)}>
+          <Pressable
+            style={styles.actionRow}
+            onPress={() => setShowFeedbackModal(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Send feedback"
+          >
             <View style={styles.actionLeft}>
               <View style={styles.actionIconCircle}>
                 <Text style={styles.actionIconText}>{'✉'}</Text>
@@ -326,10 +346,20 @@ export function SettingsScreen(): React.JSX.Element {
             <Text style={styles.modalTitle}>{confirmation?.title}</Text>
             <Text style={styles.modalBody}>{confirmation?.body}</Text>
             <View style={styles.modalButtons}>
-              <Pressable style={styles.modalBtnOutline} onPress={() => setPendingDataAction(null)}>
+              <Pressable
+                style={styles.modalBtnOutline}
+                onPress={() => setPendingDataAction(null)}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
+              >
                 <Text style={styles.modalBtnOutlineText}>Cancel</Text>
               </Pressable>
-              <Pressable style={styles.modalBtnDanger} onPress={handleConfirmedDataAction}>
+              <Pressable
+                style={styles.modalBtnDanger}
+                onPress={handleConfirmedDataAction}
+                accessibilityRole="button"
+                accessibilityLabel={confirmation?.confirmLabel ?? 'Confirm deletion'}
+              >
                 <Text style={styles.modalBtnDangerText}>{confirmation?.confirmLabel}</Text>
               </Pressable>
             </View>

@@ -160,7 +160,13 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={styles.headerSide}>
+        <Pressable
+          onPress={() => navigation.goBack()}
+          hitSlop={12}
+          style={styles.headerSide}
+          accessibilityRole="button"
+          accessibilityLabel="Back to cycle history"
+        >
           <Text style={styles.backArrow}>{'‹'}</Text>
         </Pressable>
         <View style={styles.headerCenter}>
@@ -172,6 +178,9 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
             style={[styles.exportBtn, exporting && styles.exportBtnDisabled]}
             onPress={() => setShowIntercoursePrompt(true)}
             disabled={exporting}
+            accessibilityRole="button"
+            accessibilityLabel="Export cycle PDF"
+            accessibilityState={{ disabled: exporting }}
           >
             <Text style={styles.exportBtnText}>{exporting ? 'Exporting...' : 'Export'}</Text>
           </Pressable>
@@ -198,11 +207,17 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
                 onPress={() =>
                   navigation.navigate('Help', { initialSection: 'status_messages' })
                 }
+                accessibilityRole="button"
+                accessibilityLabel="Learn what this chart status means"
               >
                 <Text style={styles.interpretationActionText}>Learn what this means</Text>
               </Pressable>
               {possibleFertilePattern?.interpretationStatus === 'review_recommended' ? (
-                <Pressable onPress={() => navigation.navigate('FindCare')}>
+                <Pressable
+                  onPress={() => navigation.navigate('FindCare')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Find charting support"
+                >
                   <Text style={styles.interpretationActionText}>Find charting support</Text>
                 </Pressable>
               ) : null}
@@ -256,17 +271,25 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
               <Pressable
                 style={styles.modalBtnOutline}
                 onPress={() => queueExport(false)}
+                accessibilityRole="button"
+                accessibilityLabel="Export without intercourse markers"
               >
                 <Text style={styles.modalBtnOutlineText}>No</Text>
               </Pressable>
               <Pressable
                 style={styles.modalBtnFilled}
                 onPress={() => queueExport(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Export with intercourse markers"
               >
                 <Text style={styles.modalBtnFilledText}>Yes</Text>
               </Pressable>
             </View>
-            <Pressable onPress={() => setShowIntercoursePrompt(false)}>
+            <Pressable
+              onPress={() => setShowIntercoursePrompt(false)}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel export"
+            >
               <Text style={styles.modalCancel}>Cancel</Text>
             </Pressable>
           </View>

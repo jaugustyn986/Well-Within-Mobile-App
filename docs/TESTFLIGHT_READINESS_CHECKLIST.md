@@ -28,7 +28,7 @@ Use these requirement tags:
 
 Expected baseline:
 
-Version: 0.2.1
+Version: 2.1.1
 Build: remote auto-increment
 
 ## Project Configuration
@@ -61,9 +61,12 @@ Build: remote auto-increment
 
 These are not required for internal TestFlight, but should be prepared early.
 
-- [ ] `[STORE-REQ]` iPhone 6.7" screenshots
-- [ ] `[STORE-REQ]` iPhone 6.5" screenshots
-- [ ] `[POLISH]` screenshots demonstrate onboarding, charting, history, and daily entry
+- [x] `[STORE-REQ]` six-frame iPhone 6.9" screenshot story at an Apple-accepted size (master: 1320x2868)
+- [ ] `[STORE-REQ]` separate iPhone 6.5" screenshots only if the final upload intentionally omits 6.9" screenshots
+- [x] `[POLISH]` screenshots demonstrate daily entry, calendar, optional backup, retrospective chart context, history, and export
+- [ ] `[STORE-REQ]` exact final screenshots pass clinical/claims, privacy, accessibility, comprehension, IP, and prohibited-claim review
+
+Action 6 package: [App Store story and privacy reconciliation](strategy/action-6-app-store-story-2026-07-14/README.md). Apple currently accepts one to ten screenshots and lists 1320x2868 as a 6.9-inch portrait size: [screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications).
 
 ---
 
@@ -87,15 +90,14 @@ Because the app handles reproductive health data, privacy transparency is requir
 
 ## Privacy Policy and Labels
 
-- [x] `[INT-BLOCKER]` in-app privacy explanation exists and is accurate
-- [ ] `[EXT-REQ]` App Store Connect privacy details are configured accurately
-- [ ] `[STORE-REQ]` publicly accessible privacy policy URL exists
-- [ ] `[STORE-REQ]` privacy policy URL is added to App Store metadata
+- [x] `[INT-BLOCKER]` in-app privacy explanation is reconciled with the implementation/data map and publication draft
+- [x] `[INT-BLOCKER]` proposed App Store Connect privacy answers are reconciled with device, account, cloud-backup, feedback, export, and deletion behavior
+- [ ] `[EXT-REQ]` reconciled App Store Connect privacy answers are saved in the owner account
+- [x] `[STORE-REQ]` publicly accessible privacy policy URL exists
+- [x] `[STORE-REQ]` privacy policy URL is present in live App Store metadata
+- [ ] `[STORE-REQ]` prepared public policy content is published at the live URL
 
-Example in-app wording:
-
-> Well Within stores your charting data locally on your device.  
-> We do not sell or share personal health data.
+Do not reuse absolute example wording without checking optional cloud backup, feedback, infrastructure providers, retention, and Apple privacy-label definitions. See the [Action 6 privacy reconciliation worksheet](strategy/action-6-app-store-story-2026-07-14/PRIVACY_RECONCILIATION.md).
 
 ---
 
@@ -155,7 +157,7 @@ Acceptable framing:
 - [ ] `[INT-BLOCKER]` no disallowed health claims in app UI copy
 - [ ] `[STORE-REQ]` no disallowed health claims in App Store metadata
 
-Audit note (2026-03-12): User-facing copy was audited (OnboardingScreen, StatusBanner, EntryForm, HelpScreen, Settings). No diagnosis, treatment, or guaranteed conception claims found. Phrases such as "Ovulation likely occurred within the last 1–2 days" are retrospective (post–peak day), not prediction of future ovulation; "your chances are highest" in Help is educational. Manual review of App Store metadata still required when submitting.
+Audit note (2026-07-14): The Action 5 implementation uses observation-bound, retrospective chart language and explicitly says Peak does not confirm ovulation. The live App Store listing still contains stale certainty, method-affiliation, `not algorithms`, and privacy wording; replace it with the [Action 6 metadata draft](strategy/action-6-app-store-story-2026-07-14/METADATA_DRAFT.md) only after the listed review gates close.
 
 ---
 
@@ -200,8 +202,9 @@ Notes:
 # 10. Release Blockers (Populate During Audit)
 
 - First production TestFlight upload succeeded; build is processed by Apple. Record build number/ID in App Store Connect when processing completes if needed for tracking.
-- BLOCKER: publicly accessible privacy policy URL is not yet configured in release metadata (required for external TestFlight / App Store).
-- BLOCKER: App Store Connect privacy details/export compliance answers are not yet recorded for this app.
+- BLOCKER: App Store Connect reports `REQUIRED_AGREEMENTS_MISSING_OR_EXPIRED`; the Account Holder must resolve this in **Business** before version creation, build lookup, or submission.
+- BLOCKER: publish the prepared privacy-policy and support-page copy, then save their stable public URLs in App Store Connect.
+- READY TO UPLOAD AFTER BLOCKERS: 2.1.1 metadata, privacy answers, six screenshots, and review notes are assembled in the [Action 6 submission packet](strategy/action-6-app-store-story-2026-07-14/APP_STORE_SUBMISSION_PACKET.md).
 
 ---
 
@@ -232,16 +235,17 @@ Notes:
 
 # 14. Current Release Status (Update Every Audit)
 
-Build Status: EAS build **uploaded and submitted**; Apple accepted the binary and is processing it.  
-Version: **0.2.1** · iOS build number: **20** (remote auto-increment)  
-EAS Build ID: `1e849556-1aa7-4f92-a8bb-ef385eb6ad55` — [Expo build](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/builds/1e849556-1aa7-4f92-a8bb-ef385eb6ad55)  
-EAS Submission ID: `23981b9a-df5e-49ee-86d1-f4d83bf2e4bd` — [Submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/23981b9a-df5e-49ee-86d1-f4d83bf2e4bd)  
-TestFlight: After Apple processing (often 5–15 min), build **20** should appear in [App Store Connect -> TestFlight](https://appstoreconnect.apple.com/apps/6760519448/testflight/ios).  
-Internal Testing: Add or confirm internal testers when the build shows as **Ready to Test**.
+Build Status: native 2.1.1 Release verification is in progress; new EAS/TestFlight build is blocked until the Account Holder accepts the updated Apple Developer Program License Agreement.
+Version: **2.1.1** · next iOS build number: **remote auto-increment**
+
+Previous TestFlight record (does **not** contain Action 5/6): version **0.2.1**, build **20**.
+EAS Build ID: `1e849556-1aa7-4f92-a8bb-ef385eb6ad55` — [Expo build](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/builds/1e849556-1aa7-4f92-a8bb-ef385eb6ad55)
+EAS Submission ID: `23981b9a-df5e-49ee-86d1-f4d83bf2e4bd` — [Submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/23981b9a-df5e-49ee-86d1-f4d83bf2e4bd)
+Do not select build 20 for the 2.1.1 App Store version.
 
 TestFlight: https://appstoreconnect.apple.com/apps/6760519448/testflight/ios
 
-Last Audit Date: 2026-07-03  
+Last Audit Date: 2026-07-14
 Audited By: Codex
 
 Release notes (latest push): support/resource links now open through native Safari handoff after the confirmation modal is dismissed, fixing the Find Care freeze/unresponsive state observed in simulator. Build also includes catch-up missing days, Find Care resources, and feedback collection improvements.

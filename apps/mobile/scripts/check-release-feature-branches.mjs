@@ -1,10 +1,18 @@
 import { execFileSync } from 'node:child_process';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ignoredBranchPattern = /(\/HEAD$|\/main$|android|cursor\/|social)/i;
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const repoRoot = path.resolve(scriptDir, '..', '..', '..');
+
+// `bleeding-guidance-palette` was manually superseded by the later Action 5
+// implementation on `codex/catch-up-missing-days`; merging it would restore
+// outdated claims and remove newer rules/UX work.
+const ignoredBranchPattern = /(\/HEAD$|\/main$|android|cursor\/|social|\/bleeding-guidance-palette$)/i;
 const appPathPattern = /^(apps\/mobile\/src\/|core\/rulesEngine\/)/;
 
 function git(args) {
-  return execFileSync('git', args, { encoding: 'utf8' }).trim();
+  return execFileSync('git', ['-C', repoRoot, ...args], { encoding: 'utf8' }).trim();
 }
 
 function hasAppChanges(branch) {
@@ -17,7 +25,7 @@ function hasAppChanges(branch) {
 
 function isAncestor(branch) {
   try {
-    execFileSync('git', ['merge-base', '--is-ancestor', branch, 'HEAD'], { stdio: 'ignore' });
+    execFileSync('git', ['-C', repoRoot, 'merge-base', '--is-ancestor', branch, 'HEAD'], { stdio: 'ignore' });
     return true;
   } catch {
     return false;

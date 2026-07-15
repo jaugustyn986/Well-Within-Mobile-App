@@ -61,11 +61,21 @@ export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNex
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Pressable onPress={onPrevMonth} hitSlop={12}>
+        <Pressable
+          onPress={onPrevMonth}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Previous month"
+        >
           <Text style={styles.navArrow}>{'<'}</Text>
         </Pressable>
         <Text style={styles.monthTitle}>{MONTHS[month]} {year}</Text>
-        <Pressable onPress={onNextMonth} hitSlop={12}>
+        <Pressable
+          onPress={onNextMonth}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Next month"
+        >
           <Text style={styles.navArrow}>{'>'}</Text>
         </Pressable>
       </View>

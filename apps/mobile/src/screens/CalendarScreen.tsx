@@ -187,6 +187,8 @@ export function CalendarScreen(): React.JSX.Element {
           style={styles.gearBtn}
           onPress={() => navigation.navigate('Settings')}
           hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Settings"
         >
           <LineIcon name="gear" size={20} />
         </Pressable>
@@ -228,6 +230,8 @@ export function CalendarScreen(): React.JSX.Element {
             <Pressable
               style={styles.feedbackLink}
               onPress={() => setShowFeedbackModal(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Report an app issue"
             >
               <Text style={styles.feedbackText}>Something looks off? Report an app issue</Text>
             </Pressable>
@@ -254,6 +258,8 @@ export function CalendarScreen(): React.JSX.Element {
             <Pressable
               style={styles.helpLink}
               onPress={() => navigation.navigate('Help')}
+              accessibilityRole="button"
+              accessibilityLabel="Help understanding your chart"
             >
               <Text style={styles.helpText}>Need help understanding your chart?</Text>
               <Text style={styles.helpSub}>Learn about sensation, appearance, peak day, and more</Text>

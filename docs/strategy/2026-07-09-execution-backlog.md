@@ -17,8 +17,8 @@ Owner assumptions:
 | ✅ Completed 2026-07-11 — Add explicit observation confirmation before a new dry entry can save | Engineering + Product | High | [Action 2 simulator report](action-2-observation-confirmation-2026-07-11/REPORT.md): new entry blocked until an intentional sensation choice; existing edit remains fast; 39 automated tests passed |
 | ✅ Completed 2026-07-11 — Add single-entry delete confirmation | Engineering | High | [Action 3 simulator report](action-3-delete-confirmation-2026-07-11/REPORT.md): dated confirmation requires a second action; cancel preserves the entry; confirm deletes and syncs once; 41 automated tests passed |
 | ✅ Completed 2026-07-11 — Define cloud delete/account delete behavior | Product + Engineering + Privacy | High | [Action 4 report](action-4-account-data-deletion-2026-07-11/REPORT.md): provider-neutral semantics, production schema/function deployment, reset-marker behavior, throwaway account/feedback cascade, and post-delete sign-in rejection verified |
-| Clinically/legally review all fertile-window, Peak, TTC, and method claims | Clinical/Legal + Product | High | Approved claim matrix shared by app, App Store, Help, and social |
-| Confirm/fix App Store screenshot set and remove `not algorithms` wording | Product | High | Public listing shows 5-8 legible proof-led screenshots and accurate copy |
+| 🟢 Action 5 owner-authorized release assumption recorded 2026-07-14 — Clinically/legally review all fertile-window, Peak, TTC, and method claims | Clinical/Legal + Product | High | [Action 5 report](action-5-clinical-legal-rules-review-2026-07-11/REPORT.md) and review packet exist; owner directed the team to proceed as though the delivered materials were accepted. This is a release assumption, not independently recorded clinical/legal approval. |
+| 🟡 Action 6 release package prepared 2026-07-14; account-holder actions pending — Replace the App Store story and listing copy | Product + UX + Privacy | High | [Action 6 package](action-6-app-store-story-2026-07-14/README.md) contains the reconciled privacy proposal, six final-size screenshots, policy/support drafts, and exact submission packet. Remaining: Apple agreement, public URLs, short accessibility/comprehension check, upload, and separate Submit for Review confirmation. |
 | Create Instagram-specific Apple campaign link | Product | High | Link resolves; campaign token appears after minimum reporting threshold |
 | Run the six-test social sprint | Content + Product | High | Six decision rows with 24h/72h/7d data and qualitative notes |
 | Interview five users and five practitioners/educators | Product | High | Ten interview notes; objections/jobs mapped to hypotheses |
@@ -57,3 +57,11 @@ Owner assumptions:
 - Third-party advertising or analytics SDKs.
 - Paid media before attribution and organic proof.
 - Partner/couple accounts until scope and privacy requirements are resolved.
+
+## Action 5 closeout and Action 6 handoff — 2026-07-14
+
+- **Action 4:** complete. Account and cloud-data deletion behavior is implemented and production-verified.
+- **Action 5:** the normal-context engine and UX implementation are complete and internally verified. On July 14, the owner directed the release workflow to proceed on the assumption that the delivered review materials were accepted. This is an operating assumption and not clinical, legal, regulatory, trademark, licensing, or Apple approval.
+- **Action 6:** the 2.1.0 release package is prepared. Privacy language and labels are reconciled; the exact store fields and six final-size screenshots are ready. External work is limited to the Apple agreement, publishing policy/support URLs, saving/uploading the package, and a separate final Submit for Review decision.
+- **Usability/accessibility follow-up:** run a short comprehension check on the final experience and screenshot language to confirm that users understand `Possible fertile pattern` as retrospective chart context rather than a prediction. This does not block starting Action 6, but it remains a pre-publication validation item.
+- **Explicitly deferred clinical scope:** postpartum/breastfeeding, perimenopause, recent hormones, medication effects, persistent discharge, BIP, continuous mucus, non-Peak-only mucus, and other alternate patterns are future work. Do not infer or implement special-context rules without new evidence, product scoping, and qualified review; continue to disclose that these contexts are not accounted for.

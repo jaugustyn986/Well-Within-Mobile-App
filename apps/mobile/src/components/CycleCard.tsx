@@ -91,6 +91,9 @@ export function CycleCard({
       <Pressable
         style={({ pressed }) => [styles.mainPressable, pressed && styles.pressed]}
         onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={`${displayedPrimary}. ${displayedSecondary}. ${statusInfo.label}`}
+        accessibilityHint="Opens this cycle's chart details"
       >
         <View style={styles.topRow}>
           <Text style={styles.primaryTitle} numberOfLines={2}>{displayedPrimary}</Text>

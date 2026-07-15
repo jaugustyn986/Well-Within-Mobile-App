@@ -17,6 +17,9 @@ export function SegmentedToggle({ activeTab, onTabChange }: Props): React.JSX.El
         <Pressable
           style={[styles.tab, activeTab === 'calendar' && styles.tabActive]}
           onPress={() => onTabChange('calendar')}
+          accessibilityRole="tab"
+          accessibilityLabel="Calendar"
+          accessibilityState={{ selected: activeTab === 'calendar' }}
         >
           <LineIcon name="grid" size={14} />
           <Text style={[styles.tabLabel, activeTab === 'calendar' && styles.tabLabelActive]}>
@@ -26,6 +29,9 @@ export function SegmentedToggle({ activeTab, onTabChange }: Props): React.JSX.El
         <Pressable
           style={[styles.tab, activeTab === 'history' && styles.tabActive]}
           onPress={() => onTabChange('history')}
+          accessibilityRole="tab"
+          accessibilityLabel="Cycle History"
+          accessibilityState={{ selected: activeTab === 'history' }}
         >
           <LineIcon name="clock" size={14} />
           <Text style={[styles.tabLabel, activeTab === 'history' && styles.tabLabelActive]}>

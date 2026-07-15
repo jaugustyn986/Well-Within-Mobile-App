@@ -98,7 +98,7 @@ function getJson(token, apiPath) {
   });
 }
 
-async function readRemotePreReleaseVersions() {
+async function readRemoteVersions() {
   const eas = readJson(path.join(mobileRoot, 'eas.json'));
   const iosSubmit = eas?.submit?.production?.ios;
   if (!iosSubmit) {
@@ -110,13 +110,20 @@ async function readRemotePreReleaseVersions() {
     issuerId: iosSubmit.ascApiKeyIssuerId,
   });
   const encodedAppId = encodeURIComponent(iosSubmit.ascAppId);
-  const json = await getJson(
+  const preReleaseJson = await getJson(
     token,
     `/v1/preReleaseVersions?filter%5Bapp%5D=${encodedAppId}&filter%5Bplatform%5D=IOS&limit=200`,
   );
-  return (json.data || [])
-    .map((item) => item?.attributes?.version)
+  const appStoreJson = await getJson(
+    token,
+    `/v1/apps/${encodedAppId}/appStoreVersions?filter%5Bplatform%5D=IOS&limit=200`,
+  );
+  return [
+    ...(preReleaseJson.data || []).map((item) => item?.attributes?.version),
+    ...(appStoreJson.data || []).map((item) => item?.attributes?.versionString),
+  ]
     .filter(Boolean)
+    .filter((version, index, versions) => versions.indexOf(version) === index)
     .sort(compareVersions);
 }
 
@@ -139,7 +146,7 @@ async function main() {
     );
   }
 
-  const remoteVersions = await readRemotePreReleaseVersions();
+  const remoteVersions = await readRemoteVersions();
   const maxRemoteVersion = remoteVersions.at(-1) ?? null;
 
   if (shouldBump) {
