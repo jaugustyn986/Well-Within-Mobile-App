@@ -33,7 +33,7 @@ An optional seventh frame shows how the app handles missing context without gues
 - The iOS marketing version is set to 2.1.1, above the current public version 2 and distinct from the old 0.2.1 TestFlight train.
 - In-app privacy language, the iOS privacy manifest, the public-policy draft, and the proposed App Store privacy answers now use the same opt-in backup and feedback model.
 - Exact copy/paste fields, privacy selections, screenshot order, review notes, and release settings are collected in the [submission packet](APP_STORE_SUBMISSION_PACKET.md).
-- The [public support page](https://well-within-app-support.jrypto3.chatgpt.site) and [public privacy policy](https://well-within-app-support.jrypto3.chatgpt.site/privacy) are published from the versioned site source in `apps/public-site`.
+- The [public support page](https://jaugustyn986.github.io/Well-Within-Mobile-App/) and [public privacy policy](https://jaugustyn986.github.io/Well-Within-Mobile-App/privacy/) are published from the versioned site source in `apps/public-site`.
 
 ## Publication gates
 

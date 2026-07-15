@@ -71,8 +71,8 @@ Well Within is an educational charting and record-keeping tool. It does not diag
 
 ### URLs
 
-- Privacy Policy URL: https://well-within-app-support.jrypto3.chatgpt.site/privacy
-- Support URL: https://well-within-app-support.jrypto3.chatgpt.site
+- Privacy Policy URL: https://jaugustyn986.github.io/Well-Within-Mobile-App/privacy/
+- Support URL: https://jaugustyn986.github.io/Well-Within-Mobile-App/
 - Marketing URL: optional; leave blank unless a stable product page is available.
 
 ## Screenshot upload order

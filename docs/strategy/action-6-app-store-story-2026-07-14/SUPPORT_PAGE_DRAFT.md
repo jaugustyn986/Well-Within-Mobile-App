@@ -23,7 +23,7 @@ Please do not email personal chart details unless they are necessary for your su
 
 ### Privacy
 
-The app works without an account. Cloud backup and feedback cycle context are optional. Read the current [Well Within Privacy Policy](https://well-within-app-support.jrypto3.chatgpt.site/privacy) for details about device storage, optional account backup, feedback, exports, and deletion.
+The app works without an account. Cloud backup and feedback cycle context are optional. Read the current [Well Within Privacy Policy](https://jaugustyn986.github.io/Well-Within-Mobile-App/privacy/) for details about device storage, optional account backup, feedback, exports, and deletion.
 
 ### Charting and care
 

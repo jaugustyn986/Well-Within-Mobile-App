@@ -44,8 +44,8 @@ The release proposal is:
 - App Store answers and exact metadata: [APP_STORE_SUBMISSION_PACKET.md](APP_STORE_SUBMISSION_PACKET.md)
 - User-visible in-app wording: `apps/mobile/src/screens/SettingsScreen.tsx`
 - iOS manifest: `apps/mobile/ios/WellWithin/PrivacyInfo.xcprivacy`
-- Published policy: [Well Within Privacy Policy](https://well-within-app-support.jrypto3.chatgpt.site/privacy)
-- Published support page: [Well Within Support](https://well-within-app-support.jrypto3.chatgpt.site)
+- Published policy: [Well Within Privacy Policy](https://jaugustyn986.github.io/Well-Within-Mobile-App/privacy/)
+- Published support page: [Well Within Support](https://jaugustyn986.github.io/Well-Within-Mobile-App/)
 
 ## Remaining external actions
 
