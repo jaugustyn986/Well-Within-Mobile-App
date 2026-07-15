@@ -1,26 +1,26 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   CycleSlice,
-  PossibleFertilePatternHistoryPresentation,
+  RecordedCycleHistorySummary,
   buildFirstReleasePossibleFertilePatternEligibility,
-  buildPossibleFertilePatternHistoryPresentation,
+  buildRecordedCycleHistorySummary,
   splitIntoCycles,
 } from 'core-rules-engine';
 import { getAllEntries, entriesToSortedArray } from '../services/storageV2';
 
 interface CycleHistoryData {
   cycles: CycleSlice[];
-  possibleFertilePatternHistory: PossibleFertilePatternHistoryPresentation;
+  recordedHistorySummary: RecordedCycleHistorySummary;
   loading: boolean;
   refresh: () => Promise<void>;
 }
 
-const EMPTY_HISTORY = buildPossibleFertilePatternHistoryPresentation([]);
+const EMPTY_HISTORY = buildRecordedCycleHistorySummary([]);
 
 export function useCycleHistory(): CycleHistoryData {
   const [cycles, setCycles] = useState<CycleSlice[]>([]);
-  const [possibleFertilePatternHistory, setPossibleFertilePatternHistory] =
-    useState<PossibleFertilePatternHistoryPresentation>(EMPTY_HISTORY);
+  const [recordedHistorySummary, setRecordedHistorySummary] =
+    useState<RecordedCycleHistorySummary>(EMPTY_HISTORY);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
@@ -35,8 +35,8 @@ export function useCycleHistory(): CycleHistoryData {
         buildFirstReleasePossibleFertilePatternEligibility(cycle.cycleBoundary),
       ]),
     );
-    setPossibleFertilePatternHistory(
-      buildPossibleFertilePatternHistoryPresentation(slices, {
+    setRecordedHistorySummary(
+      buildRecordedCycleHistorySummary(slices, {
         eligibilityByCycleNumber,
       }),
     );
@@ -47,5 +47,5 @@ export function useCycleHistory(): CycleHistoryData {
     refresh();
   }, [refresh]);
 
-  return { cycles, possibleFertilePatternHistory, loading, refresh };
+  return { cycles, recordedHistorySummary, loading, refresh };
 }

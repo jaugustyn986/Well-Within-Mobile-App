@@ -2,6 +2,7 @@ import {
   buildFirstReleasePossibleFertilePatternEligibility,
   buildPossibleFertilePatternHistoryPresentation,
   buildPossibleFertilePatternPresentation,
+  buildRecordedCycleHistorySummary,
   POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE,
   POSSIBLE_FERTILE_PATTERN_LIMITATION,
 } from '../src/possibleFertilePattern';
@@ -132,6 +133,33 @@ describe('Phase 1C Possible fertile pattern presentation', () => {
     });
     expect(presentation.observedMucusSigns.map((marker) => marker.entryIndex)).toEqual([1, 2]);
     expect(presentation.observedPeakTypeSigns.map((marker) => marker.entryIndex)).toEqual([2]);
+  });
+
+  it('explains unknown and ineligible Cycle Day 1 boundaries separately', () => {
+    const entries = simpleCompleteEntries();
+    const result = recalculateCycle(entries);
+
+    const unknown = buildPossibleFertilePatternPresentation(entries, result, {
+      contextEligibility: 'eligible',
+      cycleBoundaryEligibility: 'unknown',
+    });
+    const ineligible = buildPossibleFertilePatternPresentation(entries, result, {
+      contextEligibility: 'eligible',
+      cycleBoundaryEligibility: 'ineligible',
+    });
+
+    expect(unknown).toMatchObject({
+      state: 'withheld',
+      reason: 'cycle_boundary_eligibility_unknown',
+      heading: 'Confirm when this cycle started',
+    });
+    expect(unknown.limit?.detail).toContain('Cycle Day 1 has not been confirmed');
+    expect(ineligible).toMatchObject({
+      state: 'withheld',
+      reason: 'cycle_boundary_ineligible',
+      heading: 'This cycle start needs a closer look',
+    });
+    expect(ineligible.limit?.detail).toContain('needs a closer review');
   });
 
   it('PFP-02 keeps a developing pattern unbounded', () => {
@@ -485,5 +513,136 @@ describe('Phase 1C retrospective possible-pattern history', () => {
 
     expect(history.sampleSize).toBe(1);
     expect(history.eligibleCycleNumbers).toEqual([1]);
+  });
+});
+
+describe('recorded cycle history summary', () => {
+  const cycles = [
+    completedCycle(1, '2026-01-01', 0),
+    completedCycle(2, '2026-01-29', 1),
+    completedCycle(3, '2026-02-28', 2),
+    {
+      ...completedCycle(4, '2026-03-29', 0),
+      status: 'in_progress' as const,
+      lutealPhase: null,
+    },
+  ];
+  const eligibilityByCycleNumber = {
+    1: ELIGIBLE,
+    2: ELIGIBLE,
+    3: ELIGIBLE,
+    4: ELIGIBLE,
+  };
+
+  it('uses one eligible three-cycle sample for every retrospective range', () => {
+    const summary = buildRecordedCycleHistorySummary(cycles, {
+      eligibilityByCycleNumber,
+    });
+
+    expect(summary).toEqual({
+      state: 'available',
+      completedCycleCount: 3,
+      completedCycleNumbers: [1, 2, 3],
+      sampleSize: 3,
+      minimumSampleSize: 3,
+      includedCycleNumbers: [1, 2, 3],
+      excludedCompletedCycleCount: 0,
+      cycleLengths: { minimum: 28, maximum: 30 },
+      firstMucusCycleDays: { minimum: 2, maximum: 4 },
+      peakCycleDays: { minimum: 3, maximum: 5 },
+      daysAfterPeak: { minimum: 24, maximum: 26 },
+    });
+  });
+
+  it('withholds all ranges below the three-cycle minimum', () => {
+    const summary = buildRecordedCycleHistorySummary(cycles.slice(0, 3), {
+      eligibilityByCycleNumber,
+    });
+
+    expect(summary.state).toBe('insufficient_comparable_cycles');
+    expect(summary.completedCycleCount).toBe(3);
+    expect(summary.sampleSize).toBe(2);
+    expect(summary.includedCycleNumbers).toEqual([1, 2]);
+    expect(summary.cycleLengths).toBeNull();
+    expect(summary.firstMucusCycleDays).toBeNull();
+    expect(summary.peakCycleDays).toBeNull();
+    expect(summary.daysAfterPeak).toBeNull();
+  });
+
+  it('excludes a completed chart when the following cycle start is unresolved', () => {
+    const unresolvedNextStart = cycles.map((cycle, index) => (
+      index === 3
+        ? {
+          ...cycle,
+          cycleBoundary: {
+            ...cycle.cycleBoundary,
+            date: null,
+            eligibility: 'unknown' as const,
+            reason: 'uncertain_start_marker' as const,
+          },
+        }
+        : cycle
+    ));
+
+    const summary = buildRecordedCycleHistorySummary(unresolvedNextStart, {
+      eligibilityByCycleNumber,
+    });
+
+    expect(summary.sampleSize).toBe(2);
+    expect(summary.includedCycleNumbers).toEqual([1, 2]);
+    expect(summary.excludedCompletedCycleCount).toBe(1);
+    expect(summary.state).toBe('insufficient_comparable_cycles');
+  });
+
+  it('excludes a completed chart whose observations do not form a bounded pattern', () => {
+    const noPatternEntries = cycles[0].entries.map((entry) => ({
+      ...entry,
+      mucusRankOverride: 0,
+    }));
+    const noPatternCycles = [
+      {
+        ...cycles[0],
+        entries: noPatternEntries,
+        result: recalculateCycle(noPatternEntries),
+      },
+      ...cycles.slice(1),
+    ];
+
+    const summary = buildRecordedCycleHistorySummary(noPatternCycles, {
+      eligibilityByCycleNumber,
+    });
+
+    expect(summary.includedCycleNumbers).toEqual([2, 3]);
+    expect(summary.sampleSize).toBe(2);
+  });
+
+  it('excludes a chart when exact boundaries are not in calendar order', () => {
+    const invalidChronology = cycles.map((cycle, index) => (
+      index === 1
+        ? {
+          ...cycle,
+          cycleBoundary: {
+            ...cycle.cycleBoundary,
+            date: '2025-12-31',
+          },
+        }
+        : cycle
+    ));
+
+    const summary = buildRecordedCycleHistorySummary(invalidChronology, {
+      eligibilityByCycleNumber,
+    });
+
+    expect(summary.includedCycleNumbers).toEqual([2, 3]);
+    expect(summary.sampleSize).toBe(2);
+  });
+
+  it('never emits averages, forecasts, or normative labels', () => {
+    const summary = buildRecordedCycleHistorySummary(cycles, {
+      eligibilityByCycleNumber,
+    });
+    const serialized = JSON.stringify(summary);
+
+    expect(serialized).not.toMatch(/average|usual|typical|expected|likely|consistent|variation/i);
   });
 });

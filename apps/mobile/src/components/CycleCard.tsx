@@ -112,7 +112,7 @@ export function CycleCard({
             {showDerivedPattern ? (
               <>
                 <StatPill label="Peak" value={cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--'} />
-                <StatPill label="Luteal" value={cycle.lutealPhase !== null ? `${cycle.lutealPhase}d` : '--'} />
+                <StatPill label="After Peak" value={cycle.lutealPhase !== null ? `${cycle.lutealPhase}d` : '--'} />
               </>
             ) : presentation.reason === 'later_peak_type_reopens_pattern' ? (
               <StatPill

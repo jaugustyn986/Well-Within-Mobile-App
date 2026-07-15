@@ -1,7 +1,7 @@
 import type {
   CycleSlice,
-  PossibleFertilePatternHistoryPresentation,
   PossibleFertilePatternReason,
+  RecordedCycleHistorySummary,
 } from 'core-rules-engine';
 
 export interface DevelopingPatternCardCopy {
@@ -105,48 +105,123 @@ export function buildDevelopingPatternCardCopy(params: {
   };
 }
 
-export interface CycleHistoryCardCopy {
-  heading: string;
-  progressLabel: string;
-  body: string;
-  benefit: string;
+export interface CycleHistoryStatCopy {
+  value: string;
+  label: string;
 }
 
-function formatHistoryCycleDayRange(
-  range: NonNullable<PossibleFertilePatternHistoryPresentation['startCycleDays']>,
+export interface CycleHistoryPatternCopy {
+  label: string;
+  value: string;
+}
+
+export interface CycleHistoryOverviewCopy {
+  summaryHeading: string;
+  stats: CycleHistoryStatCopy[];
+  patternsHeading: string;
+  progressLabel: string | null;
+  body: string | null;
+  patterns: CycleHistoryPatternCopy[];
+  inclusionNote: string;
+  limitation: string | null;
+}
+
+function formatCycleDayRange(
+  range: NonNullable<RecordedCycleHistorySummary['firstMucusCycleDays']>,
 ): string {
   return range.minimum === range.maximum
-    ? `on Cycle Day ${range.minimum}`
-    : `between Cycle Days ${range.minimum}–${range.maximum}`;
+    ? `Cycle Day ${range.minimum}`
+    : `Cycle Days ${range.minimum}–${range.maximum}`;
 }
 
-export function buildCycleHistoryCardCopy(
-  history: PossibleFertilePatternHistoryPresentation,
-): CycleHistoryCardCopy {
-  if (history.state === 'available' && history.startCycleDays && history.peakCycleDays) {
+function formatDayRange(
+  range: NonNullable<RecordedCycleHistorySummary['cycleLengths']>,
+): string {
+  return range.minimum === range.maximum
+    ? `${range.minimum} ${range.minimum === 1 ? 'day' : 'days'}`
+    : `${range.minimum}–${range.maximum} days`;
+}
+
+function excludedCycleNote(summary: RecordedCycleHistorySummary): string {
+  const excluded = summary.excludedCompletedCycleCount;
+  if (excluded === 0) {
+    return `Based on ${summary.sampleSize} completed ${summary.sampleSize === 1 ? 'chart' : 'charts'} with enough detail.`;
+  }
+  if (excluded === 1) {
+    return `Compared ${summary.sampleSize} of ${summary.completedCycleCount} completed cycles. Open a cycle below to see why one was not included.`;
+  }
+  return `Compared ${summary.sampleSize} of ${summary.completedCycleCount} completed cycles. Open a cycle below to see why ${excluded} were not included.`;
+}
+
+export function buildCycleHistoryOverviewCopy(
+  summary: RecordedCycleHistorySummary,
+): CycleHistoryOverviewCopy {
+  const completedStat: CycleHistoryStatCopy = {
+    value: String(summary.completedCycleCount),
+    label: 'Completed cycles',
+  };
+
+  if (
+    summary.state === 'available' &&
+    summary.cycleLengths &&
+    summary.firstMucusCycleDays &&
+    summary.peakCycleDays &&
+    summary.daysAfterPeak
+  ) {
     return {
-      heading: 'What your past cycles have shown',
-      progressLabel: `${history.sampleSize} cycles compared`,
-      body:
-        `Your first mucus sign appeared ${formatHistoryCycleDayRange(history.startCycleDays)}. ` +
-        `Peak Day appeared ${formatHistoryCycleDayRange(history.peakCycleDays)}.`,
-      benefit:
-        'Use this to compare what you recorded from cycle to cycle. Every cycle can be different.',
+      summaryHeading: 'Cycle Summary',
+      stats: [
+        completedStat,
+        { value: String(summary.sampleSize), label: 'Charts compared' },
+        { value: formatDayRange(summary.cycleLengths), label: 'Cycle length' },
+        { value: formatDayRange(summary.daysAfterPeak), label: 'After Peak' },
+      ],
+      patternsHeading: 'What your charts have shown',
+      progressLabel: null,
+      body: null,
+      patterns: [
+        {
+          label: 'First mucus sign',
+          value: formatCycleDayRange(summary.firstMucusCycleDays),
+        },
+        {
+          label: 'Peak Day',
+          value: formatCycleDayRange(summary.peakCycleDays),
+        },
+      ],
+      inclusionNote: excludedCycleNote(summary),
+      limitation:
+        'A look back at what you recorded—not a prediction or confirmation of ovulation.',
     };
   }
 
-  const notIncluded = Math.max(0, history.completedCycleCount - history.sampleSize);
-  const notIncludedLabel = notIncluded === 1
-    ? '1 completed cycle cannot be included yet.'
-    : `${notIncluded} completed cycles cannot be included yet.`;
+  if (summary.completedCycleCount === 0) {
+    return {
+      summaryHeading: 'Cycle Summary',
+      stats: [],
+      patternsHeading: 'Your history is just getting started',
+      progressLabel: null,
+      body: 'Once this cycle is complete, you’ll be able to look back at it here.',
+      patterns: [],
+      inclusionNote: 'Keep charting—this view will grow with your completed cycles.',
+      limitation: null,
+    };
+  }
+
+  const noComparableCycles = summary.sampleSize === 0;
 
   return {
-    heading: 'Your pattern history is taking shape',
-    progressLabel: `${history.sampleSize} of ${history.minimumSampleSize} cycles ready`,
-    body:
-      `After ${history.minimumSampleSize} completed cycles show a clear pattern, you’ll be able to compare when mucus signs and Peak Day appeared across your charts.`,
-    benefit: notIncluded > 0
-      ? `${notIncludedLabel} Open a cycle below to see why.`
-      : 'Keep charting—this view will grow as your cycles are completed.',
+    summaryHeading: 'Cycle Summary',
+    stats: [completedStat],
+    patternsHeading: noComparableCycles
+      ? 'Your completed cycles are saved'
+      : 'Your pattern history is taking shape',
+    progressLabel: `${summary.sampleSize} of ${summary.minimumSampleSize} cycles ready`,
+    body: noComparableCycles
+      ? 'These cycles do not have enough chart detail for a pattern comparison yet.'
+      : `After ${summary.minimumSampleSize} completed cycles have enough detail, you’ll be able to compare what their charts showed.`,
+    patterns: [],
+    inclusionNote: excludedCycleNote(summary),
+    limitation: null,
   };
 }

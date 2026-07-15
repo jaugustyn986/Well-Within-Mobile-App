@@ -47,6 +47,19 @@ For the same assumed practitioner-approved planning basis, the product owner sup
 
 This is a versioned Well Within product interpretation for the narrow normal-context implementation. Public sources support recording mucus signs on bleeding days and the general retrospective Peak/P+3 framework, but do not validate Well Within's exact combined-observation mapping, rank model, UI treatment, or product implementation. This clarification does not add an unusual-bleeding fertility rule, identify safe/infertile days, or create clinical, legal, regulatory, IP, trademark, licensing, or release approval.
 
+## July 15 2026 — retrospective Cycle History presentation
+
+Cycle History may restore the earlier at-a-glance summary as a retrospective chart-learning surface, subject to these implementation limits:
+
+1. `Completed cycles` counts every cycle the app already classifies as complete; exclusion from a comparison does not erase that cycle.
+2. All derived summary tiles and bullets use one common comparable-cycle set. An included chart must have a bounded supported pattern, an eligible Cycle Day 1, and an exact following cycle start.
+3. At least three comparable completed cycles are required before any derived range is shown.
+4. Permitted outputs are raw cycle-length, days-after-Peak, first-mucus Cycle Day, and Peak Day ranges with the included sample size.
+5. Do not restore averages, `usual` or `typical` language, consistency/variation bands, active-cycle placement, or future prediction.
+6. Name how many completed charts were compared and direct the user to excluded cycle cards for the reason.
+
+This refinement improves presentation of already recorded retrospective facts. It does not change the chart rules, identify a physiologic fertile window, confirm ovulation, or provide pregnancy-avoidance guidance.
+
 This is a product-owner instruction to proceed on an assumed practitioner-approved basis. It does not create or substitute for an identifiable practitioner's credentials, attestation, or signature.
 
 The complete product, evidence, surface, fixture, and release-gate specification is [Phase 1C — Possible Fertile Pattern Enhancement](PHASE_1C_POSSIBLE_FERTILE_PATTERN.md).

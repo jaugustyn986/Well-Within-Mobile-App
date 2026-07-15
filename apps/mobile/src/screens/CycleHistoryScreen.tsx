@@ -13,7 +13,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList, 'CycleHistory'>;
 
 export function CycleHistoryScreen(): React.JSX.Element {
   const navigation = useNavigation<Nav>();
-  const { cycles, possibleFertilePatternHistory, loading, refresh } = useCycleHistory();
+  const { cycles, recordedHistorySummary, loading, refresh } = useCycleHistory();
 
   useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
 
@@ -59,9 +59,7 @@ export function CycleHistoryScreen(): React.JSX.Element {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {possibleFertilePatternHistory.sampleSize > 0 ? (
-          <CycleSummaryPanel history={possibleFertilePatternHistory} />
-        ) : null}
+        <CycleSummaryPanel summary={recordedHistorySummary} />
 
         <View style={styles.cardsSection}>
           <Text style={styles.cardsHeading}>Your Cycles</Text>

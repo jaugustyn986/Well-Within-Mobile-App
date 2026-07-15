@@ -1,5 +1,6 @@
 import {
   addDaysIso,
+  calendarDaysBetween,
   calendarDayNumber,
   compareIsoDate,
   cycleDayForEntryIndex,
@@ -124,6 +125,33 @@ export interface PossibleFertilePatternHistoryPresentation {
   eligibleCycleNumbers: number[];
   startCycleDays: PossibleFertilePatternCycleDayRange | null;
   peakCycleDays: PossibleFertilePatternCycleDayRange | null;
+}
+
+export type RecordedCycleHistorySummaryState =
+  | 'available'
+  | 'insufficient_comparable_cycles';
+
+/**
+ * A retrospective, common-denominator view of completed cycle history.
+ *
+ * Every displayed range uses the same included cycles. A cycle is included
+ * only when its possible-pattern presentation is bounded and both its own
+ * start and the following cycle start are exact enough to support calendar
+ * timing. This keeps cycle length and days-after-Peak aligned with the same
+ * evidence used for the mucus and Peak Day ranges.
+ */
+export interface RecordedCycleHistorySummary {
+  state: RecordedCycleHistorySummaryState;
+  completedCycleCount: number;
+  completedCycleNumbers: number[];
+  sampleSize: number;
+  minimumSampleSize: number;
+  includedCycleNumbers: number[];
+  excludedCompletedCycleCount: number;
+  cycleLengths: PossibleFertilePatternCycleDayRange | null;
+  firstMucusCycleDays: PossibleFertilePatternCycleDayRange | null;
+  peakCycleDays: PossibleFertilePatternCycleDayRange | null;
+  daysAfterPeak: PossibleFertilePatternCycleDayRange | null;
 }
 
 export interface BuildPossibleFertilePatternHistoryOptions {
@@ -711,5 +739,95 @@ export function buildPossibleFertilePatternHistoryPresentation(
     eligibleCycleNumbers,
     startCycleDays,
     peakCycleDays,
+  };
+}
+
+/**
+ * Builds a retrospective summary from raw ranges only. It intentionally emits
+ * no averages, consistency bands, normative labels, or future projection.
+ */
+export function buildRecordedCycleHistorySummary(
+  cycles: CycleSlice[],
+  options: BuildPossibleFertilePatternHistoryOptions = {},
+): RecordedCycleHistorySummary {
+  const completedCycles = cycles.filter((cycle) => cycle.status === 'complete');
+  const completedCycleNumbers = completedCycles.map((cycle) => cycle.cycleNumber);
+
+  const comparable = cycles.flatMap((cycle, index) => {
+    if (cycle.status !== 'complete') return [];
+
+    const nextCycle = cycles[index + 1];
+    const cycleStartDate = cycle.cycleBoundary.date;
+    const nextCycleStartDate = nextCycle?.cycleBoundary.date ?? null;
+    if (
+      cycle.cycleBoundary.eligibility !== 'eligible' ||
+      !cycleStartDate ||
+      !nextCycle ||
+      nextCycle.cycleBoundary.eligibility !== 'eligible' ||
+      !nextCycleStartDate
+    ) {
+      return [];
+    }
+
+    const presentation = buildPossibleFertilePatternPresentation(
+      cycle.entries,
+      cycle.result,
+      options.eligibilityByCycleNumber?.[cycle.cycleNumber],
+    );
+    if (
+      presentation.state !== 'bounded' ||
+      !presentation.start ||
+      !presentation.peak ||
+      !presentation.peak.date
+    ) {
+      return [];
+    }
+
+    const cycleLength = calendarDaysBetween(cycleStartDate, nextCycleStartDate);
+    const peakToNextCycle = calendarDaysBetween(
+      presentation.peak.date,
+      nextCycleStartDate,
+    );
+    if (
+      cycleLength === null ||
+      cycleLength <= 0 ||
+      peakToNextCycle === null ||
+      peakToNextCycle <= 0
+    ) {
+      return [];
+    }
+
+    return [{
+      cycleNumber: cycle.cycleNumber,
+      cycleLength,
+      firstMucusCycleDay: presentation.start.cycleDay,
+      peakCycleDay: presentation.peak.cycleDay,
+      daysAfterPeak: peakToNextCycle - 1,
+    }];
+  });
+
+  const sampleSize = comparable.length;
+  const available = sampleSize >= POSSIBLE_FERTILE_PATTERN_HISTORY_MINIMUM;
+
+  return {
+    state: available ? 'available' : 'insufficient_comparable_cycles',
+    completedCycleCount: completedCycles.length,
+    completedCycleNumbers,
+    sampleSize,
+    minimumSampleSize: POSSIBLE_FERTILE_PATTERN_HISTORY_MINIMUM,
+    includedCycleNumbers: comparable.map((cycle) => cycle.cycleNumber),
+    excludedCompletedCycleCount: Math.max(0, completedCycles.length - sampleSize),
+    cycleLengths: available
+      ? range(comparable.map((cycle) => cycle.cycleLength))
+      : null,
+    firstMucusCycleDays: available
+      ? range(comparable.map((cycle) => cycle.firstMucusCycleDay))
+      : null,
+    peakCycleDays: available
+      ? range(comparable.map((cycle) => cycle.peakCycleDay))
+      : null,
+    daysAfterPeak: available
+      ? range(comparable.map((cycle) => cycle.daysAfterPeak))
+      : null,
   };
 }

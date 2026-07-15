@@ -279,7 +279,7 @@ export function CalendarScreen(): React.JSX.Element {
               </View>
             ) : (
               <View style={styles.historyContent}>
-                <CycleSummaryPanel history={cycleHistory.possibleFertilePatternHistory} />
+                <CycleSummaryPanel summary={cycleHistory.recordedHistorySummary} />
 
                 <View style={styles.cardsSection}>
                   <Text style={styles.cardsHeading}>Your Cycles</Text>

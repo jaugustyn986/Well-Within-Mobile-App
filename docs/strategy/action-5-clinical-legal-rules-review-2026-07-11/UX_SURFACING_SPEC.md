@@ -169,6 +169,8 @@ For a developing chart with mucus signs, say that a possible pattern may be deve
 - Align overlays by exact date offsets, not entry indexes.
 - Choose one canonical History composition; current inline and separate screens duplicate the same product surface.
 - After the approved minimum of three eligible completed cycles, show raw Cycle Day ranges with `N` for the first recorded mucus sign and Peak marker. Do not project those ranges onto the active or next cycle.
+- Restore an at-a-glance summary using the same comparable-cycle set for every derived tile and bullet. It may show completed-cycle count, charts compared, raw cycle-length range, raw days-after-Peak range, first-mucus Cycle Day range, and Peak Day range. Do not restore averages or consistency/variation bands.
+- A completed cycle remains visible even when it is excluded from comparison. History names the included sample and directs the user to the cycle cards when one or more completed charts lack the exact boundary or supported pattern evidence needed for comparison.
 
 ### Acceptance criteria
 
@@ -177,6 +179,7 @@ For a developing chart with mucus signs, say that a possible pattern may be deve
 - No proxy value is presented as an observed/derived fact.
 - Gaps remain visible and do not compress the timeline.
 - Users can inspect why a cycle was included or excluded.
+- Cycle length and days-after-Peak ranges require an exact following cycle start; all displayed comparison ranges share one denominator.
 
 ## Help — layered education and boundaries
 

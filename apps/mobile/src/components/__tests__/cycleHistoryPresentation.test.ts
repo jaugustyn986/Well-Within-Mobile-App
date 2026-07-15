@@ -1,8 +1,8 @@
 import type {
-  PossibleFertilePatternHistoryPresentation,
+  RecordedCycleHistorySummary,
 } from 'core-rules-engine';
 import {
-  buildCycleHistoryCardCopy,
+  buildCycleHistoryOverviewCopy,
   buildDevelopingPatternCardCopy,
 } from '../cycleHistoryPresentation';
 
@@ -65,63 +65,92 @@ describe('buildDevelopingPatternCardCopy', () => {
   });
 });
 
-describe('buildCycleHistoryCardCopy', () => {
-  const insufficient: PossibleFertilePatternHistoryPresentation = {
-    state: 'insufficient_eligible_cycles',
-    heading: 'Possible fertile pattern history',
-    body: 'At least 3 eligible completed cycles are needed.',
+describe('buildCycleHistoryOverviewCopy', () => {
+  const insufficient: RecordedCycleHistorySummary = {
+    state: 'insufficient_comparable_cycles',
     completedCycleCount: 1,
     completedCycleNumbers: [1],
     sampleSize: 1,
     minimumSampleSize: 3,
-    eligibleCycleNumbers: [1],
-    startCycleDays: { minimum: 8, maximum: 8 },
-    peakCycleDays: { minimum: 14, maximum: 14 },
+    includedCycleNumbers: [1],
+    excludedCompletedCycleCount: 0,
+    cycleLengths: null,
+    firstMucusCycleDays: null,
+    peakCycleDays: null,
+    daysAfterPeak: null,
   };
 
-  it('turns a one-cycle threshold into progress, purpose, and next action', () => {
-    const copy = buildCycleHistoryCardCopy(insufficient);
+  it('keeps completed cycles visible while a comparison is taking shape', () => {
+    const copy = buildCycleHistoryOverviewCopy(insufficient);
 
-    expect(copy.heading).toBe('Your pattern history is taking shape');
+    expect(copy.summaryHeading).toBe('Cycle Summary');
+    expect(copy.stats).toEqual([{ value: '1', label: 'Completed cycles' }]);
+    expect(copy.patternsHeading).toBe('Your pattern history is taking shape');
     expect(copy.progressLabel).toBe('1 of 3 cycles ready');
-    expect(copy.body).toContain('After 3 completed cycles show a clear pattern');
-    expect(copy.benefit).toBe(
-      'Keep charting—this view will grow as your cycles are completed.',
-    );
+    expect(copy.body).toContain('After 3 completed cycles have enough detail');
+    expect(copy.inclusionNote).toBe('Based on 1 completed chart with enough detail.');
   });
 
-  it('does not erase a completed cycle when no bounded range is available', () => {
-    const copy = buildCycleHistoryCardCopy({
+  it('explains why a saved completed cycle is not yet compared', () => {
+    const copy = buildCycleHistoryOverviewCopy({
       ...insufficient,
       sampleSize: 0,
-      eligibleCycleNumbers: [],
-      startCycleDays: null,
-      peakCycleDays: null,
+      includedCycleNumbers: [],
+      excludedCompletedCycleCount: 1,
     });
 
+    expect(copy.patternsHeading).toBe('Your completed cycles are saved');
     expect(copy.progressLabel).toBe('0 of 3 cycles ready');
-    expect(copy.body).toContain('compare when mucus signs and Peak Day appeared');
-    expect(copy.benefit).toBe(
-      '1 completed cycle cannot be included yet. Open a cycle below to see why.',
+    expect(copy.body).toContain('do not have enough chart detail');
+    expect(copy.inclusionNote).toBe(
+      'Compared 0 of 1 completed cycles. Open a cycle below to see why one was not included.',
     );
   });
 
-  it('explains what past ranges can help a user notice without forecasting', () => {
-    const copy = buildCycleHistoryCardCopy({
+  it('shows a concise summary and raw recorded ranges without forecasting', () => {
+    const copy = buildCycleHistoryOverviewCopy({
       ...insufficient,
       state: 'available',
-      completedCycleCount: 3,
-      completedCycleNumbers: [1, 2, 3],
+      completedCycleCount: 4,
+      completedCycleNumbers: [1, 2, 3, 4],
       sampleSize: 3,
-      eligibleCycleNumbers: [1, 2, 3],
-      body: 'Across 3 eligible completed cycles, the first sign occurred on Cycle Days 8–10.',
+      includedCycleNumbers: [1, 2, 3],
+      excludedCompletedCycleCount: 1,
+      cycleLengths: { minimum: 27, maximum: 31 },
+      firstMucusCycleDays: { minimum: 8, maximum: 10 },
+      peakCycleDays: { minimum: 14, maximum: 16 },
+      daysAfterPeak: { minimum: 12, maximum: 14 },
     });
 
-    expect(copy.heading).toBe('What your past cycles have shown');
-    expect(copy.progressLabel).toBe('3 cycles compared');
-    expect(copy.body).toBe(
-      'Your first mucus sign appeared on Cycle Day 8. Peak Day appeared on Cycle Day 14.',
-    );
-    expect(copy.benefit).toContain('Every cycle can be different');
+    expect(copy.stats).toEqual([
+      { value: '4', label: 'Completed cycles' },
+      { value: '3', label: 'Charts compared' },
+      { value: '27–31 days', label: 'Cycle length' },
+      { value: '12–14 days', label: 'After Peak' },
+    ]);
+    expect(copy.patternsHeading).toBe('What your charts have shown');
+    expect(copy.patterns).toEqual([
+      { label: 'First mucus sign', value: 'Cycle Days 8–10' },
+      { label: 'Peak Day', value: 'Cycle Days 14–16' },
+    ]);
+    expect(copy.inclusionNote).toContain('Compared 3 of 4 completed cycles');
+    expect(copy.limitation).toContain('not a prediction');
+    expect(JSON.stringify(copy)).not.toMatch(/average|usual|typical|consistent|variation/i);
+  });
+
+  it('welcomes a user whose first cycle is still in progress', () => {
+    const copy = buildCycleHistoryOverviewCopy({
+      ...insufficient,
+      completedCycleCount: 0,
+      completedCycleNumbers: [],
+      sampleSize: 0,
+      includedCycleNumbers: [],
+      excludedCompletedCycleCount: 0,
+    });
+
+    expect(copy.stats).toEqual([]);
+    expect(copy.patternsHeading).toBe('Your history is just getting started');
+    expect(copy.body).toContain('Once this cycle is complete');
+    expect(copy.progressLabel).toBeNull();
   });
 });
