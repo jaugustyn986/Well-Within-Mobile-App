@@ -44,7 +44,7 @@ describe('buildCyclePdfHtml calendar-day output', () => {
 
     expect(cycle.peakDay).toBe(6);
     expect(html).toContain('Possible fertile pattern');
-    expect(html).toContain('through P+3 (January 9 2026)');
+    expect(html).toContain('through P+3 on January 9 2026');
     expect(html).toContain('Peak marker');
     expect(html).not.toContain('>Code</th>');
     expect(html).toContain('>Phase</th>');
@@ -68,10 +68,10 @@ describe('buildCyclePdfHtml calendar-day output', () => {
     const [cycle] = splitIntoCycles(entries);
     const html = buildCyclePdfHtml(cycle, false);
 
-    expect(html).toContain('A possible pattern cannot be bounded from this chart');
-    expect(html).toContain('Cycle Day 1 boundary has not been established');
+    expect(html).toContain('Confirm when this cycle started');
+    expect(html).toContain('Cycle Day 1 has not been confirmed');
     expect(html).toContain('focuses on recorded observations');
-    expect(html).not.toContain('Based on your logged observations, a possible pattern is shown from');
+    expect(html).not.toContain('We noticed a possible pattern in what you recorded');
     expect(html).not.toContain('>Phase</th>');
     expect(html).not.toContain('Fertile Window');
   });
@@ -89,7 +89,7 @@ describe('buildCyclePdfHtml calendar-day output', () => {
     const html = buildCyclePdfHtml(cycle, false);
 
     expect(html).toContain('Possible fertile pattern');
-    expect(html).toContain('from March 2 2026 through P+3 (March 6 2026)');
+    expect(html).toContain('from March 2 2026 through P+3 on March 6 2026');
     expect(html).toContain('does not confirm ovulation');
     expect(html).toContain('Peak marker');
     expect(html).toContain('>Phase</th>');
@@ -117,7 +117,7 @@ describe('buildCyclePdfHtml calendar-day output', () => {
     const html = buildCyclePdfHtml(cycle, false);
 
     expect(html).toContain('Possible fertile pattern');
-    expect(html).toContain('from March 12 2026 through P+3 (March 16 2026)');
+    expect(html).toContain('from March 12 2026 through P+3 on March 16 2026');
     expect(html).toContain('Special contexts—including postpartum or breastfeeding');
     expect(html).toContain('>Phase</th>');
   });
@@ -138,7 +138,7 @@ describe('buildCyclePdfHtml calendar-day output', () => {
     });
 
     expect(html).toContain('Possible fertile pattern');
-    expect(html).toContain('from April 2 2026 through P+3 (April 6 2026)');
+    expect(html).toContain('from April 2 2026 through P+3 on April 6 2026');
     expect(html).toContain('>Phase</th>');
   });
 
@@ -177,8 +177,8 @@ describe('buildCyclePdfHtml calendar-day output', () => {
       possibleFertilePatternEligibility: eligible,
     });
 
-    expect(html).toContain('Mucus and light menstrual flow were recorded together');
-    expect(html).toContain('mucus was recorded with light menstrual flow');
+    expect(html).toContain('Light menstrual flow and mucus were recorded together');
+    expect(html).toContain('light menstrual flow and mucus were recorded on the same day');
     expect(html).toContain('focuses on recorded observations');
     expect(html).not.toContain('>Phase</th>');
   });

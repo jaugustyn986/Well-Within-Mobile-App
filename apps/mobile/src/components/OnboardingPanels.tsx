@@ -10,6 +10,7 @@
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE } from 'core-rules-engine';
 import {
   BG_CARD, BG_PAGE, BG_CARD_GRADIENT_START, BG_POST_PEAK, BG_PEAK_TYPE,
   BG_BLEEDING, BG_DRY, BG_NO_ENTRY, BG_MISSING,
@@ -206,9 +207,9 @@ export function OnboardingStatusBannerPanel(): React.JSX.Element {
         <View style={[banner.container, { backgroundColor: BANNER_TONE_POSITIVE_BG }]}>
           <Text style={banner.headline}>Your chart shows a post-Peak pattern</Text>
           <Text style={banner.confidence}>
-            You logged a Peak-type mucus sign on Cycle Day 12, followed by three days without another one. Well Within marked Cycle Day 12 as Peak Day.
+            Cycle Day 12 was the last Peak-type sign before three days without another one, so your chart marks it as Peak Day.
           </Text>
-          <Text style={banner.limitation}>This reflects your chart; it does not confirm ovulation.</Text>
+          <Text style={banner.limitation}>{POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE}</Text>
           <Text style={banner.cycleDay}>Cycle Day 15 · All days charted so far</Text>
           <Text style={banner.support}>Keep charting daily. This summary updates when your observations change.</Text>
         </View>
@@ -329,12 +330,12 @@ const entry = StyleSheet.create({
 export function OnboardingHistoryPanel(): React.JSX.Element {
   return (
     <PhoneCard>
-      <Text style={hist.heading}>Possible fertile pattern history</Text>
+      <Text style={hist.heading}>What your past cycles have shown</Text>
       <Text style={hist.body}>
-        At least 3 eligible completed cycles are needed before Well Within shows retrospective ranges.
+        We’ll compare completed cycles once three have enough chart detail.
       </Text>
       <Text style={hist.note}>
-        Ranges use recorded Cycle Days only. They do not predict a future cycle.
+        See what repeats or changes from cycle to cycle. Every cycle can be different.
       </Text>
     </PhoneCard>
   );

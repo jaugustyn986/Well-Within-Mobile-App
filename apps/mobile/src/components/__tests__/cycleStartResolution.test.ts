@@ -76,7 +76,7 @@ describe('cycle start resolution UX', () => {
 
     expect(resolution?.state).toBe('uncertain');
     expect(buildCycleStartResolutionCopy(resolution!).explanation).toContain(
-      'cannot confirm Cycle Day 1',
+      'Cycle Day 1 must be confirmed',
     );
     expect(patternState('uncertain')).toBe('withheld');
   });

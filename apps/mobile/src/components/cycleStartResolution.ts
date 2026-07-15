@@ -98,8 +98,8 @@ export function buildCycleStartResolutionCopy(
       ? `You recorded light bleeding on ${lightDate}, followed by fuller flow on ${followingDate}.`
       : `You recorded light bleeding on ${lightDate} before the rest of this cycle.`,
     explanation: resolution.state === 'uncertain'
-      ? 'You chose “I’m not sure” for that day. The observations and Peak/P+ dates remain visible, but Well Within cannot confirm Cycle Day 1 or include this cycle’s timing in History yet.'
-      : 'Tell Well Within whether that was the first day of true menstrual flow. Your answer lets the app number this cycle and decide whether its pattern timing can appear in History.',
+      ? 'You chose “I’m not sure” for that day. Your chart stays saved, but Cycle Day 1 must be confirmed before this cycle can be compared in History.'
+      : 'Tell us whether that was the first day of true menstrual flow. Your answer helps the app confirm Cycle Day 1 and decide whether this cycle can be compared in History.',
     actionLabel: resolution.state === 'uncertain'
       ? `Review ${lightDate}`
       : `Confirm ${lightDate}`,

@@ -27,7 +27,6 @@ export function CycleSummaryPanel({ history }: Props): React.JSX.Element {
         </View>
         <Text style={styles.body}>{copy.body}</Text>
         <Text style={styles.supportingBody}>{copy.benefit}</Text>
-        <Text style={styles.nextStep}>{copy.nextStep}</Text>
       </View>
     </View>
   );
@@ -58,14 +57,5 @@ const styles = StyleSheet.create({
     color: TEXT_SECONDARY,
     lineHeight: 19,
     marginTop: 10,
-  },
-  nextStep: {
-    fontSize: 13,
-    color: TEXT_MUTED,
-    lineHeight: 19,
-    marginTop: 8,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: BORDER_CARD,
   },
 });

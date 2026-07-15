@@ -80,7 +80,7 @@ const SECTIONS: AccordionItemData[] = [
     title: 'What does “possible fertile pattern” mean?',
     icon: 'chart',
     content:
-      'A possible fertile pattern is retrospective chart context based on your logged observations. While a pattern is developing, Well Within shows no dates. If an eligible completed chart can be bounded, the app may show the first recorded mucus sign through P+3. If an observation or chart context is unresolved, no exact boundary is shown.\n\n' +
+      'A possible fertile pattern is a look back at what you recorded in a cycle. When the chart has enough detail, Well Within may show the first recorded mucus sign through P+3. When a day is open, marked Not observed, incomplete, or the cycle start is unclear, the app tells you what is missing and does not show pattern dates.\n\n' +
       'Spotting or brown can share a day with its dry, non-Peak, or Peak-type observation. A completed non-Peak day can carry a P+ marker; spotting or brown alone does not extend or reopen a completed pattern. A later Peak-type sign does.\n\n' +
       'This first release does not ask about or account for the special contexts listed below. A possible-pattern date may still appear because Well Within cannot detect them from the chart alone. Treat it only as chart context; a qualified practitioner can help interpret these situations.\n\n' +
       POSSIBLE_FERTILE_PATTERN_LIMITATION,

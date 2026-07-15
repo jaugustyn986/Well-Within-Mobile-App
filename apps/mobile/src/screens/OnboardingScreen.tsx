@@ -71,7 +71,7 @@ const SLIDES: Slide[] = [
   {
     id: '4',
     headline: 'See how your chart develops',
-    body: 'See mucus signs, a possible fertile pattern, and retrospective Peak context based on what you record.',
+    body: 'See mucus signs and a possible pattern based on what you record.',
     renderPanel: () => <OnboardingStatusBannerPanel />,
   },
   {
@@ -81,12 +81,12 @@ const SLIDES: Slide[] = [
     renderPanel: () => <OnboardingEntryPanel />,
     footerTitle: 'Consistency matters',
     footerBody:
-      'Daily observations give the chart more context. An open day can limit which retrospective markers the app can show.',
+      'Daily observations give the chart more context. An open day can limit which markers the app can show.',
   },
   {
     id: '6',
-    headline: 'Review chart history over time',
-    body: 'After enough eligible completed cycles, history can show raw Cycle Day ranges without predicting a future cycle.',
+    headline: 'Notice patterns across cycles',
+    body: 'After three completed cycles have enough detail, compare when mucus signs and Peak Day appeared across them.',
     renderPanel: () => <OnboardingHistoryPanel />,
   },
   {

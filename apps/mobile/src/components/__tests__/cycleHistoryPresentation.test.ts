@@ -15,7 +15,7 @@ describe('buildDevelopingPatternCardCopy', () => {
     });
 
     expect(copy.heading).toBe('This cycle’s pattern is still taking shape');
-    expect(copy.meaning).toContain('does not yet show the later observations');
+    expect(copy.meaning).toContain('needs a few more daily observations');
     expect(copy.nextStep).toContain('Keep recording one observation each day');
   });
 
@@ -27,7 +27,7 @@ describe('buildDevelopingPatternCardCopy', () => {
     });
 
     expect(copy.heading).toBe('Your observations are saved');
-    expect(copy.meaning).toContain('does not show one completed start-through-P+3 pattern');
+    expect(copy.meaning).toContain('does not have enough chart detail');
     expect(copy.nextStep).toContain('remains complete in History');
   });
 
@@ -43,9 +43,9 @@ describe('buildDevelopingPatternCardCopy', () => {
     expect(copy.eyebrow).toBe('Pattern note');
     expect(copy.heading).toBe('Two Peak-type signs were recorded');
     expect(copy.meaning).toContain('Cycle Days 11 and 19');
-    expect(copy.meaning).toContain('daily observations—not separate Peak Days');
-    expect(copy.meaning).toContain('leaves this pattern open');
-    expect(copy.nextStep).toContain('cycle remains complete in History');
+    expect(copy.meaning).toContain('daily observations, not separate Peak Days');
+    expect(copy.meaning).toContain('keeps this pattern open');
+    expect(copy.nextStep).toContain('cycle stays complete in History');
     expect(copy.learnMoreLabel).toBe('How Peak Day is identified');
   });
 
@@ -82,10 +82,12 @@ describe('buildCycleHistoryCardCopy', () => {
   it('turns a one-cycle threshold into progress, purpose, and next action', () => {
     const copy = buildCycleHistoryCardCopy(insufficient);
 
-    expect(copy.heading).toBe('Building your pattern history');
-    expect(copy.progressLabel).toBe('1 completed cycle');
-    expect(copy.body).toContain('starts comparing timing after 3 completed cycles');
-    expect(copy.nextStep).toContain('2 more completed pattern ranges are needed');
+    expect(copy.heading).toBe('Your pattern history is taking shape');
+    expect(copy.progressLabel).toBe('1 of 3 cycles ready');
+    expect(copy.body).toContain('After 3 completed cycles show a clear pattern');
+    expect(copy.benefit).toBe(
+      'Keep charting—this view will grow as your cycles are completed.',
+    );
   });
 
   it('does not erase a completed cycle when no bounded range is available', () => {
@@ -97,13 +99,14 @@ describe('buildCycleHistoryCardCopy', () => {
       peakCycleDays: null,
     });
 
-    expect(copy.progressLabel).toBe('1 completed cycle');
-    expect(copy.body).toContain('0 have a completed start-through-P+3 range');
-    expect(copy.benefit).toContain('still be complete and stay in History');
-    expect(copy.nextStep).toContain('Open the completed cycle below');
+    expect(copy.progressLabel).toBe('0 of 3 cycles ready');
+    expect(copy.body).toContain('compare when mucus signs and Peak Day appeared');
+    expect(copy.benefit).toBe(
+      '1 completed cycle cannot be included yet. Open a cycle below to see why.',
+    );
   });
 
-  it('labels available ranges as retrospective rather than predictive', () => {
+  it('explains what past ranges can help a user notice without forecasting', () => {
     const copy = buildCycleHistoryCardCopy({
       ...insufficient,
       state: 'available',
@@ -114,7 +117,11 @@ describe('buildCycleHistoryCardCopy', () => {
       body: 'Across 3 eligible completed cycles, the first sign occurred on Cycle Days 8–10.',
     });
 
-    expect(copy.heading).toBe('Your recorded pattern history');
-    expect(copy.benefit).toContain('do not predict');
+    expect(copy.heading).toBe('What your past cycles have shown');
+    expect(copy.progressLabel).toBe('3 cycles compared');
+    expect(copy.body).toBe(
+      'Your first mucus sign appeared on Cycle Day 8. Peak Day appeared on Cycle Day 14.',
+    );
+    expect(copy.benefit).toContain('Every cycle can be different');
   });
 });

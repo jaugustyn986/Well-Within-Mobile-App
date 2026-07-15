@@ -19,7 +19,7 @@ describe('date display', () => {
     } as PossibleFertilePatternPresentation;
 
     expect(formatPossibleFertilePatternBody(presentation)).toBe(
-      'Based on your logged observations, a possible pattern is shown from June 6 2026 through P+3 (June 13 2026).',
+      'We noticed a possible pattern in what you recorded, from June 6 2026 through P+3 on June 13 2026.',
     );
   });
 

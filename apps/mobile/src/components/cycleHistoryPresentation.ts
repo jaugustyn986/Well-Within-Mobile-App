@@ -47,11 +47,11 @@ export function buildDevelopingPatternCardCopy(params: {
       eyebrow: 'Pattern note',
       heading: `${numberWord(count)} Peak-type signs were recorded`,
       meaning:
-        `Peak-type signs are daily observations—not separate Peak Days. You recorded them on ${formatCycleDays(observedPeakTypeCycleDays)}. ` +
-        'Because the later sign came after the earlier three-day follow-up (P+3), Well Within leaves this pattern open instead of selecting one Peak Day.',
+        `Peak-type signs are daily observations, not separate Peak Days. You recorded them on ${formatCycleDays(observedPeakTypeCycleDays)}. ` +
+        'A later sign appeared after P+3, so the app keeps this pattern open instead of choosing a Peak Day.',
       nextStep: cycleStatus === 'complete'
-        ? 'If those entries look right, no change is needed. This cycle remains complete in History.'
-        : 'If those entries look right, keep charting daily. This note updates whenever an observation changes.',
+        ? 'If those entries look right, no change is needed. This cycle stays complete in History.'
+        : 'If those entries look right, keep charting. This note updates when an observation changes.',
       learnMoreLabel: 'How Peak Day is identified',
     };
   }
@@ -62,10 +62,10 @@ export function buildDevelopingPatternCardCopy(params: {
       heading: 'A later Peak-type sign was recorded',
       meaning:
         `${latestMucusDay !== null ? `You recorded another Peak-type sign on Cycle Day ${latestMucusDay}` : 'You recorded another Peak-type sign'} ` +
-        'after the earlier three-day follow-up (P+3). Well Within leaves this pattern open instead of treating the earlier Peak Day as settled.',
+        'after P+3. The app keeps this pattern open instead of choosing a Peak Day.',
       nextStep: cycleStatus === 'complete'
-        ? 'If that entry looks right, no change is needed. This cycle remains complete in History.'
-        : 'If that entry looks right, keep charting daily. This note updates whenever an observation changes.',
+        ? 'If that entry looks right, no change is needed. This cycle stays complete in History.'
+        : 'If that entry looks right, keep charting. This note updates when an observation changes.',
       learnMoreLabel: 'How Peak Day is identified',
     };
   }
@@ -75,7 +75,7 @@ export function buildDevelopingPatternCardCopy(params: {
       eyebrow: 'Pattern note',
       heading: 'Your observations are saved',
       meaning:
-        'Mucus signs were recorded, but this cycle does not show one completed start-through-P+3 pattern for a timing comparison.',
+        'Mucus signs were recorded, but this cycle does not have enough chart detail to show one clear pattern.',
       nextStep:
         'If the daily entries look right, no change is needed. This cycle remains complete in History.',
       learnMoreLabel: 'How pattern ranges work',
@@ -87,7 +87,7 @@ export function buildDevelopingPatternCardCopy(params: {
       eyebrow: 'Pattern note',
       heading: 'This cycle’s pattern is still taking shape',
       meaning:
-        'Mucus signs are recorded, but the chart does not yet show the later observations Well Within needs to complete a retrospective pattern.',
+        'Mucus signs are recorded. Keep charting—the app needs a few more daily observations before it can show a clear pattern.',
       nextStep:
         'Keep recording one observation each day. This note updates whenever an entry changes.',
       learnMoreLabel: 'How pattern ranges work',
@@ -98,7 +98,7 @@ export function buildDevelopingPatternCardCopy(params: {
     eyebrow: 'Pattern note',
     heading: 'Your observations are saved',
     meaning:
-      'Mucus signs are recorded, but this chart does not contain one completed start-through-P+3 pattern.',
+      'Mucus signs are recorded, but this chart does not have enough detail to show one clear pattern.',
     nextStep:
       'If the daily entries look right, no change is needed. Keep charting future cycles normally.',
     learnMoreLabel: 'How pattern ranges work',
@@ -110,43 +110,43 @@ export interface CycleHistoryCardCopy {
   progressLabel: string;
   body: string;
   benefit: string;
-  nextStep: string;
+}
+
+function formatHistoryCycleDayRange(
+  range: NonNullable<PossibleFertilePatternHistoryPresentation['startCycleDays']>,
+): string {
+  return range.minimum === range.maximum
+    ? `on Cycle Day ${range.minimum}`
+    : `between Cycle Days ${range.minimum}–${range.maximum}`;
 }
 
 export function buildCycleHistoryCardCopy(
   history: PossibleFertilePatternHistoryPresentation,
 ): CycleHistoryCardCopy {
-  if (history.state === 'available') {
+  if (history.state === 'available' && history.startCycleDays && history.peakCycleDays) {
     return {
-      heading: 'Your recorded pattern history',
-      progressLabel: `${history.completedCycleCount} completed · ${history.sampleSize} compared`,
-      body: history.body,
+      heading: 'What your past cycles have shown',
+      progressLabel: `${history.sampleSize} cycles compared`,
+      body:
+        `Your first mucus sign appeared ${formatHistoryCycleDayRange(history.startCycleDays)}. ` +
+        `Peak Day appeared ${formatHistoryCycleDayRange(history.peakCycleDays)}.`,
       benefit:
-        'These are retrospective ranges from your saved charts. They do not predict where a future cycle will fall.',
-      nextStep: 'Keep charting to add more completed cycles to this history.',
+        'Use this to compare what you recorded from cycle to cycle. Every cycle can be different.',
     };
   }
 
-  const remaining = Math.max(0, history.minimumSampleSize - history.sampleSize);
-  const completedLabel = history.completedCycleCount === 1
-    ? '1 completed cycle'
-    : `${history.completedCycleCount} completed cycles`;
-  const comparableLabel = history.sampleSize === 1
-    ? '1 has a completed start-through-P+3 range ready to compare'
-    : `${history.sampleSize} have a completed start-through-P+3 range ready to compare`;
-  const hasCompletedCycleWithoutRange = history.completedCycleCount > history.sampleSize;
+  const notIncluded = Math.max(0, history.completedCycleCount - history.sampleSize);
+  const notIncludedLabel = notIncluded === 1
+    ? '1 completed cycle cannot be included yet.'
+    : `${notIncluded} completed cycles cannot be included yet.`;
 
   return {
-    heading: 'Building your pattern history',
-    progressLabel: completedLabel,
+    heading: 'Your pattern history is taking shape',
+    progressLabel: `${history.sampleSize} of ${history.minimumSampleSize} cycles ready`,
     body:
-      `Well Within starts comparing timing after ${history.minimumSampleSize} completed cycles have a clear start-through-P+3 pattern. ` +
-      `Of your completed cycles, ${comparableLabel}.`,
-    benefit: hasCompletedCycleWithoutRange
-      ? 'A cycle can still be complete and stay in History even when its pattern timing is not included in the comparison.'
-      : 'These comparisons use completed charts only and do not predict a future cycle.',
-    nextStep: hasCompletedCycleWithoutRange
-      ? `Open the completed cycle below for its chart-specific note. Keep charting normally; ${remaining} more completed pattern ${remaining === 1 ? 'range is' : 'ranges are'} needed before History shows timing ranges.`
-      : `Keep charting normally; ${remaining} more completed pattern ${remaining === 1 ? 'range is' : 'ranges are'} needed before History shows timing ranges.`,
+      `After ${history.minimumSampleSize} completed cycles show a clear pattern, you’ll be able to compare when mucus signs and Peak Day appeared across your charts.`,
+    benefit: notIncluded > 0
+      ? `${notIncludedLabel} Open a cycle below to see why.`
+      : 'Keep charting—this view will grow as your cycles are completed.',
   };
 }

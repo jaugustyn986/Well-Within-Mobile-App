@@ -217,15 +217,30 @@ function isFocusMissing(
 function missingSupportLine(reason: InterpretationSupportReason): string {
   switch (reason) {
     case 'calendar_gap':
-      return 'An open date falls within the three days Well Within uses to mark a Peak Day, so no Peak Day is shown from this pattern.';
+      return 'An observation is missing from the three days after a possible Peak Day, so the app cannot complete this pattern.';
     case 'not_observed':
-      return 'A day marked not observed falls within the three days Well Within uses to mark a Peak Day, so no Peak Day is shown from this pattern.';
+      return 'One of the three days after a possible Peak Day is marked Not observed, so the app cannot complete this pattern.';
     case 'incomplete_observation':
-      return 'A recorded day in the three-day Peak follow-up is missing a sensation or appearance, so no Peak Day is shown until that observation is complete.';
+      return 'One of the three days after a possible Peak Day needs a sensation or appearance before the pattern can be completed.';
     case 'earlier_gap_limits_boundary':
-      return 'An earlier open or not-observed day makes where this pattern begins less clear, so no phase summary is shown from it.';
+      return 'An earlier day is open or marked Not observed, so the app cannot tell where this possible pattern began.';
     default:
-      return 'One or more open or not-observed days limit what Well Within can show from this pattern.';
+      return 'Something in this chart needs more context before a clear pattern can be shown.';
+  }
+}
+
+function missingSupportHeading(reason: InterpretationSupportReason): string {
+  switch (reason) {
+    case 'calendar_gap':
+      return 'One observation is missing';
+    case 'not_observed':
+      return 'One day was not observed';
+    case 'incomplete_observation':
+      return 'One observation needs more detail';
+    case 'earlier_gap_limits_boundary':
+      return 'The start of this pattern is not clear';
+    default:
+      return 'We cannot show a clear pattern yet';
   }
 }
 
@@ -349,18 +364,18 @@ export function buildCurrentCycleSummary(
       ? 'Your chart shows a post-Peak pattern'
       : `Your chart marks Cycle Day ${peakCycleDay} as Peak Day`;
     statusLine =
-      `You logged a Peak-type mucus sign on Cycle Day ${peakCycleDay}, followed by three days without another one. ` +
-      `Well Within marked Cycle Day ${peakCycleDay} as Peak Day.`;
+      `Cycle Day ${peakCycleDay} was the last Peak-type sign before three days without another one, ` +
+      'so your chart marks it as Peak Day.';
     supportingContext =
-      'This reflects your chart; it does not confirm ovulation.';
+      'This reflects what you recorded; it does not confirm ovulation.';
     guidance =
       'Keep charting daily. This summary updates when your observations change.';
     summaryTone = showsPostPeak ? 'positive' : 'neutral';
     explanationTarget = 'peak_day';
   } else if (interpretationSupport.status === 'review_recommended') {
-    headline = possibleFertilePattern.heading ?? 'A possible pattern cannot be bounded from this chart';
+    headline = possibleFertilePattern.heading ?? 'This chart needs a closer look';
     statusLine = possibleFertilePattern.body ??
-      'An unresolved observation or chart context limits the boundary Well Within can show.';
+      'Something in this chart needs more context before a clear pattern can be shown.';
     supportingContext = possibleFertilePattern.limit?.detail ?? '';
     guidance =
       'Keep charting; we’ll check again whenever you add or update an observation.';
@@ -373,8 +388,9 @@ export function buildCurrentCycleSummary(
       'The day stays on your chart, but it will not count toward the three-day Peak follow-up until the observation is complete.';
     summaryTone = 'caution';
   } else if (interpretationSupport.status === 'blocked_by_missing') {
-    headline = 'A few days need context';
+    headline = missingSupportHeading(interpretationSupport.reason);
     statusLine = missingSupportLine(interpretationSupport.reason);
+    supportingContext = possibleFertilePattern.limit?.detail ?? '';
     guidance =
       'Keep charting. If you remember an open day, you can add it; days marked not observed stay part of your record.';
     summaryTone = 'caution';
@@ -413,8 +429,8 @@ export function buildCurrentCycleSummary(
     if (peakCandidateCycleDay !== null) {
       headline = 'Your chart shows a possible Peak Day';
       statusLine =
-        `You logged a Peak-type mucus sign on Cycle Day ${peakCandidateCycleDay}. ` +
-        'Well Within waits for three days without another Peak-type sign before marking a Peak Day.';
+        `Cycle Day ${peakCandidateCycleDay} has a Peak-type sign. ` +
+        'The chart waits three days to see whether another one appears before marking a Peak Day.';
       guidance = 'Keep charting daily as the pattern develops.';
       explanationTarget = 'peak_day';
     } else {

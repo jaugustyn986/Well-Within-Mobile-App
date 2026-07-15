@@ -2,6 +2,7 @@ import {
   buildFirstReleasePossibleFertilePatternEligibility,
   buildPossibleFertilePatternHistoryPresentation,
   buildPossibleFertilePatternPresentation,
+  POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE,
   POSSIBLE_FERTILE_PATTERN_LIMITATION,
 } from '../src/possibleFertilePattern';
 import { evaluateInterpretationSupport } from '../src/interpretationSupport';
@@ -100,6 +101,8 @@ describe('Phase 1C Possible fertile pattern presentation', () => {
     expect(POSSIBLE_FERTILE_PATTERN_LIMITATION).toMatch(/perimenopause/);
     expect(POSSIBLE_FERTILE_PATTERN_LIMITATION).toMatch(/medication/);
     expect(POSSIBLE_FERTILE_PATTERN_LIMITATION).toMatch(/persistent discharge/);
+    expect(POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE).toMatch(/does not confirm ovulation/);
+    expect(POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE).toMatch(/safe for avoiding pregnancy/);
   });
 
   it('PFP-01 emits one bounded, evidence-separated model only with explicit eligibility', () => {
@@ -266,6 +269,7 @@ describe('Phase 1C Possible fertile pattern presentation', () => {
     );
     expect(presentation.state).toBe('withheld');
     expect(presentation.reason).toBe('earlier_gap_limits_boundary');
+    expect(presentation.heading).toBe('The start of this pattern is not clear');
     expect(presentation.limit).toMatchObject({
       date: '2026-05-02',
       cycleDay: 2,
@@ -289,6 +293,7 @@ describe('Phase 1C Possible fertile pattern presentation', () => {
     );
     expect(presentation.state).toBe('withheld');
     expect(presentation.reason).toBe('not_observed');
+    expect(presentation.heading).toBe('One day was not observed');
     expect(presentation.limit?.date).toBe('2026-06-04');
   });
 
@@ -308,6 +313,7 @@ describe('Phase 1C Possible fertile pattern presentation', () => {
 
     expect(presentation.state).toBe('withheld');
     expect(presentation.reason).toBe('incomplete_observation');
+    expect(presentation.heading).toBe('One observation needs more detail');
     expect(presentation.limit).toMatchObject({
       date: '2026-06-12',
       cycleDay: 3,
@@ -326,7 +332,7 @@ describe('Phase 1C Possible fertile pattern presentation', () => {
     const presentation = buildPossibleFertilePatternPresentation(entries, result, ELIGIBLE);
     expect(presentation.state).toBe('withheld');
     expect(presentation.reason).toBe('bleeding_mucus_ambiguity');
-    expect(presentation.heading).toBe('Mucus and light menstrual flow were recorded together');
+    expect(presentation.heading).toBe('Light menstrual flow and mucus were recorded together');
     expect(presentation.limit?.date).toBe('2026-07-02');
   });
 
@@ -412,7 +418,7 @@ describe('Phase 1C retrospective possible-pattern history', () => {
       startCycleDays: { minimum: 2, maximum: 4 },
       peakCycleDays: { minimum: 3, maximum: 5 },
     });
-    expect(history.body).toContain('Across 3 eligible completed cycles');
+    expect(history.body).toContain('Across 3 completed cycles with enough detail to compare');
     expect(history.body).toContain('Cycle Days 2–4');
     expect(history.body).toContain('Cycle Days 3–5');
     expect(history.body).not.toMatch(/usual|typically|expected|likely|average/i);
@@ -425,7 +431,7 @@ describe('Phase 1C retrospective possible-pattern history', () => {
     expect(history.state).toBe('insufficient_eligible_cycles');
     expect(history.completedCycleCount).toBe(2);
     expect(history.sampleSize).toBe(2);
-    expect(history.body).toContain('At least 3 eligible completed cycles');
+    expect(history.body).toContain('At least 3 completed cycles with enough chart detail');
   });
 
   it('defaults unknown cycle eligibility out of history aggregates', () => {

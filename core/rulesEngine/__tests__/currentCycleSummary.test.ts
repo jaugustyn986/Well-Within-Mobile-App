@@ -253,8 +253,8 @@ describe('buildCurrentCycleSummary', () => {
       todayIndex: 3,
     });
     expect(s.headline).toBe('Your chart shows a possible Peak Day');
-    expect(s.statusLine).toContain('Peak-type mucus sign on Cycle Day 4');
-    expect(s.statusLine).toContain('waits for three days');
+    expect(s.statusLine).toContain('Cycle Day 4 has a Peak-type sign');
+    expect(s.statusLine).toContain('waits three days');
     expect(s.supportingContext).toBe('');
     expect(s.guidance).toBe('Keep charting daily as the pattern develops.');
     expect(s.explanationTarget).toBe('peak_day');
@@ -337,10 +337,10 @@ describe('buildCurrentCycleSummary', () => {
     });
     expect(s.headline).toBe('Your chart marks Cycle Day 3 as Peak Day');
     expect(s.statusLine).toBe(
-      'You logged a Peak-type mucus sign on Cycle Day 3, followed by three days without another one. Well Within marked Cycle Day 3 as Peak Day.',
+      'Cycle Day 3 was the last Peak-type sign before three days without another one, so your chart marks it as Peak Day.',
     );
     expect(s.supportingContext).toBe(
-      'This reflects your chart; it does not confirm ovulation.',
+      'This reflects what you recorded; it does not confirm ovulation.',
     );
     expect(s.guidance).toBe(
       'Keep charting daily. This summary updates when your observations change.',
@@ -367,10 +367,10 @@ describe('buildCurrentCycleSummary', () => {
     });
     expect(s.headline).toBe('Your chart shows a post-Peak pattern');
     expect(s.statusLine).toBe(
-      'You logged a Peak-type mucus sign on Cycle Day 3, followed by three days without another one. Well Within marked Cycle Day 3 as Peak Day.',
+      'Cycle Day 3 was the last Peak-type sign before three days without another one, so your chart marks it as Peak Day.',
     );
     expect(s.supportingContext).toBe(
-      'This reflects your chart; it does not confirm ovulation.',
+      'This reflects what you recorded; it does not confirm ovulation.',
     );
     expect(s.guidance).toBe(
       'Keep charting daily. This summary updates when your observations change.',
@@ -397,7 +397,7 @@ describe('buildCurrentCycleSummary', () => {
       todayIndex: 2,
     });
     expect(s.headline).toBe('Your chart marks Cycle Day 3 as Peak Day');
-    expect(s.statusLine).toContain('followed by three days without another one');
+    expect(s.statusLine).toContain('before three days without another one');
     expect(s.supportingContext).toContain('does not confirm ovulation');
     expect(s.guidance).toContain('Keep charting daily');
   });
@@ -422,7 +422,7 @@ describe('buildCurrentCycleSummary', () => {
       todayIndex: idx,
     });
     expect(s.headline).toBe('Your chart shows a post-Peak pattern');
-    expect(s.statusLine).toContain('Peak-type mucus sign on Cycle Day 3');
+    expect(s.statusLine).toContain('Cycle Day 3 was the last Peak-type sign');
     expect(s.supportingContext).toContain('does not confirm ovulation');
     expect(s.guidance).toContain('summary updates');
   });
@@ -736,7 +736,7 @@ describe('compact support field + baseline context', () => {
     expect(s.baselineContext).toBeNull();
     expect(s.compactSupportField).toBe('guidance');
     expect(s.headline).toBe('Your chart shows a post-Peak pattern');
-    expect(s.statusLine).toContain('Peak-type mucus sign on Cycle Day 3');
+    expect(s.statusLine).toContain('Cycle Day 3 was the last Peak-type sign');
   });
 
   it('post-peak with later peak: keeps comparison timing out of the active summary', () => {
@@ -859,8 +859,8 @@ describe('interpretation support states', () => {
       todayIndex: 3,
     });
     expect(s.interpretationStatus).toBe('blocked_by_missing');
-    expect(s.headline).toBe('A few days need context');
-    expect(s.statusLine).toContain('An open date falls within the three days');
+    expect(s.headline).toBe('One observation is missing');
+    expect(s.statusLine).toContain('An observation is missing from the three days');
     expect(s.guidance).toContain('Keep charting');
     expect(s.statusLine).not.toContain('confidence');
     expect(s.explanationTarget).toBe('status_messages');
@@ -882,7 +882,8 @@ describe('interpretation support states', () => {
     });
     expect(s.interpretationStatus).toBe('blocked_by_missing');
     expect(s.interpretationReason).toBe('not_observed');
-    expect(s.statusLine).toContain('A day marked not observed falls within');
+    expect(s.headline).toBe('One day was not observed');
+    expect(s.statusLine).toContain('is marked Not observed');
     expect(s.guidance).toContain('Keep charting');
   });
 
@@ -907,7 +908,7 @@ describe('interpretation support states', () => {
     expect(s.interpretationStatus).toBe('summary_available');
     expect(s.headline).toBe('Your chart shows a post-Peak pattern');
     expect(s.statusLine).toContain('Cycle Day 6');
-    expect(s.statusLine).toContain('followed by three days');
+    expect(s.statusLine).toContain('before three days');
     expect(s.explanationTarget).toBe('peak_day');
   });
 });

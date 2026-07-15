@@ -12,6 +12,7 @@ import {
   ACCENT_WARM,
   BORDER_CARD,
 } from '../theme/colors';
+import { formatPossibleFertilePatternLimit } from '../utils/dateDisplay';
 
 interface Props {
   summary: CurrentCycleSummary;
@@ -47,10 +48,14 @@ export function StatusBanner({
     completenessLabel.length > 0 ? completenessLabel : null,
   ].filter((value): value is string => value !== null).join(' · ');
   const showStatusActions = summary.explanationTarget !== null;
-  const supportingContext =
+  const rawSupportingContext =
     summary.interpretationReason === 'bleeding_mucus_ambiguity'
       ? ''
       : summary.supportingContext;
+  const supportingContext = rawSupportingContext && summary.possibleFertilePattern.limit
+    ? formatPossibleFertilePatternLimit(summary.possibleFertilePattern.limit)
+      ?? rawSupportingContext
+    : rawSupportingContext;
   const understandLabel =
     summary.explanationTarget === 'peak_day' &&
     summary.interpretationStatus === 'summary_available'

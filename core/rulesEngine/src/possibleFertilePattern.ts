@@ -16,6 +16,10 @@ import type { CycleResult, DailyEntry } from './types';
 export const POSSIBLE_FERTILE_PATTERN_LIMITATION =
   'This chart-based estimate does not confirm ovulation, identify safe or infertile days, predict pregnancy, or provide pregnancy-avoidance guidance. Special contexts—including postpartum or breastfeeding, perimenopause, recent hormones, relevant medication effects, and persistent discharge—are not supported or accounted for in this first release.';
 
+/** Short adjacent note for primary app flows. Help and exports keep the full limitation above. */
+export const POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE =
+  'This reflects what you observed. It can offer helpful context, but it does not confirm ovulation or tell you which days are safe for avoiding pregnancy.';
+
 export const POSSIBLE_FERTILE_PATTERN_HISTORY_MINIMUM = 3;
 
 export type PossibleFertilePatternState =
@@ -270,27 +274,100 @@ function limitDetail(
   const datePrefix = date ? `${date}: ` : '';
   switch (reason) {
     case 'calendar_gap':
-      return `${datePrefix}no observation is recorded during the three-day Peak count.`;
+      return `${datePrefix}no observation is saved for this day.`;
     case 'not_observed':
-      return `${datePrefix}this day is marked not observed during the three-day Peak count.`;
+      return `${datePrefix}this day is marked Not observed.`;
     case 'incomplete_observation':
-      return `${datePrefix}this observation needs a sensation or appearance before it can count in the three-day Peak follow-up.`;
+      return `${datePrefix}this observation needs a sensation or appearance.`;
     case 'earlier_gap_limits_boundary':
-      return `${datePrefix}an open or not-observed day limits the opening boundary.`;
+      return `${datePrefix}this day is open or marked Not observed.`;
     case 'bleeding_mucus_ambiguity':
-      return `${datePrefix}mucus was recorded with light menstrual flow, which this release does not use to bound a possible pattern.`;
+      return `${datePrefix}light menstrual flow and mucus were recorded on the same day.`;
     case 'invalid_or_unresolved_dates':
-      return 'One or more dates are missing, invalid, duplicated, or out of order.';
+      return 'One or more dates are missing, duplicated, out of order, or not recognized.';
     case 'context_ineligible':
-      return 'The recorded chart context is outside the accepted simple-pattern scope.';
+      return 'This cycle includes a charting context the app does not interpret yet.';
     case 'context_eligibility_unknown':
-      return 'The chart does not contain enough context to establish simple-pattern eligibility.';
+      return 'The app does not have enough context about this cycle.';
     case 'cycle_boundary_ineligible':
-      return 'The cycle boundary is outside the accepted first-release scope.';
+      return 'This cycle start needs a closer review.';
     case 'cycle_boundary_eligibility_unknown':
-      return 'The accepted Cycle Day 1 boundary has not been established for this chart.';
+      return 'Cycle Day 1 has not been confirmed for this chart.';
     default:
-      return 'An unresolved pattern or chart context limits the boundary Well Within can show.';
+      return 'Something in this chart needs more context before a clear pattern can be shown.';
+  }
+}
+
+function withheldCopy(
+  reason: PossibleFertilePatternReason,
+): { heading: string; body: string } {
+  switch (reason) {
+    case 'calendar_gap':
+      return {
+        heading: 'One observation is missing',
+        body:
+          'A day in the three-day follow-up is still open, so there is not enough detail to show a clear pattern.',
+      };
+    case 'not_observed':
+      return {
+        heading: 'One day was not observed',
+        body:
+          'A day in the three-day follow-up is marked Not observed, so there is not enough detail to show a clear pattern.',
+      };
+    case 'incomplete_observation':
+      return {
+        heading: 'One observation needs more detail',
+        body:
+          'A day in the three-day follow-up needs a sensation or appearance before a clear pattern can be shown.',
+      };
+    case 'earlier_gap_limits_boundary':
+      return {
+        heading: 'The start of this pattern is not clear',
+        body:
+          'An earlier day is open or marked Not observed, so there is not enough chart context to show where this pattern began.',
+      };
+    case 'bleeding_mucus_ambiguity':
+      return {
+        heading: 'Light menstrual flow and mucus were recorded together',
+        body:
+          'Both observations stay on your chart, but this combination needs review before a clear pattern can be shown.',
+      };
+    case 'invalid_or_unresolved_dates':
+      return {
+        heading: 'A few chart dates need review',
+        body:
+          'The dates in this cycle do not give the app a clear sequence, so no pattern is shown.',
+      };
+    case 'context_ineligible':
+      return {
+        heading: 'This chart needs a closer look',
+        body:
+          'This cycle includes a charting context the app does not interpret yet, so no pattern is shown.',
+      };
+    case 'context_eligibility_unknown':
+      return {
+        heading: 'More context is needed for this chart',
+        body:
+          'The app does not have enough information about this cycle to show a clear pattern.',
+      };
+    case 'cycle_boundary_ineligible':
+      return {
+        heading: 'This cycle start needs a closer look',
+        body:
+          'The start of this cycle needs review before a clear pattern can be shown.',
+      };
+    case 'cycle_boundary_eligibility_unknown':
+      return {
+        heading: 'Confirm when this cycle started',
+        body:
+          'Cycle Day 1 needs to be confirmed before a clear pattern can be shown for this cycle.',
+      };
+    default:
+      return {
+        heading: 'We cannot show a clear pattern for this cycle',
+        body:
+          'Something in this chart needs more context before the pattern’s start and end can be shown.',
+      };
   }
 }
 
@@ -334,20 +411,7 @@ function withheldPresentation(
   cycleBoundaryEligibility: PossibleFertilePatternEligibility,
   reason: PossibleFertilePatternReason,
 ): PossibleFertilePatternPresentation {
-  const copy = (() => {
-    if (reason === 'bleeding_mucus_ambiguity') {
-      return {
-        heading: 'Mucus and light menstrual flow were recorded together',
-        body:
-          'Both observations remain on your chart. Because they were recorded together, Well Within leaves the possible-pattern boundary open for review.',
-      };
-    }
-    return {
-      heading: 'A possible pattern cannot be bounded from this chart',
-      body:
-        'Your observations remain visible. An open day, unresolved pattern, or chart context limits the boundary Well Within can show.',
-    };
-  })();
+  const copy = withheldCopy(reason);
 
   return {
     state: 'withheld',
@@ -544,8 +608,8 @@ export function buildPossibleFertilePatternPresentation(
     state: 'bounded',
     heading: 'Possible fertile pattern',
     body:
-      `Based on your logged observations, a possible pattern is shown from ${start.date} ` +
-      `through P+3 (${pPlus3.date}).`,
+      `We noticed a possible pattern in what you recorded, from ${start.date} ` +
+      `through P+3 on ${pPlus3.date}.`,
     limitation: POSSIBLE_FERTILE_PATTERN_LIMITATION,
     reason: 'eligible_retrospective_pattern',
     interpretationStatus: support.status,
@@ -619,10 +683,10 @@ export function buildPossibleFertilePatternHistoryPresentation(
   ) {
     return {
       state: 'insufficient_eligible_cycles',
-      heading: 'Possible fertile pattern history',
+      heading: 'Patterns across your cycles',
       body:
-        `At least ${POSSIBLE_FERTILE_PATTERN_HISTORY_MINIMUM} eligible completed cycles are needed ` +
-        'before Well Within shows retrospective ranges.',
+        `At least ${POSSIBLE_FERTILE_PATTERN_HISTORY_MINIMUM} completed cycles with enough chart detail are needed ` +
+        'before Well Within can compare their timing.',
       completedCycleCount: completedCycles.length,
       completedCycleNumbers,
       sampleSize,
@@ -635,9 +699,9 @@ export function buildPossibleFertilePatternHistoryPresentation(
 
   return {
     state: 'available',
-    heading: 'Possible fertile pattern history',
+    heading: 'Patterns across your cycles',
     body:
-      `Across ${sampleSize} eligible completed cycles, the first recorded mucus sign occurred on ` +
+      `Across ${sampleSize} completed cycles with enough detail to compare, the first recorded mucus sign appeared on ` +
       `${cycleDayPhrase('', startCycleDays).trim()}, and the Peak marker occurred on ` +
       `${cycleDayPhrase('', peakCycleDays).trim()}.`,
     completedCycleCount: completedCycles.length,

@@ -24,7 +24,7 @@ export function formatPossibleFertilePatternBody(
     presentation.start?.date &&
     presentation.pPlus3?.date
   ) {
-    return `Based on your logged observations, a possible pattern is shown from ${formatFullDate(presentation.start.date)} through P+3 (${formatFullDate(presentation.pPlus3.date)}).`;
+    return `We noticed a possible pattern in what you recorded, from ${formatFullDate(presentation.start.date)} through P+3 on ${formatFullDate(presentation.pPlus3.date)}.`;
   }
 
   return presentation.body;

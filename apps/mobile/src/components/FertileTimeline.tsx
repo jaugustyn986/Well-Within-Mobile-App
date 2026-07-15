@@ -1,8 +1,9 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import type {
-  PossibleFertilePatternMarker,
-  PossibleFertilePatternPresentation,
+import {
+  POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE,
+  type PossibleFertilePatternMarker,
+  type PossibleFertilePatternPresentation,
 } from 'core-rules-engine';
 import {
   BG_CARD,
@@ -150,7 +151,7 @@ export function FertileTimeline({
           </View>
         ) : null}
         {presentation.limitation ? (
-          <Text style={styles.limitation}>{presentation.limitation}</Text>
+          <Text style={styles.limitation}>{POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE}</Text>
         ) : null}
       </View>
     </View>
