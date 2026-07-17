@@ -1,7 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import {
-  POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE,
   type PossibleFertilePatternMarker,
   type PossibleFertilePatternPresentation,
 } from 'core-rules-engine';
@@ -34,7 +33,11 @@ interface Milestone {
   label: string;
   marker: PossibleFertilePatternMarker;
   color: string;
+  completed?: boolean;
 }
+
+const RETROSPECTIVE_NOTE =
+  'A look back at what you recorded—not a prediction or confirmation of ovulation.';
 
 function displayCycleDay(
   marker: PossibleFertilePatternMarker,
@@ -80,14 +83,13 @@ export function FertileTimeline({
     if (presentation.peak) {
       milestones.push({ label: 'Peak marker', marker: presentation.peak, color: PEAK_BORDER });
     }
-    if (presentation.pPlus1) {
-      milestones.push({ label: 'P+1', marker: presentation.pPlus1, color: BG_POST_PEAK });
-    }
-    if (presentation.pPlus2) {
-      milestones.push({ label: 'P+2', marker: presentation.pPlus2, color: BG_POST_PEAK });
-    }
     if (presentation.pPlus3) {
-      milestones.push({ label: 'P+3', marker: presentation.pPlus3, color: BG_POST_PEAK });
+      milestones.push({
+        label: 'P+3 recorded',
+        marker: presentation.pPlus3,
+        color: BG_POST_PEAK,
+        completed: true,
+      });
     }
   }
 
@@ -138,7 +140,9 @@ export function FertileTimeline({
           <View style={styles.milestones}>
             {milestones.map((milestone, index) => (
               <View key={milestone.label} style={styles.milestoneRow}>
-                <View style={[styles.dot, { backgroundColor: milestone.color }]} />
+                <View style={[styles.dot, { backgroundColor: milestone.color }]}>
+                  {milestone.completed ? <Text style={styles.completedCheck}>✓</Text> : null}
+                </View>
                 {index < milestones.length - 1 ? <View style={styles.line} /> : null}
                 <View style={styles.milestoneContent}>
                   <Text style={styles.milestoneLabel}>{milestone.label}</Text>
@@ -151,7 +155,7 @@ export function FertileTimeline({
           </View>
         ) : null}
         {presentation.limitation ? (
-          <Text style={styles.limitation}>{POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE}</Text>
+          <Text style={styles.limitation}>{RETROSPECTIVE_NOTE}</Text>
         ) : null}
       </View>
     </View>
@@ -218,11 +222,25 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     position: 'relative',
   },
-  dot: { width: 14, height: 14, borderRadius: 7, marginRight: 12, marginTop: 2 },
+  dot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    marginRight: 12,
+    marginTop: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  completedCheck: {
+    color: FERTILE_ACCENT,
+    fontSize: 10,
+    lineHeight: 12,
+    fontWeight: '700',
+  },
   line: {
     position: 'absolute',
-    left: 6,
-    top: 16,
+    left: 7,
+    top: 17,
     width: 2,
     height: 22,
     backgroundColor: BORDER_CARD,

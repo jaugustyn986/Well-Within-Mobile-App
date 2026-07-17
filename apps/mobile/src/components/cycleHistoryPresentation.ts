@@ -174,7 +174,6 @@ export function buildCycleHistoryOverviewCopy(
         completedStat,
         { value: String(summary.sampleSize), label: 'Charts compared' },
         { value: formatDayRange(summary.cycleLengths), label: 'Cycle length' },
-        { value: formatDayRange(summary.daysAfterPeak), label: 'After Peak' },
       ],
       patternsHeading: 'What your charts have shown',
       progressLabel: null,
@@ -185,8 +184,12 @@ export function buildCycleHistoryOverviewCopy(
           value: formatCycleDayRange(summary.firstMucusCycleDays),
         },
         {
-          label: 'Peak Day',
+          label: 'Peak marker',
           value: formatCycleDayRange(summary.peakCycleDays),
+        },
+        {
+          label: 'Peak to next cycle',
+          value: formatDayRange(summary.daysAfterPeak),
         },
       ],
       inclusionNote: excludedCycleNote(summary),

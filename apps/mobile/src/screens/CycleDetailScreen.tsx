@@ -17,6 +17,8 @@ import { DailyLogList } from '../components/DailyLogList';
 import { shouldShowRetrospectivePeakMarkers } from '../components/dayPresentationContract';
 import { CycleStartResolutionCard } from '../components/CycleStartResolutionCard';
 import { findCycleStartResolution } from '../components/cycleStartResolution';
+import { MetricCardGrid } from '../components/MetricCardGrid';
+import { buildCycleOverviewMetrics } from '../components/cycleOverviewPresentation';
 import { buildCyclePdfHtml } from '../utils/exportCyclePdf';
 import { formatCyclePrimarySecondary } from '../utils/cycleDisplay';
 import { formatPossibleFertilePatternLimit } from '../utils/dateDisplay';
@@ -135,6 +137,12 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
   const headerSecondary = cycleStartResolution
     ? `${cycleStatusLabel} · Start date needs confirmation`
     : `${headerLabels.secondary} · ${cycle.length} days · ${cycleStatusLabel}`;
+  const overviewMetrics = buildCycleOverviewMetrics({
+    length: cycle.length,
+    peakDay: cycle.peakDay,
+    peakToNextCycleDays: cycle.lutealPhase,
+    showDerivedPattern: showDerivedMarkers,
+  });
 
   const findCareCard = (
     <Pressable
@@ -237,6 +245,11 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
             })}
           />
         ) : null}
+
+        <View style={styles.overviewSection}>
+          <Text style={styles.overviewHeading}>Cycle overview</Text>
+          <MetricCardGrid items={overviewMetrics} layout="three-column" />
+        </View>
 
         <MucusChart
           days={alignedDays}
@@ -341,6 +354,17 @@ const styles = StyleSheet.create({
     maxWidth: 960,
     alignSelf: 'center',
     paddingBottom: 32,
+  },
+  overviewSection: {
+    marginHorizontal: 16,
+    marginTop: 16,
+  },
+  overviewHeading: {
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: '600',
+    color: TEXT_PRIMARY,
+    marginBottom: 10,
   },
   interpretationNotice: {
     marginHorizontal: 16,

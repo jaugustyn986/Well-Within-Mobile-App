@@ -8,8 +8,8 @@ import {
   TEXT_SECONDARY,
   TEXT_MUTED,
   BORDER_CARD,
-  ACCENT_WARM,
 } from '../theme/colors';
+import { MetricCardGrid, type MetricCardItem } from './MetricCardGrid';
 import {
   buildCycleHistoryOverviewCopy,
   type CycleHistoryStatCopy,
@@ -19,38 +19,33 @@ interface Props {
   summary: RecordedCycleHistorySummary;
 }
 
-function StatCard({
-  stat,
-  fullWidth,
-}: {
-  stat: CycleHistoryStatCopy;
-  fullWidth: boolean;
-}): React.JSX.Element {
-  return (
-    <View style={[styles.statCard, fullWidth && styles.statCardFullWidth]}>
-      <Text style={styles.statValue} numberOfLines={2} adjustsFontSizeToFit>
-        {stat.value}
-      </Text>
-      <Text style={styles.statLabel}>{stat.label}</Text>
-    </View>
-  );
+const PATTERN_ACCENTS = ['#D9AFA2', '#E4C38E', '#B9C8A8'];
+
+function buildSummaryMetrics(stats: CycleHistoryStatCopy[]): MetricCardItem[] {
+  const visualOrder: Array<Pick<MetricCardItem, 'icon' | 'tone'>> = [
+    { icon: 'calendar-check', tone: 'blush' },
+    { icon: 'comparison-chart', tone: 'cream' },
+    { icon: 'calendar-range', tone: 'sage' },
+  ];
+
+  return stats.map((stat, index) => ({
+    ...stat,
+    ...(visualOrder[index] ?? visualOrder[visualOrder.length - 1]),
+    fullWidth: stats.length === 1 || (stats.length === 3 && index === 2),
+  }));
 }
 
 export function CycleSummaryPanel({ summary }: Props): React.JSX.Element {
   const copy = buildCycleHistoryOverviewCopy(summary);
-  const singleStat = copy.stats.length === 1;
   const hasStats = copy.stats.length > 0;
+  const summaryMetrics = buildSummaryMetrics(copy.stats);
 
   return (
     <View style={styles.container}>
       {hasStats ? (
         <>
           <Text style={styles.heading}>{copy.summaryHeading}</Text>
-          <View style={styles.statsGrid}>
-            {copy.stats.map((stat) => (
-              <StatCard key={stat.label} stat={stat} fullWidth={singleStat} />
-            ))}
-          </View>
+          <MetricCardGrid items={summaryMetrics} layout="two-plus-wide" />
         </>
       ) : null}
 
@@ -66,8 +61,14 @@ export function CycleSummaryPanel({ summary }: Props): React.JSX.Element {
 
         {copy.body ? <Text style={styles.body}>{copy.body}</Text> : null}
 
-        {copy.patterns.map((pattern) => (
-          <View key={pattern.label} style={styles.patternRow}>
+        {copy.patterns.map((pattern, index) => (
+          <View
+            key={pattern.label}
+            style={[
+              styles.patternRow,
+              { borderLeftColor: PATTERN_ACCENTS[index % PATTERN_ACCENTS.length] },
+            ]}
+          >
             <Text style={styles.patternLabel}>{pattern.label}</Text>
             <Text style={styles.patternValue}>{pattern.value}</Text>
           </View>
@@ -100,39 +101,6 @@ const styles = StyleSheet.create({
     color: TEXT_PRIMARY,
     marginBottom: 10,
   },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  statCard: {
-    flexBasis: '48%',
-    flexGrow: 1,
-    minHeight: 106,
-    justifyContent: 'center',
-    backgroundColor: BG_CARD,
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderWidth: 1,
-    borderColor: BORDER_CARD,
-  },
-  statCardFullWidth: {
-    flexBasis: '100%',
-    minHeight: 92,
-  },
-  statValue: {
-    fontSize: 24,
-    lineHeight: 29,
-    fontWeight: '700',
-    color: TEXT_PRIMARY,
-  },
-  statLabel: {
-    fontSize: 13,
-    lineHeight: 18,
-    color: TEXT_MUTED,
-    marginTop: 4,
-  },
   patternsHeading: {
     fontSize: 21,
     lineHeight: 27,
@@ -162,7 +130,6 @@ const styles = StyleSheet.create({
   patternRow: {
     backgroundColor: BG_MISSING,
     borderLeftWidth: 3,
-    borderLeftColor: ACCENT_WARM,
     borderRadius: 10,
     paddingHorizontal: 13,
     paddingVertical: 11,

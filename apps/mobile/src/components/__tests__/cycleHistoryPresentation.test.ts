@@ -126,12 +126,12 @@ describe('buildCycleHistoryOverviewCopy', () => {
       { value: '4', label: 'Completed cycles' },
       { value: '3', label: 'Charts compared' },
       { value: '27–31 days', label: 'Cycle length' },
-      { value: '12–14 days', label: 'After Peak' },
     ]);
     expect(copy.patternsHeading).toBe('What your charts have shown');
     expect(copy.patterns).toEqual([
       { label: 'First mucus sign', value: 'Cycle Days 8–10' },
-      { label: 'Peak Day', value: 'Cycle Days 14–16' },
+      { label: 'Peak marker', value: 'Cycle Days 14–16' },
+      { label: 'Peak to next cycle', value: '12–14 days' },
     ]);
     expect(copy.inclusionNote).toContain('Compared 3 of 4 completed cycles');
     expect(copy.limitation).toContain('not a prediction');

@@ -81,7 +81,12 @@ export function CycleHistoryScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: BG_PAGE },
   loading: { textAlign: 'center', marginTop: 100, color: TEXT_MUTED, fontSize: 15 },
-  scrollContent: { paddingBottom: 32 },
+  scrollContent: {
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
+    paddingBottom: 32,
+  },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   emptyTitle: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
   emptyText: { fontSize: 15, fontWeight: '400', color: TEXT_MUTED, textAlign: 'center', lineHeight: 22 },

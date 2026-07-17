@@ -16,6 +16,14 @@ import {
   buildCycleStartResolutionCopy,
   findCycleStartResolution,
 } from './cycleStartResolution';
+import {
+  CycleMetricIcon,
+  type CycleMetricIconName,
+} from './CycleMetricIcon';
+import {
+  resolveCycleCardStatusKey,
+  type CycleCardStatusKey,
+} from './cycleCardPresentation';
 
 interface Props {
   cycle: CycleSlice;
@@ -24,14 +32,53 @@ interface Props {
   onResolveCycleStart?: (date: string) => void;
 }
 
-function getStatusStyle(status: CycleSlice['status']): { bg: string; text: string; label: string } {
+interface StatusStyle {
+  bg: string;
+  text: string;
+  label: string;
+  icon: CycleMetricIconName;
+}
+
+const STATUS_CONTEXT_BG = '#F4DFE2';
+const STATUS_CONTEXT_TEXT = '#7A3E4A';
+
+function getStatusStyle(status: CycleCardStatusKey): StatusStyle {
   switch (status) {
     case 'complete':
-      return { bg: BG_DRY, text: '#15803d', label: 'Complete' };
+      return {
+        bg: BG_DRY,
+        text: '#15803d',
+        label: 'Complete',
+        icon: 'calendar-check',
+      };
     case 'in_progress':
-      return { bg: BG_POST_PEAK, text: '#92400e', label: 'In Progress' };
+      return {
+        bg: BG_POST_PEAK,
+        text: '#92400e',
+        label: 'In Progress',
+        icon: 'calendar-progress',
+      };
     case 'no_peak':
-      return { bg: BG_MISSING, text: TEXT_MUTED, label: 'Peak not confirmed' };
+      return {
+        bg: STATUS_CONTEXT_BG,
+        text: STATUS_CONTEXT_TEXT,
+        label: 'Peak not confirmed',
+        icon: 'calendar-question',
+      };
+    case 'needs_review':
+      return {
+        bg: STATUS_CONTEXT_BG,
+        text: STATUS_CONTEXT_TEXT,
+        label: 'Needs review',
+        icon: 'calendar-question',
+      };
+    case 'needs_context':
+      return {
+        bg: STATUS_CONTEXT_BG,
+        text: STATUS_CONTEXT_TEXT,
+        label: 'Needs context',
+        icon: 'calendar-question',
+      };
   }
 }
 
@@ -56,12 +103,14 @@ export function CycleCard({
   const showDerivedPattern =
     presentation.state === 'bounded' &&
     presentation.interpretationStatus === 'summary_available';
-  const statusInfo =
-    interpretation.status === 'review_recommended'
-      ? { bg: BG_POST_PEAK, text: '#92400e', label: 'Needs review' }
-      : interpretation.status === 'blocked_by_missing'
-        ? { bg: BG_MISSING, text: TEXT_MUTED, label: 'Needs context' }
-        : getStatusStyle(cycle.status);
+  const latestCycleNumber = Math.max(...allCycles.map((candidate) => candidate.cycleNumber));
+  const statusKey = resolveCycleCardStatusKey({
+    cycleNumber: cycle.cycleNumber,
+    latestCycleNumber,
+    cycleStatus: cycle.status,
+    interpretationStatus: interpretation.status,
+  });
+  const statusInfo = getStatusStyle(statusKey);
   const interpretationLimited =
     interpretation.status === 'review_recommended' ||
     interpretation.status === 'blocked_by_missing';
@@ -95,33 +144,49 @@ export function CycleCard({
         accessibilityLabel={`${displayedPrimary}. ${displayedSecondary}. ${statusInfo.label}`}
         accessibilityHint="Opens this cycle's chart details"
       >
-        <View style={styles.topRow}>
-          <Text style={styles.primaryTitle} numberOfLines={2}>{displayedPrimary}</Text>
-          <View style={[styles.badge, { backgroundColor: statusInfo.bg }]}>
-            <Text style={[styles.badgeText, { color: statusInfo.text }]}>{statusInfo.label}</Text>
+        <View style={styles.contentRow}>
+          <View style={styles.statusIcon} accessibilityElementsHidden>
+            <CycleMetricIcon
+              name={statusInfo.icon}
+              size={44}
+              backgroundColor={statusInfo.bg}
+            />
           </View>
-        </View>
-        <Text style={styles.secondaryLine}>{displayedSecondary}</Text>
-        {interpretationLimited ? (
-          <Text style={styles.limitationText}>
-            {presentation.heading ?? 'This chart needs more context'}
-          </Text>
-        ) : cycleStartResolution ? null : (
-          <View style={styles.statsRow}>
-            <StatPill label="Length" value={`${cycle.length}d`} />
-            {showDerivedPattern ? (
-              <>
-                <StatPill label="Peak" value={cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--'} />
-                <StatPill label="After Peak" value={cycle.lutealPhase !== null ? `${cycle.lutealPhase}d` : '--'} />
-              </>
-            ) : presentation.reason === 'later_peak_type_reopens_pattern' ? (
-              <StatPill
-                label="Peak-type"
-                value={`${presentation.observedPeakTypeSigns.length} ${presentation.observedPeakTypeSigns.length === 1 ? 'sign' : 'signs'}`}
-              />
+          <View style={styles.contentBody}>
+            <View style={styles.topRow}>
+              <Text style={styles.primaryTitle} numberOfLines={2}>{displayedPrimary}</Text>
+              <View style={[styles.badge, { backgroundColor: statusInfo.bg }]}>
+                <Text style={[styles.badgeText, { color: statusInfo.text }]}>{statusInfo.label}</Text>
+              </View>
+            </View>
+            <Text style={styles.secondaryLine}>{displayedSecondary}</Text>
+            {!cycleStartResolution ? (
+              <View style={styles.statsRow}>
+                <StatPill label="Length" value={`${cycle.length}d`} />
+                <StatPill
+                  label="Peak"
+                  value={showDerivedPattern && cycle.peakDay !== null ? `Day ${cycle.peakDay}` : '--'}
+                />
+                <StatPill
+                  label="After Peak"
+                  value={showDerivedPattern && cycle.lutealPhase !== null ? `${cycle.lutealPhase}d` : '--'}
+                />
+                {presentation.reason === 'later_peak_type_reopens_pattern' ? (
+                  <StatPill
+                    label="Peak-type"
+                    value={`${presentation.observedPeakTypeSigns.length} ${presentation.observedPeakTypeSigns.length === 1 ? 'sign' : 'signs'}`}
+                  />
+                ) : null}
+              </View>
+            ) : null}
+            {interpretationLimited ? (
+              <Text style={styles.limitationText}>
+                {presentation.heading ?? 'This chart needs more context'}
+              </Text>
             ) : null}
           </View>
-        )}
+          <Text style={styles.chevron} accessibilityElementsHidden>{'›'}</Text>
+        </View>
       </Pressable>
       {cycleStartResolution && cycleStartCopy ? (
         <View style={styles.cycleStartSection}>
@@ -164,12 +229,15 @@ const styles = StyleSheet.create({
   },
   mainPressable: { padding: 16 },
   pressed: { opacity: 0.6 },
+  contentRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  statusIcon: { paddingTop: 1 },
+  contentBody: { flex: 1, minWidth: 0 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 },
   primaryTitle: { fontSize: 16, fontWeight: '600', color: TEXT_PRIMARY, flex: 1 },
   badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, flexShrink: 0 },
   badgeText: { fontSize: 11, fontWeight: '600' },
   secondaryLine: { fontSize: 13, color: TEXT_MUTED, marginTop: 4 },
-  statsRow: { flexDirection: 'row', gap: 8, marginTop: 8 },
+  statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
   statPill: {
     backgroundColor: BG_MISSING,
     paddingHorizontal: 10,
@@ -179,6 +247,13 @@ const styles = StyleSheet.create({
   },
   statValue: { fontSize: 14, fontWeight: '600', color: TEXT_PRIMARY },
   statLabel: { fontSize: 10, color: TEXT_MUTED, marginTop: 1 },
+  chevron: {
+    color: TEXT_PRIMARY,
+    fontSize: 28,
+    lineHeight: 30,
+    fontWeight: '300',
+    marginTop: 4,
+  },
   limitationText: { fontSize: 13, color: TEXT_MUTED, lineHeight: 19, marginTop: 10 },
   cycleStartSection: {
     paddingHorizontal: 16,
