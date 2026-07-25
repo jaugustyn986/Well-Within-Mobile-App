@@ -201,12 +201,14 @@ Notes:
 
 # 10. Release Blockers (Populate During Audit)
 
-- Production TestFlight upload succeeded: version 2.1.4, build 24, Apple build ID `4cd193ef-3c7e-4788-9137-caa34a981129`, EAS build ID `d7c316c3-c3aa-4541-9b4f-049544407581`.
+- Production baseline: version 2.1.4 is live in the App Store.
+- TestFlight upload succeeded for version 2.1.5, build 25: Apple build ID `fee5b2c7-a746-4bfa-8a08-da9b45a4cf85`, EAS build ID `2257de1f-2747-474d-a81d-3b5cc84a3b81`, and EAS submission ID `963df21f-d727-4334-9f0c-c0e2421e8580`.
+- App Store Connect reports 2.1.5 build 25 as `VALID` and not expired.
 - Apple agreements are current for this free release; the Free Apps Agreement is active.
 - Public privacy-policy and support URLs are published and saved in App Store Connect.
-- 2.1.4 metadata, reconciled privacy answers, six refreshed screenshots, review notes, manual-release setting, and build 24 are saved in App Store Connect.
-- Remaining product validation: complete the short accessibility/comprehension check and confirm that an internal tester can install and smoke-test build 24.
-- FINAL OWNER GATE: the release is stopped at Apple's review confirmation. Do not submit to App Review without a separate owner decision.
+- 2.1.5 automated verification, native iOS Release smoke, and native PDF preview passed; see [Action 7 report](strategy/action-7-multiple-observations-2026-07-25/REPORT.md).
+- Remaining internal validation: install build 25 through TestFlight and collect feedback.
+- FINAL OWNER GATE: do not create or submit a 2.1.5 App Store version without a separate owner decision after TestFlight feedback.
 
 ---
 
@@ -214,7 +216,7 @@ Notes:
 
 - First EAS build and submit to TestFlight completed successfully. For future releases: **`npm run mobile:release:testflight`** (preflight + build + submit), or stepwise `mobile:build:ios:testflight` then `mobile:submit:ios:production` (non-interactive when `.p8` is in `apps/mobile/credentials/` and `eas.json` has `ascAppId` + API key fields).
 - Privacy policy URL and support URL are configured in App Store Connect.
-- App Store Connect privacy details are reconciled and published; build 24 is valid and attached to the editable 2.1.4 App Store record.
+- App Store Connect privacy details are reconciled and published; 2.1.4 is the live production baseline and 2.1.5 build 25 is valid in TestFlight.
 - Run **`git fetch --all --prune`** and **`npm run mobile:preflight:release`** before building. Preflight now checks Expo config, intended feature-branch coverage, and App Store Connect/TestFlight version-train state.
 - Use **`npm run version:ios:bump --workspace well-within-mobile`** when opening a new TestFlight/App Store marketing-version train.
 - Optionally run **`npm run mobile:preflight:release:with-doctor`**; treat **expo-doctor** failures from flaky Expo API or Metro hints as **advisory** unless they indicate a real misconfiguration.
