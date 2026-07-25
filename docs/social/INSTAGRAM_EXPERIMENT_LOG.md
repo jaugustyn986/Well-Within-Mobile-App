@@ -514,23 +514,23 @@ Use this file to track planned, posted, measured, and retired Instagram content 
 ### Results
 
 - Immediate verification: 0 likes, 0 comments; views, reach, saves, profile visits, and follows not yet available
-- 24h snapshot:
-- 72h snapshot:
-- 7d snapshot:
-- Reach:
-- Views/plays:
-- Likes:
-- Comments:
-- Shares:
-- Saves:
-- Profile visits:
-- Follows:
-- Link taps:
-- App Store clicks:
+- 24h snapshot: 153 views, 136 reach, 0 saves, 0 likes, 0 comments, 0 shares, 0 total interactions; account at 4 followers
+- 72h snapshot: not captured at the exact checkpoint
+- 7d snapshot: 153 views, 136 reach, 0 saves, 0 likes, 0 comments, 0 shares, 0 total interactions; account still at 4 followers
+- Reach: 136 lifetime at 7d
+- Views/plays: 153 lifetime at 7d
+- Likes: 0
+- Comments: 0
+- Shares: 0
+- Saves: 0
+- Profile visits: unavailable post-attributed
+- Follows: unavailable post-attributed; account total unchanged at 4
+- Link taps: unavailable post-attributed
+- App Store clicks: unavailable
 
 ### Learning
 
-- What worked:
-- What did not:
-- Confidence: low until results are collected
-- Next action: collect the 24h snapshot at or after 2026-07-18 09:45 CDT, then the 72h and 7d checkpoints before creating any sibling variant.
+- What worked: the specific tension hook plus screen-forward product proof cleared the reach threshold by 4.7x (136 versus >29) and materially out-distributed the prior Reel baseline.
+- What did not: the post produced no measurable intent or interaction, and it gained no additional views or reach between the 24h and 7d pulls.
+- Confidence: medium that this creative pattern can earn initial distribution; low that the H3 message or save CTA creates intent.
+- Next action: do not create an H3 sibling. Use the completed 7-day window to move to one native H2 audience-language test with a one-response decision rule, or collect the same question through H5 practitioner/community listening if a public post is not likely to reach respondents.

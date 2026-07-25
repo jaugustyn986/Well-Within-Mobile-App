@@ -369,6 +369,13 @@ Show fast daily entry, exports, history, and clear visual interpretation.
 - H3 remains primary only for a verified capture-to-readable-history demonstration. H1 may eventually make a reviewed restraint promise about not forcing a person into generic categories or selling certainty; H2 can listen for the observation/category people second-guess; H5 is strengthened as an educator-interview route. Do not imply method instruction, category customization, fertility-status interpretation, contraception efficacy, or educator equivalence without review.
 - No draft is justified until the July 17 Reel’s 7-day intent pull and a verified unusual/edited-entry plus interpretation-boundary walkthrough close the evidence gap.
 
+## Research Update: 2026-07-24
+
+- The July 17 `Some Days Don’t Fit One Neat Box` Reel closed its 7-day window at 153 views and 136 reach with 0 saves, likes, comments, shares, or total interactions; account followers remained at 4. Its distribution result is real relative to the 29-reach baseline, but it did not validate the H3 message, save CTA, or conversion intent.
+- Do not make an H3 sibling from the same imperfect-day product-proof premise. The next public test, if authorized, should change the job and hypothesis: use H2 to ask one specific native-format question about where charting becomes difficult or pressuring, with one useful response as the keep threshold. If it receives none, move the question to H5 practitioner/community listening.
+- Recent TTC/community language reinforces the need to distinguish keeping a record from claiming certainty. Preserve for research prompts: “what temps mean and what they don’t mean,” “Temping with a toddler is impossible,” “missed or inaccurate results,” “I can’t actually confirm,” “not consume them,” and “I need to feel like I am doing something when I actually just need to wait.”
+- H1 remains a conditional, reviewed boundary: Well Within may help keep observations visible, but any statement about what the app does not interpret or predict must match verified current product behavior. No broader customization, method-fit, or fertility-status claim is supported by this run.
+
 ```markdown
 ## Observation: [Source or pattern]
 - Date:
