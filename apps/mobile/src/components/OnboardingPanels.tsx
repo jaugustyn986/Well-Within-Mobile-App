@@ -265,12 +265,6 @@ export function OnboardingEntryPanel(): React.JSX.Element {
         </View>
       </View>
 
-      <View style={entry.hintCard}>
-        <Text style={entry.hintText}>
-          Record your most fertile observation of the day — not just the most recent.
-        </Text>
-      </View>
-
       <View style={entry.section}>
         <Text style={entry.fieldLabel}>Sensation</Text>
         <View style={entry.pillRow}>
@@ -316,11 +310,6 @@ const entry = StyleSheet.create({
   pillSelected: { backgroundColor: ACCENT_WARM_TINT, borderColor: ACCENT_WARM },
   pillText: { fontSize: 12, color: TEXT_SECONDARY },
   pillTextSel: { color: BRAND_NAME, fontWeight: '600' },
-  hintCard: {
-    backgroundColor: '#f0fdf4', borderLeftWidth: 3, borderLeftColor: '#16a34a',
-    padding: 9, borderRadius: 8, marginTop: 10,
-  },
-  hintText: { fontSize: 11, color: '#166534', fontStyle: 'italic', lineHeight: 17 },
 });
 
 /* ─────────────────────────────────────────────────

@@ -9,7 +9,17 @@ jest.mock('../../config/env', () => ({ hasSupabaseEnv: () => true }));
 
 const validRow = {
   entry_date: '2025-01-01',
-  entry_payload: { date: '2025-01-01', bleeding: 'light' },
+  entry_payload: {
+    date: '2025-01-01',
+    bleeding: 'light',
+    observations: [{
+      id: 'remote-observation',
+      observedAt: '08:15',
+      sensation: 'damp',
+      appearances: ['cloudy'],
+      frequency: 1,
+    }],
+  },
   client_updated_at: '2025-01-01T12:00:00Z',
   deleted_at: null,
 };
@@ -63,6 +73,13 @@ describe('sync - invalid remote payload skipped', () => {
     const state = await getStoredState();
     expect(state.entriesByDate['2025-01-01']).toBeDefined();
     expect(state.entriesByDate['2025-01-01'].entry).toMatchObject({ date: '2025-01-01', bleeding: 'light' });
+    expect(state.entriesByDate['2025-01-01'].entry.observations?.[0]).toEqual({
+      id: 'remote-observation',
+      observedAt: '08:15',
+      sensation: 'damp',
+      appearances: ['cloudy'],
+      frequency: 1,
+    });
     expect(state.entriesByDate['2025-01-02']).toBeUndefined();
   });
 });

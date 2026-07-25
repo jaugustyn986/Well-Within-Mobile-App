@@ -5,6 +5,7 @@ export * from './flowBleeding';
 export * from './mucusClassification';
 export * from './primaryDayClass';
 export * from './rank';
+export * from './observationResolution';
 export * from './peak';
 export * from './interpretationSupport';
 export * from './possibleFertilePattern';

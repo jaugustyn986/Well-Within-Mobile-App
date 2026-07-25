@@ -47,6 +47,13 @@ describe('sync - push partial failure only marks successful rows clean', () => {
             date: '2025-01-01',
             bleeding: 'light',
             menstrualFlowStart: 'confirmed',
+            observations: [{
+              id: 'local-observation',
+              observedAt: '20:30',
+              sensation: 'stretchy',
+              appearances: ['clear'],
+              frequency: 2,
+            }],
           },
         },
         '2025-01-02': {
@@ -67,6 +74,13 @@ describe('sync - push partial failure only marks successful rows clean', () => {
     expect(state.entriesByDate['2025-01-02'].dirty).toBe(true);
     expect(upsertPayloads[0]?.entry_payload).toMatchObject({
       menstrualFlowStart: 'confirmed',
+      observations: [{
+        id: 'local-observation',
+        observedAt: '20:30',
+        sensation: 'stretchy',
+        appearances: ['clear'],
+        frequency: 2,
+      }],
     });
   });
 });

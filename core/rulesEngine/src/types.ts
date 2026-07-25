@@ -17,23 +17,34 @@ export type PhaseLabel =
   | 'missing'
   | 'previous_cycle';
 
-export interface Observation {
+export interface MucusObservation {
+  /** Stable client-generated identifier. Optional only for legacy payload compatibility. */
+  id?: string;
+  /** Local civil time in 24-hour HH:mm form. Never interpreted as UTC. */
+  observedAt?: string;
   sensation: Sensation;
   appearances: Appearance[];
+  frequency?: Frequency;
 }
+
+/** @deprecated Prefer MucusObservation. Retained as a source-compatible alias. */
+export type Observation = MucusObservation;
 
 export interface DailyEntry {
   date?: string;
   bleeding?: BleedingType;
   /** User assessment of whether this date is the first day of true menstrual flow. */
   menstrualFlowStart?: MenstrualFlowStart;
+  /** @deprecated Compatibility projection of the representative mucus observation. */
   sensation?: Sensation;
+  /** @deprecated Compatibility projection of the representative mucus observation. */
   appearances?: Appearance[];
   intercourse?: boolean;
   notes?: string;
+  /** @deprecated Compatibility projection of the representative mucus observation. */
   frequency?: Frequency;
   missing?: boolean;
-  observations?: Observation[];
+  observations?: MucusObservation[];
   mucusRankOverride?: number;
 }
 

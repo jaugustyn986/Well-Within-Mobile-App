@@ -28,7 +28,7 @@ export type RootStackParamList = {
   DailyEntry: {
     date: string;
     existingEntry?: boolean;
-    intent?: 'confirm_cycle_start';
+    intent?: 'confirm_cycle_start' | 'add_observation';
   };
   CatchUpMissingDays: undefined;
   Help: {

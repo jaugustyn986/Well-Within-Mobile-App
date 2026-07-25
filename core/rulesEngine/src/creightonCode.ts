@@ -5,12 +5,14 @@ import {
   FertilityClassification,
   Frequency,
 } from './types';
+import { resolveDailyMucus } from './observationResolution';
 
 const LUBRICATIVE_PROMOTABLE = new Set(['damp', 'shiny', 'wet']);
 
 function getBaseCode(entry: DailyEntry): string {
-  const sensation = entry.sensation ?? 'dry';
-  const appearances = entry.appearances ?? [];
+  const representative = resolveDailyMucus(entry).representative;
+  const sensation = representative?.sensation ?? 'dry';
+  const appearances = representative?.appearances ?? [];
   const hasLubricative = appearances.includes('lubricative');
 
   if (hasLubricative && LUBRICATIVE_PROMOTABLE.has(sensation)) {
@@ -45,7 +47,7 @@ const APPEARANCE_SUFFIX_ORDER: Array<{ key: Appearance; code: string }> = [
 ];
 
 function getAppearanceSuffix(entry: DailyEntry, baseCode: string): string {
-  const appearances = entry.appearances ?? [];
+  const appearances = resolveDailyMucus(entry).representative?.appearances ?? [];
   if (appearances.length === 0 || (appearances.length === 1 && appearances[0] === 'none')) {
     return '';
   }
@@ -81,7 +83,7 @@ function classifyBaseCode(baseCode: string): FertilityClassification {
 export function generateCreightonCode(entry: DailyEntry): CreightonCode {
   const baseCode = getBaseCode(entry);
   const appearanceSuffix = getAppearanceSuffix(entry, baseCode);
-  const frequencySuffix = getFrequencySuffix(entry.frequency);
+  const frequencySuffix = getFrequencySuffix(resolveDailyMucus(entry).representative?.frequency);
   const fullCode = `${baseCode}${appearanceSuffix}${frequencySuffix}`;
   const fertilityClassification = classifyBaseCode(baseCode);
 

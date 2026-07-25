@@ -108,7 +108,7 @@ export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNex
                 onPress={() => onDayPress(cell.date)}
                 disabled={isFuture}
                 accessibilityRole="button"
-                accessibilityLabel={`${MONTHS[month]} ${dayNum}, ${year}. ${presentation.stateLabel}`}
+                accessibilityLabel={`${MONTHS[month]} ${dayNum}, ${year}. ${presentation.stateLabel}${(cell.observationCount ?? 0) > 1 ? `. ${cell.observationCount} mucus observations` : ''}`}
                 accessibilityState={{ disabled: isFuture }}
               >
                 <Text style={[styles.dayText, { color: textColor }]}>{dayNum}</Text>

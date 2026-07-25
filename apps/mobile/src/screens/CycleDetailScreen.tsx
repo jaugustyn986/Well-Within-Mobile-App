@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import * as Print from 'expo-print';
@@ -20,6 +20,7 @@ import { findCycleStartResolution } from '../components/cycleStartResolution';
 import { MetricCardGrid } from '../components/MetricCardGrid';
 import { buildCycleOverviewMetrics } from '../components/cycleOverviewPresentation';
 import { buildCyclePdfHtml } from '../utils/exportCyclePdf';
+import { printCyclePdfHtmlOnWeb } from '../utils/printCyclePdfWeb';
 import { formatCyclePrimarySecondary } from '../utils/cycleDisplay';
 import { formatPossibleFertilePatternLimit } from '../utils/dateDisplay';
 import {
@@ -77,13 +78,17 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
     if (!cycle) return;
     setExporting(true);
     try {
-      const { primary, secondary } = formatCyclePrimarySecondary(cycle, cycles);
+      const { primary } = formatCyclePrimarySecondary(cycle, cycles);
       const headerSubtitle = cycleStartResolution
-        ? `${secondary} · Start date needs confirmation`
-        : `${primary} · ${secondary} · ${cycle.length} days`;
+        ? `${primary} · Start date needs confirmation`
+        : `${primary} · ${cycle.length} days`;
       const html = buildCyclePdfHtml(cycle, includeIntercourse, { headerSubtitle });
-      const { uri } = await Print.printToFileAsync({ html });
-      await shareAsync(uri, { mimeType: 'application/pdf' });
+      if (Platform.OS === 'web') {
+        await printCyclePdfHtmlOnWeb(html);
+      } else {
+        const { uri } = await Print.printToFileAsync({ html });
+        await shareAsync(uri, { mimeType: 'application/pdf' });
+      }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'An error occurred while exporting.';
       Alert.alert('Export Failed', msg);
@@ -271,7 +276,14 @@ export function CycleDetailScreen({ route, navigation }: Props): React.JSX.Eleme
             }
           />
         ) : null}
-        <DailyLogList cycle={cycle} showDerivedMarkers={showDerivedMarkers} />
+        <DailyLogList
+          cycle={cycle}
+          showDerivedMarkers={showDerivedMarkers}
+          onEditDay={(date) => navigation.navigate('DailyEntry', {
+            date,
+            existingEntry: true,
+          })}
+        />
         {!showFindCareNearTop ? findCareCard : null}
       </ScrollView>
 

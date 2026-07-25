@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AccessibilityInfo,
   Keyboard,
   KeyboardAvoidingView,
   Modal,
@@ -12,6 +13,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Appearance,
@@ -23,7 +25,12 @@ import {
   DailyEntry,
   derivePrimaryDayClassFromEntry,
   Frequency,
+  isValidObservationTime,
+  MucusObservation,
+  resolveDailyMucus,
   Sensation,
+  sortMucusObservationsForDisplay,
+  withMucusObservations,
 } from 'core-rules-engine';
 import {
   BG_CARD, BG_PAGE, BG_MISSING,
@@ -32,8 +39,8 @@ import {
 } from '../theme/colors';
 import { formatFullDate } from '../utils/dateDisplay';
 import {
-  canSaveObservationEntry,
   initialSensationForEntry,
+  shouldShowObservationTimeEditor,
 } from './entryObservationConfirmation';
 import {
   applyEntryDeleteChoice,
@@ -54,6 +61,57 @@ interface Props {
   saveLabel?: string;
   showMarkMissingButton?: boolean;
   cycleStartReview?: boolean;
+  startAddingObservation?: boolean;
+}
+
+interface DraftMucusObservation extends Omit<MucusObservation, 'sensation'> {
+  sensation: Sensation | null;
+}
+
+const MULTIPLE_OBSERVATIONS_EDUCATION_KEY = 'well_within_multiple_observations_education_v1';
+
+function createObservationId(): string {
+  return `obs:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function initialObservationDrafts(
+  initialEntry: DailyEntry | null | undefined,
+): DraftMucusObservation[] {
+  const resolved = resolveDailyMucus(initialEntry ?? null);
+  if (resolved.observations.length > 0) {
+    return resolved.observations.map((observation) => ({ ...observation }));
+  }
+  return [{
+    id: createObservationId(),
+    sensation: initialSensationForEntry(initialEntry),
+    appearances: [],
+  }];
+}
+
+function formatObservationTime(value: string | undefined): string {
+  if (!value || !isValidObservationTime(value)) return 'Time not recorded';
+  const [hourValue, minute] = value.split(':').map(Number);
+  const period = hourValue >= 12 ? 'PM' : 'AM';
+  const hour = hourValue % 12 || 12;
+  return `${hour}:${String(minute).padStart(2, '0')} ${period}`;
+}
+
+function currentLocalTime(): string {
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+}
+
+function observationSummary(observation: DraftMucusObservation): string {
+  if (!observation.sensation) return 'Choose a sensation to finish this observation';
+  const sensation = SENSATION_OPTIONS.find((option) => option.value === observation.sensation)?.label
+    ?? observation.sensation;
+  const appearance = observation.appearances.length > 0
+    ? observation.appearances
+        .map((value) => APPEARANCE_OPTIONS.find((option) => option.value === value)?.label ?? value)
+        .join(', ')
+    : 'No appearance';
+  const frequency = FREQUENCY_OPTIONS.find((option) => option.value === observation.frequency)?.label;
+  return [sensation, appearance, frequency].filter(Boolean).join(' · ');
 }
 
 const SENSATION_OPTIONS: { value: Sensation; label: string; desc: string }[] = [
@@ -127,16 +185,18 @@ export function EntryForm({
   saveLabel = 'Save Entry',
   showMarkMissingButton = false,
   cycleStartReview = false,
+  startAddingObservation = false,
 }: Props): React.JSX.Element {
   const [missing, setMissing] = useState(initialEntry?.missing ?? false);
   const [bleeding, setBleeding] = useState<BleedingType>(initialEntry?.bleeding ?? 'none');
   const [menstrualFlowStart, setMenstrualFlowStart] =
     useState<MenstrualFlowStartChoice | null>(initialEntry?.menstrualFlowStart ?? null);
-  const [sensation, setSensation] = useState<Sensation | null>(
-    initialSensationForEntry(initialEntry),
+  const [observations, setObservations] = useState<DraftMucusObservation[]>(
+    () => initialObservationDrafts(initialEntry),
   );
-  const [appearances, setAppearances] = useState<Appearance[]>(initialEntry?.appearances ?? []);
-  const [frequency, setFrequency] = useState<Frequency | undefined>(initialEntry?.frequency);
+  const [activeObservationId, setActiveObservationId] = useState(
+    () => observations[0]?.id ?? '',
+  );
   const [showBleedingInfo, setShowBleedingInfo] = useState(false);
   const [showFreqInfo, setShowFreqInfo] = useState(false);
   const [showNotesInfo, setShowNotesInfo] = useState(false);
@@ -145,16 +205,53 @@ export function EntryForm({
   const [saving, setSaving] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showMultipleObservationInfo, setShowMultipleObservationInfo] = useState(false);
+  const [showObservationHelp, setShowObservationHelp] = useState(false);
+  const [observationToRemove, setObservationToRemove] = useState<string | null>(null);
 
   const [sameAsYesterday, setSameAsYesterday] = useState(false);
   const preToggleSnapshot = useRef<{
-    sensation: Sensation | null;
-    appearances: Appearance[];
+    observation: DraftMucusObservation;
   } | null>(null);
+  const handledStartAdding = useRef(false);
   const scrollRef = useRef<ScrollView>(null);
   const notesBlockY = useRef(0);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const insets = useSafeAreaInsets();
+
+  const activeObservation = observations.find(
+    (observation) => observation.id === activeObservationId,
+  ) ?? observations[0];
+  const multiObservation = observations.length > 1;
+  const showObservationTimeEditor = activeObservation
+    ? shouldShowObservationTimeEditor(observations.length, activeObservation.observedAt)
+    : false;
+  const completeObservations = useMemo(
+    () => observations.filter(
+      (observation): observation is DraftMucusObservation & { sensation: Sensation } =>
+        observation.sensation !== null,
+    ),
+    [observations],
+  );
+  const resolvedDraft = useMemo(
+    () => resolveDailyMucus({
+      date,
+      observations: completeObservations,
+    }),
+    [completeObservations, date],
+  );
+  const sortedObservationCards = useMemo(() => {
+    const sortedComplete = sortMucusObservationsForDisplay(completeObservations);
+    const byId = new Map(observations.map((observation) => [observation.id, observation]));
+    const ordered = sortedComplete
+      .map((observation) => byId.get(observation.id))
+      .filter((observation): observation is DraftMucusObservation => Boolean(observation));
+    const orderedIds = new Set(ordered.map((observation) => observation.id));
+    return [
+      ...ordered,
+      ...observations.filter((observation) => !orderedIds.has(observation.id)),
+    ];
+  }, [completeObservations, observations]);
 
   useEffect(() => {
     const show = Keyboard.addListener('keyboardDidShow', (e) => {
@@ -171,30 +268,50 @@ export function EntryForm({
 
   const showSameAsYesterday =
     !missing &&
+    !multiObservation &&
     !initialEntry &&
     previousDayEntry != null &&
     !previousDayEntry.missing;
+  const canAddObservation = observations.every(
+    (observation) => observation.sensation !== null
+      && isValidObservationTime(observation.observedAt),
+  );
+
+  const updateObservation = useCallback((
+    id: string,
+    updater: (observation: DraftMucusObservation) => DraftMucusObservation,
+  ) => {
+    setObservations((current) => current.map(
+      (observation) => observation.id === id ? updater(observation) : observation,
+    ));
+  }, []);
 
   const handleSameAsYesterday = useCallback((on: boolean) => {
+    if (!activeObservation) return;
     if (on && previousDayEntry) {
-      preToggleSnapshot.current = { sensation, appearances: [...appearances] };
-      setSensation(initialSensationForEntry(previousDayEntry));
-      setAppearances(previousDayEntry.appearances ?? []);
+      const representative = resolveDailyMucus(previousDayEntry).representative;
+      preToggleSnapshot.current = { observation: { ...activeObservation } };
+      updateObservation(activeObservation.id ?? '', (observation) => ({
+        ...observation,
+        sensation: representative?.sensation ?? initialSensationForEntry(previousDayEntry),
+        appearances: [...(representative?.appearances ?? [])],
+        frequency: representative?.frequency,
+      }));
     } else if (!on && preToggleSnapshot.current) {
-      setSensation(preToggleSnapshot.current.sensation);
-      setAppearances(preToggleSnapshot.current.appearances);
+      const snapshot = preToggleSnapshot.current.observation;
+      updateObservation(activeObservation.id ?? '', () => snapshot);
       preToggleSnapshot.current = null;
     }
     setSameAsYesterday(on);
-  }, [previousDayEntry, sensation, appearances]);
+  }, [activeObservation, previousDayEntry, updateObservation]);
 
   const rank = useMemo(
     () => (
-      missing || sensation === null
+      missing || completeObservations.length === 0
         ? null
-        : computeMucusRank({ sensation, appearances })
+        : computeMucusRank({ observations: completeObservations })
     ),
-    [sensation, appearances, missing],
+    [completeObservations, missing],
   );
 
   const selectedBleedingEducation = useMemo(
@@ -209,8 +326,11 @@ export function EntryForm({
   });
 
   const classInfo = useMemo(() => {
-    if (missing || sensation === null || rank === null) return null;
-    const draft: DailyEntry = { bleeding, sensation, appearances };
+    if (missing || completeObservations.length === 0 || rank === null) return null;
+    const draft = withMucusObservations(
+      { bleeding },
+      completeObservations,
+    );
     const primary = derivePrimaryDayClassFromEntry(draft, rank);
     if (primary === 'menstrual_flow') {
       return {
@@ -226,7 +346,7 @@ export function EntryForm({
         hint: 'Your dry or mucus observation stays separate from the spotting you recorded.',
       };
     }
-    const classification = classifyFertility({ sensation, appearances });
+    const classification = classifyFertility(draft);
     const base = CLASSIFICATION_LABELS[classification] ?? null;
     if (!base || (bleeding !== 'spotting' && bleeding !== 'brown')) return base;
     const bleedingLabel = bleeding === 'brown' ? 'Brown was' : 'Spotting was';
@@ -235,23 +355,69 @@ export function EntryForm({
       desc: `${base.desc} ${bleedingLabel} also recorded.`,
       hint: 'Both observations stay visible on your chart; the mucus sign determines the mucus pattern shown for this day.',
     };
-  }, [missing, rank, bleeding, sensation, appearances]);
+  }, [missing, rank, bleeding, completeObservations]);
 
   const displayDate = formatFullDate(date);
 
   const toggleAppearance = (value: Appearance) => {
+    if (!activeObservation?.id) return;
     if (value === 'none') {
-      setAppearances([]);
+      updateObservation(activeObservation.id, (observation) => ({
+        ...observation,
+        appearances: [],
+      }));
       return;
     }
-    setAppearances((prev) => {
-      const filtered = prev.filter((a) => a !== 'none');
+    updateObservation(activeObservation.id, (observation) => {
+      const filtered = observation.appearances.filter((appearance) => appearance !== 'none');
       if (filtered.includes(value)) {
-        return filtered.filter((a) => a !== value);
+        return { ...observation, appearances: filtered.filter((appearance) => appearance !== value) };
       }
-      return [...filtered, value];
+      return { ...observation, appearances: [...filtered, value] };
     });
   };
+
+  const performAddObservation = useCallback(() => {
+    const id = createObservationId();
+    setObservations((current) => [
+      ...current,
+      { id, sensation: null, appearances: [] },
+    ]);
+    setActiveObservationId(id);
+    setSameAsYesterday(false);
+  }, []);
+
+  const requestAddObservation = useCallback(async () => {
+    const hasSeenEducation = await AsyncStorage.getItem(MULTIPLE_OBSERVATIONS_EDUCATION_KEY);
+    if (hasSeenEducation === 'true') {
+      performAddObservation();
+      return;
+    }
+    setShowMultipleObservationInfo(true);
+  }, [performAddObservation]);
+
+  const confirmAddObservation = useCallback(async () => {
+    await AsyncStorage.setItem(MULTIPLE_OBSERVATIONS_EDUCATION_KEY, 'true');
+    setShowMultipleObservationInfo(false);
+    performAddObservation();
+  }, [performAddObservation]);
+
+  useEffect(() => {
+    if (!startAddingObservation || handledStartAdding.current) return;
+    handledStartAdding.current = true;
+    void requestAddObservation();
+  }, [requestAddObservation, startAddingObservation]);
+
+  const removeObservation = useCallback(() => {
+    if (!observationToRemove || observations.length <= 1) return;
+    const next = observations.filter((observation) => observation.id !== observationToRemove);
+    setObservations(next);
+    if (activeObservationId === observationToRemove) {
+      setActiveObservationId(next[0]?.id ?? '');
+    }
+    setObservationToRemove(null);
+    AccessibilityInfo.announceForAccessibility('Mucus observation removed. Daily chart result updated.');
+  }, [activeObservationId, observationToRemove, observations]);
 
   const selectBleeding = (value: BleedingType) => {
     if (value !== 'light' || bleeding !== 'light') {
@@ -275,23 +441,25 @@ export function EntryForm({
       void saveEntry({ date, missing: true });
       return;
     }
-    if (sensation === null) return;
+    if (
+      observations.length === 0
+      || observations.some((observation) => observation.sensation === null)
+      || observations.some((observation) => !isValidObservationTime(observation.observedAt))
+    ) return;
     const savedMenstrualFlowStart = menstrualFlowStartForSavedEntry({
       showQuestion: showMenstrualFlowStartQuestion,
       selected: menstrualFlowStart,
     });
-    void saveEntry({
+    const complete = observations as Array<DraftMucusObservation & { sensation: Sensation }>;
+    void saveEntry(withMucusObservations({
       date,
       bleeding,
       ...(savedMenstrualFlowStart
         ? { menstrualFlowStart: savedMenstrualFlowStart }
         : {}),
-      sensation,
-      appearances: appearances.length > 0 ? appearances : undefined,
-      frequency,
       intercourse,
       notes: notes.trim() || undefined,
-    });
+    }, complete));
   };
 
   const handleMarkMissing = () => {
@@ -309,7 +477,11 @@ export function EntryForm({
     }
   }, [deleting, onDelete]);
 
-  const canSave = canSaveObservationEntry(missing, sensation);
+  const canSave = missing || (
+    observations.length > 0
+    && observations.every((observation) => observation.sensation !== null)
+    && observations.every((observation) => isValidObservationTime(observation.observedAt))
+  );
 
   return (
     <KeyboardAvoidingView
@@ -445,11 +617,98 @@ export function EntryForm({
             ) : null}
           </View>
 
-          <View style={styles.mostFertileNote}>
-            <Text style={styles.mostFertileText}>
-              Record your most fertile observation of the day — not just the most recent.
-            </Text>
-          </View>
+          {multiObservation ? (
+            <View style={styles.section}>
+              <View style={styles.observationHeadingRow}>
+                <View>
+                  <Text style={styles.observationHeading}>
+                    Mucus observations ({observations.length})
+                  </Text>
+                  <Text style={styles.observationHelper}>
+                    The observation with the most fertile signs is used for the day&apos;s chart.
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={() => setShowObservationHelp(true)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel="About multiple mucus observations"
+                >
+                  <View style={styles.infoBubble}>
+                    <Text style={styles.infoBubbleText}>i</Text>
+                  </View>
+                </Pressable>
+              </View>
+              <View style={styles.observationCards}>
+                {sortedObservationCards.map((observation) => {
+                  const active = observation.id === activeObservation?.id;
+                  const usedForChart = observation.id === resolvedDraft.representative?.id;
+                  return (
+                    <Pressable
+                      key={observation.id}
+                      style={[styles.observationCard, active && styles.observationCardActive]}
+                      onPress={() => setActiveObservationId(observation.id ?? '')}
+                      accessibilityRole="button"
+                      accessibilityState={{ expanded: active }}
+                      accessibilityLabel={`${formatObservationTime(observation.observedAt)}. ${observationSummary(observation)}${usedForChart ? '. Used for chart' : ''}`}
+                    >
+                      <View style={styles.observationCardHeader}>
+                        <Text style={styles.observationTime}>
+                          {formatObservationTime(observation.observedAt)}
+                        </Text>
+                        {usedForChart ? (
+                          <View style={styles.chartResultBadge}>
+                            <Text style={styles.chartResultBadgeText}>Used for chart</Text>
+                          </View>
+                        ) : null}
+                        <Text style={styles.observationChevron}>{active ? '⌃' : '›'}</Text>
+                      </View>
+                      <Text style={styles.observationSummary}>{observationSummary(observation)}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
+
+          {showObservationTimeEditor && activeObservation ? (
+            <View style={styles.timeSection}>
+              <Text style={styles.fieldLabel}>Time observed (optional)</Text>
+              <Text style={styles.timeHelper}>
+                Choose when you observed this. Leave blank if you don&apos;t remember.
+              </Text>
+              <View style={styles.timeRow}>
+                <TextInput
+                  style={styles.timeInput}
+                  value={activeObservation.observedAt ?? ''}
+                  onChangeText={(value) => updateObservation(
+                    activeObservation.id ?? '',
+                    (observation) => ({
+                      ...observation,
+                      observedAt: value.replace(/[^0-9:]/g, '').slice(0, 5) || undefined,
+                    }),
+                  )}
+                  placeholder="HH:MM"
+                  keyboardType="numbers-and-punctuation"
+                  maxLength={5}
+                  accessibilityLabel="Time observed, optional, 24 hour format"
+                />
+                <Pressable
+                  style={styles.currentTimeButton}
+                  onPress={() => updateObservation(
+                    activeObservation.id ?? '',
+                    (observation) => ({ ...observation, observedAt: currentLocalTime() }),
+                  )}
+                  accessibilityRole="button"
+                >
+                  <Text style={styles.currentTimeButtonText}>Use current time</Text>
+                </Pressable>
+              </View>
+              {!isValidObservationTime(activeObservation.observedAt) ? (
+                <Text style={styles.timeError}>Use 24-hour time, such as 08:15 or 20:30.</Text>
+              ) : null}
+            </View>
+          ) : null}
 
           <View style={styles.section}>
             <Text style={styles.fieldLabel}>Sensation</Text>
@@ -457,12 +716,15 @@ export function EntryForm({
               {SENSATION_OPTIONS.map((opt) => (
                 <Pressable
                   key={opt.value}
-                  style={[styles.card, sensation === opt.value && styles.cardSelected]}
-                  onPress={() => setSensation(opt.value)}
+                  style={[styles.card, activeObservation?.sensation === opt.value && styles.cardSelected]}
+                  onPress={() => activeObservation?.id && updateObservation(
+                    activeObservation.id,
+                    (observation) => ({ ...observation, sensation: opt.value }),
+                  )}
                   accessibilityRole="radio"
-                  accessibilityState={{ selected: sensation === opt.value }}
+                  accessibilityState={{ selected: activeObservation?.sensation === opt.value }}
                 >
-                  <Text style={[styles.cardTitle, sensation === opt.value && styles.cardTitleSelected]}>
+                  <Text style={[styles.cardTitle, activeObservation?.sensation === opt.value && styles.cardTitleSelected]}>
                     {opt.label}
                   </Text>
                   <Text style={styles.cardDesc}>{opt.desc}</Text>
@@ -477,8 +739,8 @@ export function EntryForm({
               {APPEARANCE_OPTIONS.map((opt) => {
                 const isNone = opt.value === 'none';
                 const selected = isNone
-                  ? appearances.length === 0
-                  : appearances.includes(opt.value);
+                  ? (activeObservation?.appearances.length ?? 0) === 0
+                  : activeObservation?.appearances.includes(opt.value) ?? false;
                 return (
                   <Pressable
                     key={opt.value}
@@ -512,16 +774,44 @@ export function EntryForm({
               {FREQUENCY_OPTIONS.map((opt) => (
                 <Pressable
                   key={String(opt.value)}
-                  style={[styles.pill, frequency === opt.value && styles.pillSelected]}
-                  onPress={() => setFrequency(frequency === opt.value ? undefined : opt.value)}
+                  style={[styles.pill, activeObservation?.frequency === opt.value && styles.pillSelected]}
+                  onPress={() => activeObservation?.id && updateObservation(
+                    activeObservation.id,
+                    (observation) => ({
+                      ...observation,
+                      frequency: observation.frequency === opt.value ? undefined : opt.value,
+                    }),
+                  )}
                 >
-                  <Text style={[styles.pillText, frequency === opt.value && styles.pillTextSelected]}>
+                  <Text style={[styles.pillText, activeObservation?.frequency === opt.value && styles.pillTextSelected]}>
                     {opt.label}
                   </Text>
                 </Pressable>
               ))}
             </View>
           </View>
+
+          {multiObservation ? (
+            <Pressable
+              style={styles.removeObservationButton}
+              onPress={() => setObservationToRemove(activeObservation?.id ?? null)}
+              accessibilityRole="button"
+              accessibilityLabel="Remove this mucus observation"
+            >
+              <Text style={styles.removeObservationText}>Remove mucus observation</Text>
+            </Pressable>
+          ) : null}
+
+          <Pressable
+            style={[styles.addObservationButton, !canAddObservation && styles.addObservationButtonDisabled]}
+            onPress={() => void requestAddObservation()}
+            disabled={!canAddObservation}
+            accessibilityRole="button"
+            accessibilityLabel="Add another mucus observation"
+            accessibilityState={{ disabled: !canAddObservation }}
+          >
+            <Text style={styles.addObservationText}>+ Add another mucus observation</Text>
+          </Pressable>
 
           <View style={styles.intercourseRow}>
             <Text style={styles.fieldLabel}>Intercourse Today?</Text>
@@ -588,17 +878,22 @@ export function EntryForm({
           style={styles.deleteBtn}
           onPress={() => setShowDeleteConfirmation(true)}
           accessibilityRole="button"
-          accessibilityLabel="Delete entry"
-          accessibilityHint="Opens a confirmation before deleting this observation"
+          accessibilityLabel="Delete daily entry"
+          accessibilityHint="Opens a confirmation before deleting this entire day"
         >
-          <Text style={styles.deleteText}>Delete Entry</Text>
+          <Text style={styles.deleteText}>Delete Daily Entry</Text>
         </Pressable>
       )}
     </ScrollView>
     <View style={styles.stickyFooter}>
-      {!missing && sensation === null ? (
+      {!missing && observations.some((observation) => observation.sensation === null) ? (
         <Text style={styles.observationConfirmationPrompt} accessibilityLiveRegion="polite">
-          Choose a sensation — including Dry — to confirm today&apos;s observation.
+          Finish or remove this mucus observation before saving.
+        </Text>
+      ) : null}
+      {!missing && observations.some((observation) => !isValidObservationTime(observation.observedAt)) ? (
+        <Text style={styles.observationConfirmationPrompt} accessibilityLiveRegion="polite">
+          Correct the observation time or leave it blank before saving.
         </Text>
       ) : null}
       {showMarkMissingButton && !missing ? (
@@ -631,9 +926,9 @@ export function EntryForm({
         }}
       >
         <View style={styles.modalCard}>
-          <Text style={styles.modalTitle}>Delete this entry?</Text>
+          <Text style={styles.modalTitle}>Delete this daily entry?</Text>
           <Text style={styles.modalBody}>
-            This removes the observation for {displayDate} from your chart. This action cannot be undone.
+            This removes all mucus observations and day details for {displayDate} from your chart. This action cannot be undone.
           </Text>
           <View style={styles.modalButtons}>
             <Pressable
@@ -651,8 +946,92 @@ export function EntryForm({
               accessibilityRole="button"
             >
               <Text style={styles.modalBtnDangerText}>
-                {deleting ? 'Deleting...' : 'Delete Entry'}
+                {deleting ? 'Deleting...' : 'Delete Daily Entry'}
               </Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+    <Modal
+      visible={showMultipleObservationInfo}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setShowMultipleObservationInfo(false)}
+    >
+      <View style={styles.modalOverlay} accessibilityViewIsModal>
+        <View style={styles.modalCard}>
+          <Text style={styles.modalTitle}>Multiple mucus observations</Text>
+          <Text style={styles.modalBody}>
+            Log mucus as it changes during the day. Bleeding, intercourse, and notes still apply to the whole day. Well Within keeps every mucus observation and uses the one with the most fertile signs for that day&apos;s chart.
+          </Text>
+          <View style={styles.modalButtons}>
+            <Pressable
+              style={styles.modalBtnOutline}
+              onPress={() => setShowMultipleObservationInfo(false)}
+              accessibilityRole="button"
+            >
+              <Text style={styles.modalBtnOutlineText}>Cancel</Text>
+            </Pressable>
+            <Pressable
+              style={styles.modalBtnFilled}
+              onPress={() => void confirmAddObservation()}
+              accessibilityRole="button"
+            >
+              <Text style={styles.modalBtnFilledText}>Add observation</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+    <Modal
+      visible={showObservationHelp}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setShowObservationHelp(false)}
+    >
+      <View style={styles.modalOverlay} accessibilityViewIsModal>
+        <View style={styles.modalCard}>
+          <Text style={styles.modalTitle}>About multiple mucus observations</Text>
+          <Text style={styles.modalBody}>
+            Mucus can change during the day. You can save each distinct observation instead of deciding which one had the most fertile signs.{`\n\n`}Well Within keeps every observation and uses the one with the most fertile signs for that date&apos;s mucus result. Bleeding, menstrual flow start, intercourse, and notes are recorded once for the whole day.{`\n\n`}Time is optional and only helps organize observations. It does not affect the chart result.
+          </Text>
+          <Pressable
+            style={[styles.modalBtnFilled, styles.modalBtnStandalone]}
+            onPress={() => setShowObservationHelp(false)}
+            accessibilityRole="button"
+          >
+            <Text style={styles.modalBtnFilledText}>Done</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+    <Modal
+      visible={observationToRemove !== null}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setObservationToRemove(null)}
+    >
+      <View style={styles.modalOverlay} accessibilityViewIsModal>
+        <View style={styles.modalCard}>
+          <Text style={styles.modalTitle}>Remove this mucus observation?</Text>
+          <Text style={styles.modalBody}>
+            The rest of this day will stay saved. Well Within will update the day&apos;s chart result using the remaining observations.
+          </Text>
+          <View style={styles.modalButtons}>
+            <Pressable
+              style={styles.modalBtnOutline}
+              onPress={() => setObservationToRemove(null)}
+              accessibilityRole="button"
+            >
+              <Text style={styles.modalBtnOutlineText}>Cancel</Text>
+            </Pressable>
+            <Pressable
+              style={styles.modalBtnDanger}
+              onPress={removeObservation}
+              accessibilityRole="button"
+            >
+              <Text style={styles.modalBtnDangerText}>Remove observation</Text>
             </Pressable>
           </View>
         </View>
@@ -848,6 +1227,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalBtnOutlineText: { fontSize: 14, color: TEXT_SECONDARY, fontWeight: '600' },
+  modalBtnFilled: {
+    flex: 1,
+    minHeight: 48,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    backgroundColor: ACCENT_WARM,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBtnFilledText: { fontSize: 14, color: BG_CARD, fontWeight: '600', textAlign: 'center' },
+  modalBtnStandalone: { flex: 0 },
   modalBtnDanger: {
     flex: 1,
     paddingVertical: 14,
@@ -868,11 +1258,84 @@ const styles = StyleSheet.create({
   missingLabel: { fontSize: 14, fontWeight: '500', color: TEXT_SECONDARY },
   missingNote: { backgroundColor: '#fef3c7', padding: 12, borderRadius: 8, marginTop: 8 },
   missingNoteText: { fontSize: 14, fontWeight: '400', color: '#92400e', lineHeight: 22 },
-  mostFertileNote: {
-    backgroundColor: '#f0fdf4', borderLeftWidth: 3, borderLeftColor: '#16a34a',
-    padding: 10, borderRadius: 8, marginTop: 16,
+  observationHeadingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
   },
-  mostFertileText: { fontSize: 12, color: '#166534', fontStyle: 'italic' },
+  observationHeading: { fontSize: 17, fontWeight: '600', color: TEXT_PRIMARY },
+  observationHelper: { fontSize: 12, color: TEXT_SUBTLE, lineHeight: 18, marginTop: 3 },
+  observationCards: { gap: 8, marginTop: 10 },
+  observationCard: {
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    borderRadius: 10,
+    backgroundColor: BG_CARD,
+    padding: 12,
+    minHeight: 64,
+  },
+  observationCardActive: { borderColor: ACCENT_WARM, backgroundColor: ACCENT_WARM_TINT },
+  observationCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  observationTime: { flex: 1, fontSize: 14, fontWeight: '600', color: TEXT_PRIMARY },
+  observationSummary: { fontSize: 13, color: TEXT_SECONDARY, marginTop: 4, lineHeight: 18 },
+  observationChevron: { fontSize: 19, color: ACCENT_WARM },
+  chartResultBadge: {
+    backgroundColor: BG_MISSING,
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  chartResultBadgeText: { fontSize: 10, fontWeight: '600', color: TEXT_SECONDARY },
+  timeSection: {
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: BG_PAGE,
+  },
+  timeHelper: { fontSize: 12, color: TEXT_SUBTLE, lineHeight: 18, marginBottom: 8 },
+  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  timeInput: {
+    width: 92,
+    minHeight: 44,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    fontSize: 15,
+    color: TEXT_PRIMARY,
+    backgroundColor: BG_CARD,
+  },
+  currentTimeButton: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: ACCENT_WARM_TINT,
+  },
+  currentTimeButtonText: { fontSize: 13, fontWeight: '600', color: ACCENT_WARM },
+  timeError: { fontSize: 12, color: ACCENT_RED, marginTop: 6 },
+  addObservationButton: {
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    borderRadius: 10,
+    backgroundColor: BG_PAGE,
+  },
+  addObservationText: { fontSize: 14, fontWeight: '600', color: ACCENT_WARM },
+  addObservationButtonDisabled: { opacity: 0.5 },
+  removeObservationButton: {
+    minHeight: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  removeObservationText: { fontSize: 13, fontWeight: '500', color: ACCENT_RED },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
   infoBubble: {
     width: 18, height: 18, borderRadius: 9,

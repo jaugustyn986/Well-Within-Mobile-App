@@ -1,0 +1,216 @@
+description: Daily AI Workflow Intelligence Codex skill routing eval
+
+prompts:
+  - |
+    {{request}}
+
+    Eval mode constraints:
+    - Return only JSON matching the configured schema.
+    - Do not browse the web.
+    - Do not write, edit, create, delete, publish, or archive files.
+    - Do not use credentials, paid services, account connections, production writes, or destructive actions.
+    - If the request would normally require a file write, describe the intended path in JSON instead of writing it.
+
+x-daily-intelligence-schema: &dailyIntelligenceSchema
+  type: object
+  required:
+    - should_use_daily_ai_workflow_skill
+    - classification
+    - required_context
+    - intended_report_path
+    - would_update_cumulative_files
+    - action_filter_not_digest
+    - pause_before_risky_actions
+    - recommended_next_agent_task
+    - reason
+  additionalProperties: false
+  properties:
+    should_use_daily_ai_workflow_skill:
+      type: boolean
+    classification:
+      type: string
+      enum:
+        - daily_ai_workflow_intelligence
+        - ai_workflow_explanation
+        - broad_ai_news_digest
+        - social_research_or_strategy
+        - other
+    required_context:
+      type: array
+      items:
+        type: string
+    intended_report_path:
+      type: string
+    would_update_cumulative_files:
+      type: array
+      items:
+        type: string
+    action_filter_not_digest:
+      type: boolean
+    pause_before_risky_actions:
+      type: boolean
+    recommended_next_agent_task:
+      type: string
+    reason:
+      type: string
+
+providers:
+  - id: openai:codex-sdk
+    label: codex-daily-ai-workflow-skill
+    config:
+      model: gpt-5.5
+      working_dir: ../..
+      skip_git_repo_check: false
+      sandbox_mode: read-only
+      enable_streaming: true
+      deep_tracing: true
+      output_schema: *dailyIntelligenceSchema
+      cli_env:
+        CODEX_HOME: /Users/jimaugustyn/Documents/Projects/Well-Within/ai-intelligence/evals/codex-home
+
+defaultTest:
+  options:
+    disableVarExpansion: true
+  assert:
+    - type: javascript
+      value: |
+        const result = typeof output === 'string' ? JSON.parse(output) : output;
+        const expectedUse = context.vars.shouldUseSkill;
+        const expectedClassification = context.vars.classification;
+        const requiredContext = context.vars.requiredContext || [];
+        const requiredUpdates = context.vars.requiredUpdates || [];
+        const contextText = (result.required_context || []).join('\n');
+        const updateText = (result.would_update_cumulative_files || []).join('\n');
+        const missingContext = requiredContext.filter((item) => !contextText.includes(item));
+        const missingUpdates = requiredUpdates.filter((item) => !updateText.includes(item));
+        const failures = [];
+
+        if (result.should_use_daily_ai_workflow_skill !== expectedUse) {
+          failures.push(`expected should_use_daily_ai_workflow_skill=${expectedUse}`);
+        }
+
+        if (result.classification !== expectedClassification) {
+          failures.push(`expected classification ${expectedClassification}, got ${result.classification}`);
+        }
+
+        if (context.vars.expectActionFilter && result.action_filter_not_digest !== true) {
+          failures.push('expected action_filter_not_digest=true');
+        }
+
+        if (context.vars.expectPauseRule && result.pause_before_risky_actions !== true) {
+          failures.push('expected pause_before_risky_actions=true');
+        }
+
+        if (context.vars.expectReportPath && !result.intended_report_path.includes('ai-intelligence/reports/YYYY-MM-DD-ai-workflow-intelligence.md')) {
+          failures.push('expected canonical daily report path');
+        }
+
+        if (context.vars.expectNoReportPath && result.intended_report_path !== '') {
+          failures.push('expected no report path for non-daily request');
+        }
+
+        if (missingContext.length > 0) {
+          failures.push(`missing required context: ${missingContext.join(', ')}`);
+        }
+
+        if (missingUpdates.length > 0) {
+          failures.push(`missing cumulative updates: ${missingUpdates.join(', ')}`);
+        }
+
+        return {
+          pass: failures.length === 0,
+          score: failures.length === 0 ? 1 : 0,
+          reason: failures.length === 0 ? 'daily workflow routing shape matched' : failures.join('; '),
+        };
+    - type: latency
+      threshold: 180000
+
+tests:
+  - description: Explicit automation request routes to daily intelligence skill
+    vars:
+      request: "Use $daily-ai-workflow-intelligence to run today's Daily AI Workflow Intelligence process for Jim, but in eval dry-run mode only."
+      shouldUseSkill: true
+      classification: daily_ai_workflow_intelligence
+      expectActionFilter: true
+      expectPauseRule: true
+      expectReportPath: true
+      requiredContext:
+        - docs/CODEX_TASK_ROUTER.md
+        - docs/AI_WORKFLOW_INTELLIGENCE_RUNBOOK.md
+        - /Users/jimaugustyn/.codex/automations/daily-ai-workflow-intelligence/memory.md
+        - ai-intelligence/index.md
+      requiredUpdates:
+        - ai-intelligence/index.md
+        - ai-intelligence/backlog.md
+        - ai-intelligence/watchlist.md
+        - ai-intelligence/slop-log.md
+        - ai-intelligence/tested.md
+    assert:
+      - type: skill-used
+        value: daily-ai-workflow-intelligence
+
+  - description: Implicit action-filter report request routes to daily intelligence skill
+    vars:
+      request: "Produce Jim's AI workflow action-filter report for the local workspace date using the project runbook and automation memory. Dry-run only; do not write files."
+      shouldUseSkill: true
+      classification: daily_ai_workflow_intelligence
+      expectActionFilter: true
+      expectPauseRule: true
+      expectReportPath: true
+      requiredContext:
+        - docs/CODEX_TASK_ROUTER.md
+        - docs/AI_WORKFLOW_INTELLIGENCE_RUNBOOK.md
+        - /Users/jimaugustyn/.codex/automations/daily-ai-workflow-intelligence/memory.md
+      requiredUpdates:
+        - ai-intelligence/index.md
+        - ai-intelligence/backlog.md
+        - ai-intelligence/watchlist.md
+        - ai-intelligence/slop-log.md
+        - ai-intelligence/tested.md
+    assert:
+      - type: skill-used
+        value: daily-ai-workflow-intelligence
+
+  - description: Explanation-only request uses skill but avoids report writes
+    vars:
+      request: "Explain how the Daily AI Workflow Intelligence process should run in this repo. Dry-run only; do not update the report or cumulative files."
+      shouldUseSkill: true
+      classification: ai_workflow_explanation
+      expectActionFilter: true
+      expectPauseRule: true
+      expectNoReportPath: true
+      requiredContext:
+        - docs/AI_WORKFLOW_INTELLIGENCE_RUNBOOK.md
+        - ai-intelligence/
+      requiredUpdates: []
+    assert:
+      - type: skill-used
+        value: daily-ai-workflow-intelligence
+
+  - description: Broad AI news digest should not use daily intelligence skill
+    vars:
+      request: "Write a broad digest of today's AI headlines for a general audience. Do not use the Well-Within automation or repo memory."
+      shouldUseSkill: false
+      classification: broad_ai_news_digest
+      expectActionFilter: false
+      expectPauseRule: true
+      expectNoReportPath: true
+      requiredContext: []
+      requiredUpdates: []
+    assert:
+      - type: not-skill-used
+        value: daily-ai-workflow-intelligence
+
+  - description: Instagram/social automation request routes away from daily intelligence skill
+    vars:
+      request: "Run the Instagram organic research workflow and update the draft queue. Dry-run only; do not publish."
+      shouldUseSkill: false
+      classification: social_research_or_strategy
+      expectActionFilter: false
+      expectPauseRule: true
+      expectNoReportPath: true
+      requiredContext: []
+      requiredUpdates: []
+    assert:
+      - type: not-skill-used
+        value: daily-ai-workflow-intelligence

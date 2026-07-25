@@ -1,11 +1,11 @@
 # App Store Submission Packet
 
-Prepared: July 14, 2026
-Target iOS marketing version: **2.1.1**
+Prepared: July 16, 2026
+Target iOS marketing version: **2.1.4**
 Bundle ID: `com.wellwithin.app`
 Apple ID: `6760519448`
 
-Status: **staged in App Store Connect for version 2.1.1; build 21 is complete in TestFlight; stopped before review submission**
+Status: **2.1.4 build 24, refreshed metadata, and all six screenshots staged in App Store Connect; stopped before review submission**
 
 ## Exact customer-facing fields
 
@@ -21,8 +21,8 @@ Status: **staged in App Store Connect for version 2.1.1; build 21 is complete in
 
 ### Promotional text
 
-`Build a consistent daily chart, review how recorded patterns developed, compare completed cycles, and export your record when you choose.`
-137/170 characters
+`Chart one day at a time, see what your completed cycles have shown, and export your record whenever you choose.`
+111/170 characters
 
 ### Keywords
 
@@ -44,15 +44,15 @@ Record structured bleeding, sensation, appearance, and mucus observations in a c
 
 SEE WHAT YOU RECORDED
 
-Your calendar reflects your entries with clear labels for bleeding, dry days, mucus observations, Peak-type signs, Peak Day, and P+1–P+3 chart markers.
+Your calendar reflects your entries with clear labels for bleeding, dry days, mucus observations, Peak-type signs, a Peak marker, and P+1–P+3 chart markers.
 
 REVIEW RETROSPECTIVE CHART CONTEXT
 
-When the recorded observations support it, Well Within can show how a possible pattern developed. The app keeps limitations visible when dates, entries, or special context are missing.
+When the recorded observations support it, a Cycle Overview brings the cycle length, Peak marker, days from Peak to the next cycle, and recorded pattern into one view. The app keeps limitations visible when dates, entries, or special context are missing.
 
 LEARN ACROSS COMPLETED CYCLES
 
-Open a completed chart, review its daily log, and compare eligible recorded ranges across cycles. These views describe chart history; they do not predict future ovulation or fertile-window dates.
+Open a completed chart, review its daily log, and see what completed charts have shown about first mucus signs, Peak markers, and the days from Peak to the next cycle. These views describe chart history; they do not predict future ovulation or fertile-window dates.
 
 EXPORT ON YOUR TERMS
 
@@ -67,7 +67,7 @@ Well Within is an educational charting and record-keeping tool. It does not diag
 
 ### What’s New
 
-`Chart context is now easier to understand across Calendar and Cycle History. This update adds clearer retrospective pattern explanations, consistent Peak and P+ chart markers, improved bleeding-plus-observation handling, and calmer next steps when an entry needs review.`
+`See each cycle more clearly with a new Cycle Overview, a calmer history summary, and simpler pattern milestones. We also improved cycle status labels and how bleeding and mucus details appear together.`
 
 ### URLs
 
@@ -81,10 +81,10 @@ Upload only the six PNGs in `drafts/`, in numeric order. Do not upload the conta
 
 1. `01-daily-observation.png`
 2. `02-see-your-chart.png`
-3. `03-backup-choice.png`
-4. `04-pattern-developed.png`
-5. `05-completed-charts.png`
-6. `06-ready-to-export.png`
+3. `03-cycle-overview.png`
+4. `04-completed-charts.png`
+5. `05-ready-to-export.png`
+6. `06-privacy-choice.png`
 
 All six files are 1320×2868, flattened PNG, have no alpha channel, and match `CAPTURE_MANIFEST.md`.
 
@@ -112,7 +112,7 @@ Suggested review flow:
 1. Complete onboarding.
 2. Add or edit a Daily Observation from Calendar.
 3. Open Cycle History and a completed cycle.
-4. Review the retrospective Possible fertile pattern card and its limitation language.
+4. Review Cycle Overview, the retrospective Possible fertile pattern card, and its limitation language.
 5. Export a completed cycle to PDF.
 6. Open Settings to review optional cloud backup, feedback, data deletion, Find Care, and privacy information.
 
@@ -123,8 +123,8 @@ No demo account is required because the primary charting flow works signed out. 
 ## Release settings
 
 - Release method: **Manually release this version**.
-- Phased release: off for the initial 2.1.1 release unless the owner chooses otherwise after approval.
-- Build: select only the new 2.1.1 build created from the final release commit; do not select TestFlight build 20.
+- Phased release: off for version 2.1.4 unless the owner chooses otherwise after approval.
+- Build: select version 2.1.4 build 24 created from release commit `ea2303f06a10fd27f90952780bc4473e616c0bb4`.
 - Accessibility Nutrition Label: make no supported-feature claim until the release candidate passes the corresponding Apple criteria.
 
 ## Fields that still require owner account information
@@ -135,6 +135,9 @@ App Store Connect requires the existing App Review contact name, email, and phon
 
 - Apple Developer Program agreement accepted July 14, 2026; Free Apps Agreement active through March 11, 2027.
 - Public support and privacy URLs are published and saved in App Store Connect.
+
+### Prior 2.1.1 staging history
+
 - EAS build ID: `fa460f20-a784-4ddb-9d83-73adbce84256`.
 - EAS submission ID: `4fb82e1b-c16b-4f4a-bc62-87ef5738df0f`.
 - Release source commit: `607caec07891bc41bbad7cb6dcd3e863b572d4be`.
@@ -143,4 +146,23 @@ App Store Connect requires the existing App Review contact name, email, and phon
 - Six screenshots uploaded in numeric order to the iPhone 6.9-inch screenshot set; all six reached `COMPLETE`.
 - App privacy answers published exactly as listed above. Subtitle, metadata, review notes, manual-release setting, and build 21 are saved on the 2.1.1 release record.
 - Internal TestFlight group: `Team (Expo)`.
+
+The editable 2.1.1 App Store record was never submitted and was updated in place to 2.1.4.
+
+### Current 2.1.4 staging record
+
+- 2.1.4 EAS build ID: `d7c316c3-c3aa-4541-9b4f-049544407581`.
+- 2.1.4 EAS submission ID: `a3d4710e-6f4d-4d0c-bedd-b2f599ccc220`.
+- 2.1.4 release source commit: `ea2303f06a10fd27f90952780bc4473e616c0bb4`.
+- App Store Connect build: version `2.1.4`, build `24`, Apple build ID `4cd193ef-3c7e-4788-9137-caa34a981129`, processing state `VALID`.
+- App Store Connect version ID: `685b4590-8695-48b1-95a5-e786587e4322`; state `PREPARE_FOR_SUBMISSION`; release type `MANUAL`.
+- English localization ID: `31a94682-e9f1-427a-a100-db89093914d8`.
+- The six refreshed screenshots were uploaded in the packet order and all reached `COMPLETE`:
+  - `01-daily-observation.png`: `50f25030-9755-40cf-850d-89d4e2df6baa`
+  - `02-see-your-chart.png`: `1e92243a-db8a-48db-a6d7-f51063ece5be`
+  - `03-cycle-overview.png`: `b6451840-c18a-429d-a180-8aaaa0093aab`
+  - `04-completed-charts.png`: `eef45d88-1145-42d1-a8e0-c660cf6bae99`
+  - `05-ready-to-export.png`: `f19d39f4-02fd-4097-b9d9-c9cf18e2619b`
+  - `06-privacy-choice.png`: `916ded16-6648-4b19-924c-783f5a5be744`
+- The staging workflow intentionally stopped before App Review submission.
 - Final gate: do not continue past Apple's review confirmation or submit the version to App Review without a separate owner decision.

@@ -302,6 +302,73 @@ Show fast daily entry, exports, history, and clear visual interpretation.
 - H3 remains the strongest candidate, but the proof point must be verified in-product: which observations can appear together, which categories are customizable, and what chart context users actually see after saving. H1's user-agency language remains conditional on confirming that Well Within does not auto-interpret observations.
 - This source set is public and mostly historical (2023–2025); it is not current social-performance evidence. No draft is justified without product verification and a measurable test plan.
 
+## Research Update: 2026-07-12
+
+- A bounded public TTC/community set across `r/TryingForABaby`, `r/tryingforanother`, `r/FAMnNFP`, and `r/BabyBumps` adds fresh (April–July 2026) evidence that the emotional cost of charting is cognitive load, not just sign confusion. Users name inconsistent routines, sleep disruption, device changes, and not knowing whether they are recording enough as reasons tracking can feel like a personal failure.
+- Preserve for future research prompts only: "a looot of brain power," "love/hate relationship," "wondering if I'm doing something wrong," "so many variables in reality," "you can't go back in time and get this data," "I am intimidated," "without a bit of hand holding," and "modified some of the other sections to chart things I cared about."
+- Strongest implication: H3's future proof should reduce capture friction and preserve readable history for imperfect real-life routines; it must not present Well Within as resolving ambiguity, ensuring accurate measurement, or replacing education. H1 can normalize uncertainty in a human voice; H2 can ask which part of the routine takes the most mental load. H4 remains conditional on a product/privacy review.
+- No draft is justified from this run: the account still lacks fresh intent metrics and the product's actual capture, customization, chart, and privacy behavior are unverified. Avoid TTC outcome reassurance, timing advice, or a generic "charting is easy" promise.
+
+## Research Update: 2026-07-13
+
+- A bounded public TTC/community set across `r/TryingForABaby`, `r/TFABChartStalkers`, and `r/TTC_PCOS` reinforces that charting distress can emerge from disrupted routines and competing inputs, not only missing education. The durable user job is preserving a useful record when sleep, testing cadence, symptoms, and app timing do not neatly agree.
+- Preserve for future research prompts only: "chart was thrown all out of whack," "I’m confused," "manual override my ovulation date," "when to stop LH strip testing," "I can control when I pee at least," "it is tough for me not to spiral," "the charting was satisfying," and "it didn’t feel like a burden because it fit my lifestyle."
+- H3 remains strongest, conditional on proving that Well Within can capture an imperfect-day entry and show it as readable history without claiming interpretation. H1 can humanize uncertainty only after the product's non-predictive boundary is verified. H2 can explore routine-fit friction, but no content is justified without a measurable native format and audience response.
+- This source set is public Reddit evidence with low or unavailable engagement context. It is problem-language, not medical guidance, a creative-performance signal, or proof of product capability.
+
+## Research Update: 2026-07-15
+
+- A bounded public adjacent-Instagram creator set (Clearblue, Premom Fertility, and Tempdrop; recent May–June 2026 posts) uses ordinary-life, routine-fit language around cycle tracking: "girl's trip," "tracking routine," "sisterly cycle-tracking check-in," and a chart "just the right size."
+- Treat this as a light positioning cue, not direct audience evidence: it supports the existing H3 job of keeping a useful record through real life, but does not establish an engagement winner or prove that Well Within can make capture effortless, travel-proof, or interpretive.
+- If product verification supports it, an H3 demonstration may place one observable entry in an everyday routine and show the resulting readable history. H2 may use routine-fit as a listening question. Keep TTC, BBT protocol, fertility-window, and prediction language out of Well Within claims.
+- The next decisive evidence is still an in-product walkthrough: capture an imperfect-day entry, save it, and inspect the exact chart/history and any interpretation boundary before drafting.
+
+## Research Update: 2026-07-17
+
+- A bounded recent TTC/community set reinforces a critical distinction: users may value observation records, but feel harmed by tracker experiences that turn ordinary variation into pressure for certainty. Keep the product role to calm capture and readable history, never an answer engine.
+- Preserve for future research prompts only: "the stress of tracking everything and timing is really getting to me," "I can't handle BBT," "the confirmation makes me feel better," "starting to spiral," "I truly just want to be done," and "no amount of charting and no app will tell you the actual day."
+- H3 remains strongest if an in-product walkthrough proves an ordinary, imperfect-day entry can be saved and read in context. H1 is strengthened only as a truthful, reviewed anti-certainty boundary; H2 can explore where tracking becomes pressure. Never use this qualitative evidence for ovulation confirmation, fertility timing, diagnostic, treatment, or pregnancy-outcome claims.
+- Public Reddit evidence is not social-format performance or verified Well Within capability. No draft is justified without product verification, a measurable test plan, and claim review.
+
+## Research Update: 2026-07-18
+
+- A bounded public fertility-awareness app-review set reinforces a durable tension: users want a charting tool to be detailed and flexible, while preserving their ownership of interpretation. The strongest recurring phrasing is “insanely customizable,” “as detailed as you’d like,” “the app doesn’t make predictions,” and concern that apps may “predict our bodies for us.”
+- Treat this as language for product research and future, verified H3/H1 work—not a permission to say Well Within is customizable, prediction-free, fast, or easy to read. Those are product claims that still need walkthrough evidence.
+- H3 remains the strongest candidate: prove one user-owned entry becoming readable history/chart context. H1 may use a reviewed restraint boundary; H2 can surface where trackers feel rigid or too directive. No draft is justified without the in-product walkthrough and a measurable test plan.
+
+## Research Update: 2026-07-19
+
+- A bounded public cycle-app review set adds a durable constraint to the existing privacy and capture findings: users experience privacy as control plus dependable access to their own record. The sharpest objections are not only data-sharing fears; they include a "Today" entry crashing, no way to handle an anomalous cycle, paper becoming "messy fast," and apps that omit needed data.
+- Preserve the language for research prompts and product validation only: "stores your data locally," "crashing repeatedly," "no way to exclude an anomalous cycle," "didn't let me include the data I needed," and "highly customizable." Do not treat any as a Well Within claim.
+- H3 remains primary, now with a reliability requirement: a future demonstration must show a verified entry surviving save and appearing in readable history/chart context. H4 remains conditional on a current privacy/product review and should never be framed as abstract reassurance; any future trust proof must cover both control and the user's ability to retain/use their record. H1 is not advanced by this source set.
+- The July 17 Reel already verified a narrow Brown-plus-Wet capture and saved-chart flow, but it generated distribution without an intent signal. Before a sibling or broader claim, collect its 72-hour and 7-day intent metrics and verify an unusual/edited-entry workflow plus any broader data-handling claims.
+
+## Research Update: 2026-07-20
+
+- A bounded recent TTC/community set adds a durable emotional constraint: charting can be both useful and too consuming when sleep changes, signals conflict, or an app timeline becomes a prompt to seek certainty. The relevant product job is to preserve an observation record without positioning the record as an answer engine.
+- Preserve for research prompts only: "where do you draw the line so that it doesn’t become obsessive and it stays productive?", "it didn’t feel like a burden because it fit my lifestyle", "my chart was thrown all out of whack", "I can control when I pee at least", and "I do find that tracking makes me obsessive."
+- H3 remains strongest for a verified ordinary/imperfect entry that saves into readable history. H1 remains conditional on a reviewed anti-certainty boundary; H2 can ask where tracking shifts from useful to pressure. Do not use this evidence to imply that Well Within reconciles signals, confirms ovulation, provides TTC guidance, or produces a pregnancy outcome.
+- The July 17 Reel reached people but has no recorded intent signal. No new draft is justified until that 72-hour/7-day measurement and the unusual/edited-entry walkthrough close the remaining evidence gap.
+
+## Research Update: 2026-07-21
+
+- A bounded privacy-first cycle-app discourse set reinforces that people treat privacy as a concrete usability and control question: where the record lives, who can access it, whether it generates ads, and whether it remains readable enough to replace paper. Preserve as research language only: "physical note of dates/symptoms," "secure, private, and ACCESSIBLE," "targeted ads," "dense charts," "alarmist notifications," and "murky data practices."
+- H4 remains conditional on a current implementation audit. Any future trust proof must answer user-visible questions about identifiers, storage, backup/sync, export/delete/reset, and data sharing; it must not imply local-only storage, no-sale, legal protection, or subpoena resistance without review. H3 remains relevant because a private record must still be accessible and usable.
+- The July 17 Reel has reach but no recorded intent signal. No draft is justified until the 7-day intent pull and privacy/product audit are complete; do not use fear-led privacy rhetoric, legal-risk framing, or category takedowns.
+
+## Research Update: 2026-07-22
+
+- Public cycle-app reviews reinforce a durable H3 constraint: the value of a detailed chart is user-owned continuity—needed observations together, a record that saves and stays readable, and no pressure to accept app interpretation. Preserve for research and validation only: “all of your cycle data in one glance,” “as detailed as you’d like,” “more scrolling to chart and notate,” “crashing repeatedly,” and “no way to exclude an anomalous cycle.”
+- Do not translate this into Well Within claims about customization, local storage, unusual-cycle handling, speed, or non-prediction without a product walkthrough and claim review. H1 remains conditional on a reviewed restraint boundary; H4 remains conditional on the privacy audit.
+- No draft is justified until the July 17 Reel’s 7-day intent pull and an unusual/edited-entry walkthrough establish whether a H3 follow-up can make a narrow, verified record-continuity proof.
+
+## Research Update: 2026-07-23
+
+- A bounded public fertility-awareness-educator source set reinforces that the useful charting job is not merely “simple tracking.” Beginners want help keeping observations that fit their own pattern when generic app categories, rules, graphs, and information overload make them second-guess themselves.
+- Preserve for research prompts and product validation only: “pull out your own unique pattern,” “they don’t fit exactly into those categories,” “patterns over perfection,” “totally overwhelmed with all the rules, graphs, and nuances,” and “hours ... researching on Google and second-guessing yourself.” These are educator/testimonial phrases, not direct Well Within audience evidence.
+- H3 remains primary only for a verified capture-to-readable-history demonstration. H1 may eventually make a reviewed restraint promise about not forcing a person into generic categories or selling certainty; H2 can listen for the observation/category people second-guess; H5 is strengthened as an educator-interview route. Do not imply method instruction, category customization, fertility-status interpretation, contraception efficacy, or educator equivalence without review.
+- No draft is justified until the July 17 Reel’s 7-day intent pull and a verified unusual/edited-entry plus interpretation-boundary walkthrough close the evidence gap.
+
 ```markdown
 ## Observation: [Source or pattern]
 - Date:

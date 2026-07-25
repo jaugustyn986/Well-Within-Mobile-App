@@ -27,6 +27,7 @@ export interface CalendarDayInfo {
   mucusRank?: number | null;
   bleeding?: BleedingType;
   intercourse?: boolean;
+  observationCount?: number;
   /** Retrospective Peak/P+ markers are shown only for a bounded presentation. */
   showDerivedMarkers?: boolean;
 }

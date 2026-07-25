@@ -1,8 +1,8 @@
 # Action 6 — App Store Story and Privacy Reconciliation
 
-Date: July 14, 2026
+Date: July 16, 2026
 
-Status: **2.1.1 build 21 is staged in App Store Connect and TestFlight; stopped before review submission**
+Status: **2.1.4 build 24, refreshed metadata, and all six screenshots are staged in App Store Connect; stopped before review submission**
 
 ## Outcome
 
@@ -12,10 +12,10 @@ The default screenshot story contains six frames:
 
 1. Make one structured daily observation.
 2. See the chart take shape.
-3. Choose whether to add account-backed cloud backup.
-4. Review how a possible pattern developed.
-5. Compare eligible completed charts over time.
-6. Export a chart on the user's terms.
+3. Review one completed cycle in a clear overview.
+4. See what completed charts have shown over time.
+5. Export a chart on the user's terms.
+6. Choose whether to add account-backed cloud backup.
 
 An optional seventh frame shows how the app handles missing context without guessing.
 
@@ -27,17 +27,18 @@ An optional seventh frame shows how the app handles missing context without gues
 - A reproducible, non-personal 99-entry capture fixture covers three eligible completed cycles and one current cycle.
 - The fixture passes through the production rules engine.
 - A current native Release build succeeds and has been verified at Apple's accepted 1320×2868 portrait size.
-- Six clean native source captures and a genuine synthetic export preview are recorded in the [capture manifest](CAPTURE_MANIFEST.md).
+- Six clean native source captures from 2.1.4 and a genuine synthetic export preview are recorded in the [capture manifest](CAPTURE_MANIFEST.md).
 - Six on-brand 1320×2868 composites are in `drafts/`; all are flattened PNGs with no alpha channel.
 - `drafts/contact-sheet.png` provides a single internal review wall.
-- The iOS marketing version is set to 2.1.1, above the current public version 2 and distinct from the old 0.2.1 TestFlight train.
+- The iOS marketing version is set to 2.1.4 and the accepted TestFlight binary is build 24.
 - In-app privacy language, the iOS privacy manifest, the public-policy draft, and the proposed App Store privacy answers now use the same opt-in backup and feedback model.
 - Exact copy/paste fields, privacy selections, screenshot order, review notes, and release settings are collected in the [submission packet](APP_STORE_SUBMISSION_PACKET.md).
 - The [public support page](https://jaugustyn986.github.io/Well-Within-Mobile-App/) and [public privacy policy](https://jaugustyn986.github.io/Well-Within-Mobile-App/privacy/) are published from the versioned site source in `apps/public-site`.
-- App Store Connect version 2.1.1 is created and saved with the approved metadata, review notes, manual-release setting, subtitle, support URL, and privacy-policy URL.
-- All six 1320x2868 screenshots are uploaded in order to the iPhone 6.9-inch screenshot set and report `COMPLETE` through the App Store Connect API.
-- Production EAS build `fa460f20-a784-4ddb-9d83-73adbce84256` produced iOS build 21 from release commit `607caec07891bc41bbad7cb6dcd3e863b572d4be`.
-- EAS submission `4fb82e1b-c16b-4f4a-bc62-87ef5738df0f` uploaded the binary successfully; Apple processed build 21 as `VALID`/`Complete`, and it is available to the internal `Team (Expo)` TestFlight group.
+- The prior 2.1.1 App Store record was updated in place to version 2.1.4 because it remained editable and had not been submitted.
+- App Store Connect version 2.1.4 is saved with the approved metadata, review notes, manual-release setting, subtitle, support URL, privacy-policy URL, and build 24.
+- All six refreshed 1320x2868 screenshots are uploaded in the approved order to the iPhone 6.9-inch screenshot set and report `COMPLETE` through the App Store Connect API.
+- Production EAS build `d7c316c3-c3aa-4541-9b4f-049544407581` produced version 2.1.4 build 24 from release commit `ea2303f06a10fd27f90952780bc4473e616c0bb4`.
+- EAS submission `a3d4710e-6f4d-4d0c-bedd-b2f599ccc220` uploaded build 24 successfully; Apple accepted the binary for TestFlight processing.
 - App Store privacy is published with Health, Email Address, User ID, Customer Support, Other Diagnostic Data, and Coarse Location; each is App Functionality only, linked to the user, and not used for tracking. Fitness and Product Personalization are not selected.
 
 ## Publication gates
@@ -48,15 +49,15 @@ The remaining release gates are:
 
 - [x] In-app privacy language, privacy manifest, public-policy draft, and proposed App Store privacy answers reconciled.
 - [x] Final copy avoids Creighton affiliation, certification, efficacy, fertile-window prediction, ovulation-confirmation, and safe/unsafe-day claims.
-- [x] Six screenshots recaptured from the 2.1.1 release source with the validated synthetic fixture.
+- [x] Six screenshots recaptured from the 2.1.4 release source with the validated synthetic fixture.
 - [x] PNG dimensions, flattening, hashes, sensitive-data scan, crop, and thumbnail story reviewed.
 - [x] Account Holder accepted the Apple Developer Program agreement; the Free Apps Agreement is active.
 - [x] Prepared privacy policy and support page published at stable public URLs.
-- [x] App Store Connect metadata, subtitle, URLs, review notes, screenshots, privacy answers, release settings, and build 21 saved for version 2.1.1.
-- [x] Build 21 processed by Apple and assigned to the internal `Team (Expo)` TestFlight group.
+- [x] Refreshed metadata, screenshots, review notes, release settings, and build 24 saved on the App Store Connect 2.1.4 record.
+- [x] Build 24 accepted by Apple and available in TestFlight.
 - [ ] Release candidate receives the short VoiceOver/Larger Text/contrast and retrospective-vs-prediction comprehension check recorded in the backlog.
 - [x] Owner authorized the App Store Connect save/upload actions completed in this package.
-- [ ] Owner separately confirms **Submit for Review** after reviewing the staged 2.1.1 record. The workflow is intentionally stopped at Apple's review confirmation.
+- [ ] Owner separately confirms **Submit for Review** after reviewing the staged 2.1.4 record. The workflow is intentionally stopped at Apple's review confirmation.
 
 Drafting does not constitute clinical, legal, regulatory, privacy, trademark, licensing, accessibility, or App Store approval.
 
@@ -74,6 +75,8 @@ Drafting does not constitute clinical, legal, regulatory, privacy, trademark, li
 - [Support page copy ready for publication](SUPPORT_PAGE_DRAFT.md)
 - [Synthetic fixture](capture-fixture.mjs)
 - [Simulator seeding helper](seed-simulator-fixture.mjs)
+- [Exact 2.1.4 App Store payload](app-store-2.1.4-payload.mjs)
+- [Inspect/stage App Store Connect helper](stage-app-store-connect.mjs)
 
 ## Authoritative platform references
 

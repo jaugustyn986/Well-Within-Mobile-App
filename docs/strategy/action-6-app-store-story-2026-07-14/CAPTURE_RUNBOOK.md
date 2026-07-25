@@ -46,7 +46,7 @@ Never use this helper against a physical device or production account.
 2. Install it on the 1320×2868 simulator.
 3. Seed the same fixture once.
 4. Turn off simulator debug indicators, pointer overlays, and personal Apple account content.
-5. Capture Daily Entry, Calendar, signed-out Settings, completed Cycle Detail, Cycle History, and Export in that order.
+5. Capture Daily Entry, Calendar, completed Cycle Detail, Cycle History, Export, and signed-out Settings in that order.
 6. Generate the PDF from the same completed cycle used in Cycle Detail.
 7. Record the exact cycle and date used for each frame.
 8. Restore the simulator's previous data.

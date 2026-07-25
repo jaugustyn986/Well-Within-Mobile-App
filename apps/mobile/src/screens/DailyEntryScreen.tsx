@@ -25,6 +25,7 @@ export function DailyEntryScreen(): React.JSX.Element {
   const sync = useSync();
   const { date, intent } = route.params;
   const confirmingCycleStart = intent === 'confirm_cycle_start';
+  const startAddingObservation = intent === 'add_observation';
 
   const [existing, setExisting] = useState<DailyEntry | null>(null);
   const [previousDayEntry, setPreviousDayEntry] = useState<DailyEntry | null>(null);
@@ -74,6 +75,7 @@ export function DailyEntryScreen(): React.JSX.Element {
       onSave={handleSave}
       onDelete={existing ? handleDelete : undefined}
       cycleStartReview={confirmingCycleStart}
+      startAddingObservation={startAddingObservation}
       saveLabel={confirmingCycleStart ? 'Save cycle start' : undefined}
     />
   );

@@ -70,7 +70,7 @@ export async function pullRemoteEntries(userId: string): Promise<{ error: string
     if (!result.success) continue;
     const date = row.entry_date;
     const local = entriesByDate[date];
-    const merged = mergeOne(date, local, row);
+    const merged = mergeOne(date, local, { ...row, entry_payload: result.data });
     if (merged) entriesByDate[date] = merged;
   }
   const newState: StoredEntriesState = {

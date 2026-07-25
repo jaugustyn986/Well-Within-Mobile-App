@@ -3,6 +3,12 @@ dist
 .expo
 coverage
 .DS_Store
+__pycache__/
+*.py[cod]
+
+# Generated QA and intermediate render artifacts
+docs/social/generated/**/.render/
+output/docx-qa/
 
 # Cursor agent debug NDJSON (session-specific; do not commit)
 .cursor/debug-*.log

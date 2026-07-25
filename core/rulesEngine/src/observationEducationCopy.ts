@@ -91,8 +91,8 @@ export const HELP_HOW_TO_OBSERVE_BODY =
   '\u2022 Note the sensation (what you feel)\n' +
   '\u2022 Note the appearance of any mucus on the tissue (what you see)\n' +
   '\u2022 Check before and after toileting throughout the day\n' +
-  '\u2022 Make a final observation at bedtime\n' +
-  '\u2022 Record the most fertile sign you noticed all day \u2014 not just the last check';
+  '\u2022 Record distinct changes you want to remember\n' +
+  '\u2022 Well Within keeps each observation and uses the one with the most fertile signs for that day\u2019s chart';
 
 export const HELP_SENSATION_APPEARANCE_TITLE = 'How do sensation and appearance work together?';
 
@@ -106,7 +106,7 @@ export const HELP_SENSATION_APPEARANCE_BODY =
   'Dry sensation with no mucus \u2192 dry day\n' +
   'Damp or sticky mucus \u2192 non-Peak mucus observation\n' +
   'Clear, stretchy, or lubricative mucus \u2192 peak-type pattern\n\n' +
-  'If you record multiple observations in one day, the app uses the most fertile one.\n\n' +
+  'If you record multiple observations in one day, the app keeps them all and uses the observation with the most fertile signs for that day\u2019s chart. Observation time helps organize your entries but does not change the result.\n\n' +
   'When bleeding is also recorded\n\n' +
   'Heavy, moderate, or light menstrual flow remains the primary chart sign. Spotting and brown stay visible alongside the dry, non-Peak, or Peak-type observation you record. A spotting or brown day can also carry a retrospective P+ marker when it is one of three completed observations after a possible Peak.';
 

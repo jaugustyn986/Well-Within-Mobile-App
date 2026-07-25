@@ -16,7 +16,7 @@ describe('buildCyclePdfHtml calendar-day output', () => {
 
     const html = buildCyclePdfHtml(cycle, false);
     const tableBody = html.match(/<tbody>([\s\S]*?)<\/tbody>/)?.[1] ?? '';
-    const rows = tableBody.match(/<tr style="background:[\s\S]*?<\/tr>/g) ?? [];
+    const rows = tableBody.match(/<tr class="data-row [\s\S]*?<\/tr>/g) ?? [];
     const missingDayRow = rows.find((row) => row.includes('January 2 2026')) ?? '';
 
     expect(cycle.length).toBe(3);
@@ -25,6 +25,69 @@ describe('buildCyclePdfHtml calendar-day output', () => {
     expect(html).toContain('focuses on recorded observations');
     expect(html).not.toContain('Chart Strength</th>');
     expect(html).not.toContain('>Phase</th>');
+  });
+
+  it('keeps one PDF row per day and summarizes multiple observations compactly', () => {
+    const entries: DailyEntry[] = [{
+      date: '2026-01-01',
+      bleeding: 'heavy',
+      menstrualFlowStart: 'confirmed',
+      sensation: 'dry',
+      observations: [
+        { id: 'morning', observedAt: '08:10', sensation: 'damp', appearances: ['cloudy'], frequency: 1 },
+        { id: 'evening', observedAt: '20:30', sensation: 'stretchy', appearances: ['clear'], frequency: 2 },
+      ],
+    }];
+    const [cycle] = splitIntoCycles(entries);
+    const html = buildCyclePdfHtml(cycle, false);
+    const tableBody = html.match(/<tbody>([\s\S]*?)<\/tbody>/)?.[1] ?? '';
+    const rows = tableBody.match(/<tr class="data-row [\s\S]*?<\/tr>/g) ?? [];
+
+    expect(rows).toHaveLength(1);
+    expect(html).toContain('2 mucus observations - strongest shown');
+    expect(html).toContain('>Stretchy</td>');
+    expect(html).toContain('>Clear</td>');
+    expect(html).toContain('>x2</td>');
+    expect(html).not.toContain('08:10');
+    expect(html).not.toContain('20:30');
+  });
+
+  it('renders a print-friendly chart hierarchy and clinically meaningful row tones', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-03-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-03-02', bleeding: 'none', mucusRankOverride: 1 },
+      { date: '2026-03-03', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-03-04', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-03-05', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-03-06', bleeding: 'none', mucusRankOverride: 0 },
+    ];
+    const [cycle] = splitIntoCycles(entries);
+    const html = buildCyclePdfHtml(cycle, false, {
+      possibleFertilePatternEligibility: eligible,
+    });
+
+    expect(html).toContain('Day-by-day chart');
+    expect(html).toContain('Recorded observations');
+    expect(html).toContain('Chart interpretation');
+    expect(html).toContain('Chart result</th>');
+    expect(html).toContain('class="data-row row-bleeding');
+    expect(html).toContain('class="data-row row-mucus');
+    expect(html).toContain('class="data-row row-peak row-peak-day');
+    expect(html).toContain('class="data-row row-p-plus');
+    expect(html).toContain('thead { display: table-header-group; }');
+    expect(html).toContain('print-color-adjust: exact');
+  });
+
+  it('labels unrecorded dates directly in the daily table', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-03', bleeding: 'none', mucusRankOverride: 1 },
+    ];
+    const [cycle] = splitIntoCycles(entries);
+    const html = buildCyclePdfHtml(cycle, false);
+
+    expect(html).toContain('No entry');
+    expect(html).toContain('row-missing');
   });
 
   it('exports the latest Peak and P+ count when separated sequences both qualify', () => {
@@ -118,7 +181,7 @@ describe('buildCyclePdfHtml calendar-day output', () => {
 
     expect(html).toContain('Possible fertile pattern');
     expect(html).toContain('from March 12 2026 through P+3 on March 16 2026');
-    expect(html).toContain('Special contexts—including postpartum or breastfeeding');
+    expect(html).toContain('Special contexts-including postpartum or breastfeeding');
     expect(html).toContain('>Phase</th>');
   });
 

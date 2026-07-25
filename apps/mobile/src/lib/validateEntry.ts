@@ -10,8 +10,26 @@ const frequency = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal('
 const menstrualFlowStart = z.enum(['confirmed', 'not_start', 'uncertain']);
 
 const observationSchema = z.object({
+  id: z.string().min(1).optional(),
+  observedAt: z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/).optional(),
   sensation: sensation,
   appearances: z.array(appearance),
+  frequency: frequency.optional(),
+});
+
+const observationsSchema = z.array(observationSchema).superRefine((observations, context) => {
+  const seenIds = new Set<string>();
+  observations.forEach((observation, index) => {
+    if (!observation.id) return;
+    if (seenIds.has(observation.id)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Mucus observation IDs must be unique',
+        path: [index, 'id'],
+      });
+    }
+    seenIds.add(observation.id);
+  });
 });
 
 export const dailyEntrySchema = z.object({
@@ -23,7 +41,7 @@ export const dailyEntrySchema = z.object({
   notes: z.string().optional(),
   frequency: frequency.optional(),
   missing: z.boolean().optional(),
-  observations: z.array(observationSchema).optional(),
+  observations: observationsSchema.optional(),
   mucusRankOverride: z.number().optional(),
   menstrualFlowStart: menstrualFlowStart.optional(),
 });

@@ -2,24 +2,27 @@ import AppKit
 import Foundation
 
 let fileManager = FileManager.default
-let root = URL(fileURLWithPath: fileManager.currentDirectoryPath)
+let defaultRoot = URL(fileURLWithPath: fileManager.currentDirectoryPath)
     .appendingPathComponent("docs/strategy/action-6-app-store-story-2026-07-14")
+let root = ProcessInfo.processInfo.environment["ACTION6_ROOT"]
+    .map { URL(fileURLWithPath: $0) }
+    ?? defaultRoot
 let imageURLs = [
     "01-daily-observation.png",
     "02-see-your-chart.png",
-    "03-backup-choice.png",
-    "04-pattern-developed.png",
-    "05-completed-charts.png",
-    "06-ready-to-export.png",
+    "03-cycle-overview.png",
+    "04-completed-charts.png",
+    "05-ready-to-export.png",
+    "06-privacy-choice.png",
 ].map { root.appendingPathComponent("drafts").appendingPathComponent($0) }
 
 let labels = [
     "1 · Daily observation",
     "2 · Chart takes shape",
-    "3 · Backup choice",
-    "4 · Pattern context",
-    "5 · Completed charts",
-    "6 · Export",
+    "3 · Cycle overview",
+    "4 · Completed charts",
+    "5 · Export",
+    "6 · Privacy & backup",
 ]
 
 let columns = 3

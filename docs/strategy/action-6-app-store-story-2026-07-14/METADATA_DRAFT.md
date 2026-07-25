@@ -12,7 +12,7 @@ Cycle charting, made clear
 
 ## Promotional text
 
-Build a consistent daily chart, review how recorded patterns developed, compare completed cycles, and export your record when you choose.
+Chart one day at a time, see what your completed cycles have shown, and export your record whenever you choose.
 
 ## Description
 
@@ -26,15 +26,15 @@ Record structured bleeding, sensation, appearance, and mucus observations in a c
 
 ### See what you recorded
 
-Your calendar reflects your entries with clear labels for bleeding, dry days, mucus observations, Peak-type signs, Peak Day, and P+1–P+3 chart markers.
+Your calendar reflects your entries with clear labels for bleeding, dry days, mucus observations, Peak-type signs, a Peak marker, and P+1–P+3 chart markers.
 
 ### Review retrospective chart context
 
-When the recorded observations support it, Well Within can show how a possible pattern developed. The app keeps limitations visible when dates, entries, or special context are missing.
+When the recorded observations support it, a Cycle Overview brings the cycle length, Peak marker, days from Peak to the next cycle, and recorded pattern into one view. The app keeps limitations visible when dates, entries, or special context are missing.
 
 ### Learn across completed cycles
 
-Open a completed chart, review its daily log, and compare eligible recorded ranges across cycles. These views describe chart history; they do not predict future ovulation or fertile-window dates.
+Open a completed chart, review its daily log, and see what completed charts have shown about first mucus signs, Peak markers, and the days from Peak to the next cycle. These views describe chart history; they do not predict future ovulation or fertile-window dates.
 
 ### Export on your terms
 
@@ -54,7 +54,7 @@ Do not add another organization's brand, a certification claim, `ovulation track
 
 ## What's New — draft
 
-Chart context is now easier to understand across Calendar and Cycle History. This update adds clearer retrospective pattern explanations, consistent Peak and P+ chart markers, improved bleeding-plus-observation handling, and calmer next steps when an entry needs review.
+See each cycle more clearly with a new Cycle Overview, a calmer history summary, and simpler pattern milestones. We also improved cycle status labels and how bleeding and mucus details appear together.
 
 ## Claims intentionally excluded
 

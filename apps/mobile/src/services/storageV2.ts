@@ -1,5 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import type { DailyEntry } from 'core-rules-engine';
+import {
+  resolveDailyMucus,
+  withMucusObservations,
+  type DailyEntry,
+} from 'core-rules-engine';
 import { validateDailyEntry } from '../lib/validateEntry';
 
 export const STORAGE_KEY_V1 = 'wellwithin_entries_state_v1';
@@ -155,7 +159,11 @@ export async function getDailyEntry(date: string): Promise<DailyEntry | null> {
 export async function saveDailyEntry(date: string, entry: DailyEntry): Promise<void> {
   const state = await getStoredState();
   const now = new Date().toISOString();
-  const fullEntry = { ...entry, date };
+  const datedEntry = { ...entry, date };
+  const resolved = resolveDailyMucus(datedEntry);
+  const fullEntry = !datedEntry.missing && resolved.observations.length > 0
+    ? withMucusObservations(datedEntry, resolved.observations)
+    : datedEntry;
   state.entriesByDate[date] = {
     clientUpdatedAt: now,
     dirty: true,

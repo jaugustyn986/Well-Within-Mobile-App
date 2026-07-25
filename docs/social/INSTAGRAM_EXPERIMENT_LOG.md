@@ -445,7 +445,7 @@ Use this file to track planned, posted, measured, and retired Instagram content 
 
 ## Experiment: Record One Observation. See It On Your Chart.
 
-- Status: planned
+- Status: superseded before publishing
 - Date planned: 2026-07-03
 - Date posted:
 - Post URL:
@@ -461,7 +461,7 @@ Use this file to track planned, posted, measured, and retired Instagram content 
 - Target metric: saves and profile visits; secondary link taps
 - Baseline or comparison: compare against prior beginner education carousels once insights are available; current confidence remains low because recent post metrics are missing
 - Review checkpoints: 24h, 72h, 7d
-- Research reinforcement: 2026-07-04 public fallback research again supported the saveable one-action utility angle. Keep this planned test app-led and reference-like; do not convert it into a fertile-window explainer or another broad beginner reassurance post.
+- Research reinforcement: 2026-07-04 public fallback research supported the saveable one-action utility angle, but July 8–17 listening made the generic “one observation” wording too shallow. Replaced by `Some Days Don’t Fit One Neat Box`, which uses verified multi-observation product proof.
 
 ### Results
 
@@ -484,4 +484,53 @@ Use this file to track planned, posted, measured, and retired Instagram content 
 - What worked:
 - What did not:
 - Confidence: low
-- Next action: approve or capture the real UI screenshots needed for the 3-slide package; after posting, collect saves, profile visits, reach, shares, and link taps at 24h, 72h, and 7d before deciding whether product-light utility should repeat.
+- Next action: do not publish this version. Use the replacement experiment below.
+
+## Experiment: Some Days Don’t Fit One Neat Box
+
+- Status: posted and verified
+- Date planned: 2026-07-17
+- Date posted: 2026-07-17 at 09:45:07 CDT
+- Post URL: `https://www.instagram.com/reel/Da5dbL3kUpJ/`
+- Media ID: `18090981767086429`
+- Format: 9-second Reel, 1080 x 1920, proof-first cover
+- Hypothesis: `H3 — One Real Daily Entry Demo`, sharpened to competing observations on one imperfect day
+- Primary variable: a specific tension hook plus verified, uncovered product behavior
+- Strategic bet: a real Brown-plus-Wet entry that remains visible in the chart will feel more human, useful, and trustworthy than another generic reassurance post or text-heavy carousel
+- Audience: fertility-charting users who experience cognitive load when signs or routines do not feel tidy
+- Hook: “Some days don’t fit one neat box.”
+- Visual: real Well Within 2.1.4 UI only; blank entry → Brown → Wet → saved chart; no stock footage or generated interface
+- Caption angle: keep what happened visible and in context without claiming that one sign confirms ovulation or predicts what comes next
+- CTA: save this for the charting day that feels less clear
+- Target metric: saves and profile visits; secondary follows, replies, comments, and DMs
+- Baseline or comparison: July 3 Reel — 32 views, 29 reach, 1 save
+- Decision rule: continue only if reach is greater than 29 or the post produces at least two concrete intent signals among saves, profile visits, follows, replies, comments, or DMs
+- Review checkpoints: 24h, 72h, 7d
+- Package: `docs/social/generated/some-days-dont-fit-one-neat-box/content-package.md`
+- Release note: Jim approved showing imminent 2.1.4 behavior before public release on 2026-07-17; no download CTA is included
+- Publishing route: Composio CLI (`INSTAGRAM_POST_IG_USER_MEDIA` → `INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH`), local MP4 upload, `share_to_feed=true`, first-frame cover; container ID `18106412036018990`
+- Verification note: live API readback confirmed Reel/Video media type, `@wellwithinapp`, permalink, comments enabled, and the exact approved caption. Instagram’s edit interface was used immediately after publishing to correct literal `%23` strings produced by the Composio caption layer and to add the approved alt text.
+
+### Results
+
+- Immediate verification: 0 likes, 0 comments; views, reach, saves, profile visits, and follows not yet available
+- 24h snapshot:
+- 72h snapshot:
+- 7d snapshot:
+- Reach:
+- Views/plays:
+- Likes:
+- Comments:
+- Shares:
+- Saves:
+- Profile visits:
+- Follows:
+- Link taps:
+- App Store clicks:
+
+### Learning
+
+- What worked:
+- What did not:
+- Confidence: low until results are collected
+- Next action: collect the 24h snapshot at or after 2026-07-18 09:45 CDT, then the 72h and 7d checkpoints before creating any sibling variant.

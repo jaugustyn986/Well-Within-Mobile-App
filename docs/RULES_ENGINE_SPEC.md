@@ -41,17 +41,21 @@ The rank is the **maximum** across all applicable signals:
 
 **Final rank = max(sensationRank, lubricativePromotionRank, appearanceBoostRank)**
 
-If multiple observations exist in one day, daily rank is the `max(observationRanks)`.
+If multiple mucus observations exist in one day, daily rank is the `max(observationRanks)`. The final array item wins an equal-rank tie. Optional observation time is display metadata only and never changes ranking or tie-breaking.
 
 An entry that has neither a sensation nor an appearance is **not** inferred to be dry. Its rank is `null` until the observation is completed. Explicit `dry` has rank 0 and may participate in a later retrospective P+ count.
 
 ## Observation Fields
 
-The system captures three observation dimensions per day:
+The system captures three dimensions for each mucus observation:
 
 - **Sensation** (single-select): `dry`, `damp`, `wet`, `shiny`, `sticky`, `tacky`, `stretchy`
 - **Appearances** (multi-select array): `none`, `brown`, `cloudy`, `cloudy_clear`, `gummy`, `clear`, `lubricative`, `pasty`, `red`, `yellow`
 - **Frequency**: `1`, `2`, `3`, `all_day`
+
+Each canonical mucus observation may also carry a stable client ID and an optional local civil time (`HH:mm`). A daily entry may contain multiple mucus observations, but bleeding, menstrual-flow start, intercourse, and notes remain day-level fields recorded once.
+
+`DailyEntry.observations[]` is authoritative whenever present, including an empty array. Legacy entries without the array are interpreted as one observation using the top-level sensation, appearances, and frequency fields. New saves retain those top-level fields only as a compatibility projection of the representative strongest observation; engine consumers resolve from the array.
 
 ## Creighton Code Generation
 

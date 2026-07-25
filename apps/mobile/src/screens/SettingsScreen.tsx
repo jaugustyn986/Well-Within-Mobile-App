@@ -17,6 +17,7 @@ import { useAuth } from '../context/AuthProvider';
 import { useSync } from '../context/SyncProvider';
 import { hasSupabaseEnv } from '../config/env';
 import { LineIcon, type IconName } from '../components/LineIcon';
+import { buildDataExport } from '../utils/exportData';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import {
   BG_PAGE, BG_CARD,
@@ -51,7 +52,7 @@ export function SettingsScreen(): React.JSX.Element {
     setExporting(true);
     try {
       const entries = await getAllEntries();
-      const json = JSON.stringify(entries, null, 2);
+      const json = JSON.stringify(buildDataExport(entries), null, 2);
       const fileUri = FileSystem.cacheDirectory + 'well-within-data.json';
       await FileSystem.writeAsStringAsync(fileUri, json);
       await shareAsync(fileUri, { mimeType: 'application/json' });

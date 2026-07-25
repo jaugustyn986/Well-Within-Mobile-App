@@ -422,10 +422,10 @@ The Cycle Detail screen includes an "Export" button in the top-right header. The
 
 1. User taps Export
 2. A modal asks "Include intercourse markers?" (Yes / No / Cancel)
-3. A PDF is generated via `expo-print` from an HTML template (`exportCyclePdf.ts`)
-4. The iOS share sheet opens via `expo-sharing`, allowing save to Files, AirDrop, email, print, etc.
+3. A PDF is generated via `expo-print` from an HTML template (`exportCyclePdf.ts`). On web, the same HTML opens in an isolated print view so the browser prints the report instead of the current app screen.
+4. The native share sheet opens via `expo-sharing`, allowing save to Files, AirDrop, email, print, etc. Desktop browsers open their print dialog, where the report can be saved as a PDF.
 
-PDF content includes: cycle number, date range, summary stats (length, peak day, fertile window, luteal phase), and a day-by-day observation table (Day, Date, Bleeding, Sensation, Appearance, Freq, Chart, Code, Phase, optional I/C). The **Chart** column shows qualitative strength (Dry, Damp, Wet, Peak-type), not numeric ranks. The **Daily Mucus Pattern chart is in-app only**; it is not included in the PDF because the HTML-to-PDF renderer (expo-print) does not reliably render the chart.
+PDF content includes: cycle number, date range, chart status, summary stats, and a color-keyed day-by-day table (Day, Date, Bleeding, Sensation, Appearance, Freq, Chart result, Phase, optional I/C). The report remains one row per date, repeats table headers on later pages, and labels dates with multiple mucus observations while showing the chart-driving observation in the row. The **Chart result** column shows qualitative strength (Dry, Damp, Wet, Peak-type), not numeric ranks. The **Daily Mucus Pattern chart is in-app only**; it is not included in the PDF because the HTML-to-PDF renderer (expo-print) does not reliably render the chart.
 
 ### Feature: Settings
 

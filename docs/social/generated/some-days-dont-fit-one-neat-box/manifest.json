@@ -1,0 +1,95 @@
+{
+  "package": "some-days-dont-fit-one-neat-box",
+  "status": "published-verified",
+  "renderDate": "2026-07-17",
+  "account": "@wellwithinapp",
+  "releaseContext": {
+    "productVersionShown": "2.1.4",
+    "build": 24,
+    "releaseCommit": "ea2303f06a10fd27f90952780bc4473e616c0bb4",
+    "ownerApprovedPreReleaseShowcase": true,
+    "downloadCtaIncluded": false
+  },
+  "deliverables": [
+    {
+      "path": "reel.mp4",
+      "mediaType": "video/mp4",
+      "bytes": 1329518,
+      "sha256": "9bd21303853feaf0e5f3af5263da1833857b02e88b0ff1e504f22e1b16be3427",
+      "width": 1080,
+      "height": 1920,
+      "durationSeconds": 9,
+      "video": "H.264, 30 fps, yuv420p limited range",
+      "audio": "AAC, 48 kHz, mono"
+    },
+    {
+      "path": "cover.jpg",
+      "mediaType": "image/jpeg",
+      "bytes": 224873,
+      "sha256": "2c6bd9ba04db3b0f2774795757c2ecc21ce5186d6aced328c3414181b9d55bda",
+      "width": 1080,
+      "height": 1920
+    },
+    {
+      "path": "caption.txt",
+      "mediaType": "text/plain",
+      "sha256": "aef9d1070b85ea4e4d558b7b9dc95da897fe3788a322ba764ba0b286387b0354"
+    },
+    {
+      "path": "alt-text.txt",
+      "mediaType": "text/plain",
+      "sha256": "67b0a02882fb8df360c93a8b3e30cf45a7ae361bb692cc40482d0a4f3d8a6b5a"
+    },
+    {
+      "path": "content-package.md",
+      "mediaType": "text/markdown",
+      "sha256": "f33cef751940dbe48d5efb0a8d0e66ad93a2c15473be68aa7ee5d27d54c90dd6"
+    }
+  ],
+  "sources": [
+    {
+      "path": "source/simulator-recording.mov",
+      "description": "Real neutral-data iOS Simulator walkthrough",
+      "sha256": "cd84a37a673650a49b0b22371f6fd06d82f2efeb4017b05e548731696a7f5ca1"
+    },
+    {
+      "path": "source/saved-chart.png",
+      "description": "Real saved-chart result from the same walkthrough",
+      "sha256": "69e2dbcd19506c8a8eb34534bfad765f88ce74235967cd1580a625d1182c240a"
+    },
+    {
+      "path": "source/app-icon.png",
+      "description": "Official Well Within app icon",
+      "sha256": "938d5ea4cae3916d39b20d049677e0456cb19dd462f8601471844e36f741577d"
+    }
+  ],
+  "render": {
+    "script": "generate.mjs",
+    "scriptSha256": "ecd1f60505298ff93bfe596d2b412235a6b807f0719407f4fb072b41a77724f6",
+    "reproducibilityCheck": "passed; two consecutive renders produced identical Reel and cover SHA-256 hashes"
+  },
+  "validation": {
+    "decode": "passed",
+    "dimensions": "passed",
+    "duration": "passed",
+    "videoCodec": "passed",
+    "audioCodec": "passed",
+    "visualQa": "passed after two refinement rounds",
+    "claimReview": "passed for the bounded observation and chart-visibility behavior",
+    "publishApproval": "passed",
+    "liveReadback": "passed"
+  },
+  "publication": {
+    "platform": "Instagram",
+    "username": "wellwithinapp",
+    "permalink": "https://www.instagram.com/reel/Da5dbL3kUpJ/",
+    "mediaId": "18090981767086429",
+    "creationContainerId": "18106412036018990",
+    "timestamp": "2026-07-17T14:45:07+0000",
+    "shareToFeed": true,
+    "commentsEnabled": true,
+    "captionReadback": "matches caption.txt",
+    "altText": "added through Instagram edit interface",
+    "initialCaptionCorrection": "Composio preserved schema-advised percent-encoded hashtag markers literally; corrected immediately in Instagram and verified by API readback"
+  }
+}

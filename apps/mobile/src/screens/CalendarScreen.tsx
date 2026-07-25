@@ -18,6 +18,7 @@ import {
   buildPossibleFertilePatternPresentation,
   type PhaseLabel,
   type PrimaryDayClass,
+  resolveDailyMucus,
 } from 'core-rules-engine';
 import { LineIcon } from '../components/LineIcon';
 import { buildCurrentCycleCatchUpDates, formatCatchUpCount } from '../utils/catchUpDays';
@@ -147,6 +148,7 @@ export function CalendarScreen(): React.JSX.Element {
         showDerivedMarkers: cycleInfo?.showDerivedMarkers ?? false,
         bleeding: entry.bleeding,
         intercourse: !!entry.intercourse,
+        observationCount: resolveDailyMucus(entry).observations.length,
       };
     });
   }, [cycleHistory.cycles, sortedEntries, result, today]);
@@ -252,7 +254,12 @@ export function CalendarScreen(): React.JSX.Element {
               mucusRank={todayRank}
               primaryDayClass={todayPrimaryClass}
               date={today}
-              onPress={() => navigation.navigate('DailyEntry', { date: today, existingEntry: !!todayEntry })}
+              onReview={() => navigation.navigate('DailyEntry', { date: today, existingEntry: !!todayEntry })}
+              onAddObservation={() => navigation.navigate('DailyEntry', {
+                date: today,
+                existingEntry: !!todayEntry,
+                intent: 'add_observation',
+              })}
             />
 
             <Pressable
