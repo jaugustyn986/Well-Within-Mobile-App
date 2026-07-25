@@ -8,7 +8,7 @@ const repoRoot = path.resolve(scriptDir, '..', '..', '..');
 // `bleeding-guidance-palette` was manually superseded by the later Action 5
 // implementation on `codex/catch-up-missing-days`; merging it would restore
 // outdated claims and remove newer rules/UX work.
-const ignoredBranchPattern = /(\/HEAD$|\/main$|android|cursor\/|social|\/bleeding-guidance-palette$)/i;
+const ignoredBranchPattern = /(\/HEAD$|\/main$|\/gh-pages$|android|cursor\/|social|\/bleeding-guidance-palette$)/i;
 const appPathPattern = /^(apps\/mobile\/src\/|core\/rulesEngine\/)/;
 
 function git(args) {
