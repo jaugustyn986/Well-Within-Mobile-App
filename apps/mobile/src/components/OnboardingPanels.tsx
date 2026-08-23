@@ -11,6 +11,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE } from 'core-rules-engine';
+import { LineIcon } from './LineIcon';
 import {
   BG_CARD, BG_PAGE, BG_CARD_GRADIENT_START, BG_POST_PEAK, BG_PEAK_TYPE,
   BG_BLEEDING, BG_DRY, BG_NO_ENTRY, BG_MISSING,
@@ -235,85 +236,559 @@ const banner = StyleSheet.create({
    Shows the top section of EntryForm (bleeding, hint).
 ───────────────────────────────────────────────── */
 
-const BLEEDING_LABELS = ['None', 'Spotting', 'Light', 'Moderate', 'Heavy', 'Brown'];
-const SENSATION_LABELS = ['Dry', 'Damp', 'Wet', 'Stretchy'];
+const ONBOARDING_SENSATIONS: readonly {
+  label: string;
+  description: string;
+  wide?: boolean;
+}[] = [
+  { label: 'Dry', description: 'No sensation' },
+  { label: 'Damp', description: 'Slightly moist' },
+  { label: 'Wet', description: 'Wet, no lubrication' },
+  { label: 'Shiny', description: 'Shiny, no lubrication' },
+  { label: 'Sticky', description: 'Holds together' },
+  { label: 'Tacky', description: 'Stretches slightly' },
+  { label: 'Stretchy', description: 'Stretches 1 inch or more', wide: true },
+];
 
 export function OnboardingEntryPanel(): React.JSX.Element {
   return (
     <PhoneCard>
-      <Text style={entry.title}>Daily Observation</Text>
-      <View style={entry.dateBox}>
-        <Text style={entry.dateText}>April 7, 2026</Text>
-      </View>
-
-      <View style={entry.toggleRow}>
-        <Text style={entry.toggleLabel}>Did you observe today?</Text>
-        {/* Static toggle in "on" position */}
-        <View style={entry.switchTrack}>
-          <View style={entry.switchThumb} />
+      <View style={entry.headingRow}>
+        <Text style={entry.title}>Daily Observation</Text>
+        <View style={entry.todayBadge}>
+          <Text style={entry.todayBadgeText}>Today</Text>
         </View>
       </View>
-
-      <View style={entry.section}>
-        <Text style={entry.fieldLabel}>Bleeding</Text>
-        <View style={entry.pillRow}>
-          {BLEEDING_LABELS.map((label, i) => (
-            <View key={label} style={[entry.pill, i === 0 && entry.pillSelected]}>
-              <Text style={[entry.pillText, i === 0 && entry.pillTextSel]}>{label}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
       <View style={entry.section}>
         <Text style={entry.fieldLabel}>Sensation</Text>
-        <View style={entry.pillRow}>
-          {SENSATION_LABELS.map(s => (
-            <View key={s} style={entry.pill}>
-              <Text style={entry.pillText}>{s}</Text>
+        <View style={entry.cardGrid}>
+          {ONBOARDING_SENSATIONS.map((option) => (
+            <View
+              key={option.label}
+              style={[entry.sensationCard, option.wide && entry.sensationCardWide]}
+            >
+              <Text style={entry.sensationTitle}>{option.label}</Text>
+              <Text style={[entry.sensationDescription, option.wide && entry.wideDescription]}>
+                {option.description}
+              </Text>
             </View>
           ))}
         </View>
+      </View>
+      <View style={entry.intentNote}>
+        <View style={entry.checkCircle}>
+          <Text style={entry.checkText}>✓</Text>
+        </View>
+        <Text style={entry.intentText}>
+          Nothing is selected for you. Choose a sensation before saving.
+        </Text>
       </View>
     </PhoneCard>
   );
 }
 
 const entry = StyleSheet.create({
-  title: { fontSize: 19, fontWeight: '600', color: TEXT_PRIMARY },
-  dateBox: {
-    borderWidth: 1, borderColor: BORDER_CARD, borderRadius: 8,
-    padding: 10, marginTop: 8,
+  headingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
   },
-  dateText: { fontSize: 14, color: TEXT_PRIMARY },
-  toggleRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: BG_MISSING, padding: 12, borderRadius: 10, marginTop: 10,
+  title: { fontSize: 18, fontWeight: '600', color: TEXT_PRIMARY },
+  todayBadge: {
+    borderRadius: 999,
+    backgroundColor: BG_MISSING,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
   },
-  toggleLabel: { fontSize: 13, fontWeight: '500', color: TEXT_SECONDARY },
-  switchTrack: {
-    width: 42, height: 24, borderRadius: 12, backgroundColor: '#34C759',
-    justifyContent: 'center', alignItems: 'flex-end', paddingHorizontal: 2,
+  todayBadgeText: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    fontWeight: '600',
   },
-  switchThumb: {
-    width: 20, height: 20, borderRadius: 10, backgroundColor: '#FFFFFF',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15, shadowRadius: 2, elevation: 2,
+  section: { marginTop: 16 },
+  fieldLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: TEXT_SECONDARY,
+    marginBottom: 9,
   },
-  section: { marginTop: 12 },
-  fieldLabel: { fontSize: 12, fontWeight: '600', color: TEXT_SECONDARY, marginBottom: 6 },
-  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  pill: {
-    paddingHorizontal: 11, paddingVertical: 6,
-    borderRadius: 20, borderWidth: 1, borderColor: BORDER_CARD,
+  cardGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 8,
   },
-  pillSelected: { backgroundColor: ACCENT_WARM_TINT, borderColor: ACCENT_WARM },
-  pillText: { fontSize: 12, color: TEXT_SECONDARY },
-  pillTextSel: { color: BRAND_NAME, fontWeight: '600' },
+  sensationCard: {
+    width: '48.7%',
+    minHeight: 58,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    paddingHorizontal: 11,
+    paddingVertical: 9,
+    justifyContent: 'center',
+  },
+  sensationCardWide: {
+    width: '100%',
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  sensationTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  sensationDescription: {
+    color: TEXT_MUTED,
+    fontSize: 11,
+    lineHeight: 15,
+    marginTop: 3,
+  },
+  wideDescription: {
+    marginTop: 0,
+    textAlign: 'right',
+    flexShrink: 1,
+  },
+  intentNote: {
+    marginTop: 13,
+    paddingHorizontal: 13,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: BANNER_TONE_POSITIVE_BG,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  checkCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: FERTILE_ACCENT,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  checkText: {
+    color: FERTILE_ACCENT,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 15,
+  },
+  intentText: {
+    color: TEXT_SECONDARY,
+    fontSize: 12,
+    lineHeight: 17,
+    flex: 1,
+  },
 });
 
 /* ─────────────────────────────────────────────────
-   SLIDE 6 — "Review chart history over time"
+   ACTIVATION — show how one observation gains context
+───────────────────────────────────────────────── */
+
+export function OnboardingChartContextPanel(): React.JSX.Element {
+  return (
+    <View style={chartContext.wrap}>
+      <PhoneCard>
+        <View style={chartContext.exampleHeader}>
+          <View>
+            <Text style={chartContext.eyebrow}>Example observation</Text>
+            <Text style={chartContext.entryDate}>One saved entry</Text>
+          </View>
+          <View style={chartContext.observationBadge}>
+            <Text style={chartContext.observationBadgeText}>Wet · Cloudy</Text>
+          </View>
+        </View>
+      </PhoneCard>
+
+      <View style={chartContext.connector}>
+        <View style={chartContext.connectorLine} />
+        <Text style={chartContext.connectorText}>becomes part of your chart</Text>
+        <Text style={chartContext.connectorArrow}>⌄</Text>
+      </View>
+
+      <PhoneCard>
+        <View style={chartContext.statusCard}>
+          <Text style={chartContext.statusTitle}>Your pattern is still taking shape</Text>
+          <Text style={chartContext.statusBody}>
+            Keep charting daily. This summary updates as your observations change.
+          </Text>
+        </View>
+        <View style={chartContext.weekRow}>
+          {[
+            { day: 'S', date: '1', tone: BG_BLEEDING },
+            { day: 'M', date: '2', tone: BG_BLEEDING },
+            { day: 'T', date: '3', tone: BG_DRY },
+            { day: 'W', date: '4', tone: BG_PEAK_TYPE },
+            { day: 'T', date: '5', tone: BG_POST_PEAK },
+            { day: 'F', date: '6', tone: BG_POST_PEAK },
+            { day: 'S', date: '7', tone: BG_NO_ENTRY },
+          ].map((item, index) => (
+            <View key={`${item.day}-${item.date}`} style={chartContext.weekDay}>
+              <Text style={chartContext.weekDayLabel}>{item.day}</Text>
+              <View
+                style={[
+                  chartContext.dateCell,
+                  { backgroundColor: item.tone },
+                  index === 6 && chartContext.todayCell,
+                ]}
+              >
+                <Text style={chartContext.dateText}>{item.date}</Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      </PhoneCard>
+
+      <View style={chartContext.benefitNote}>
+        <Text style={chartContext.benefitText}>
+          Over time, review past cycles and export your chart when you need it.
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const chartContext = StyleSheet.create({
+  wrap: { gap: 10 },
+  exampleHeader: {
+    minHeight: 54,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  eyebrow: {
+    color: TEXT_PRIMARY,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  entryDate: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    marginTop: 5,
+  },
+  observationBadge: {
+    borderRadius: 999,
+    backgroundColor: BG_PEAK_TYPE,
+    paddingVertical: 7,
+    paddingHorizontal: 11,
+  },
+  observationBadgeText: {
+    color: TEXT_PRIMARY,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  connector: {
+    minHeight: 53,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  connectorLine: {
+    height: 10,
+    width: 1,
+    backgroundColor: BORDER_CARD,
+  },
+  connectorText: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  connectorArrow: {
+    color: ACCENT_WARM,
+    fontSize: 20,
+    lineHeight: 20,
+  },
+  statusCard: {
+    backgroundColor: BANNER_TONE_POSITIVE_BG,
+    borderRadius: 12,
+    paddingHorizontal: 13,
+    paddingVertical: 12,
+  },
+  statusTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  statusBody: {
+    color: TEXT_SECONDARY,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 5,
+  },
+  weekRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 14,
+  },
+  weekDay: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  weekDayLabel: {
+    color: TEXT_MUTED,
+    fontSize: 10,
+    fontWeight: '600',
+    marginBottom: 5,
+  },
+  dateCell: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  todayCell: {
+    borderWidth: 2,
+    borderColor: BORDER_TODAY,
+  },
+  dateText: {
+    color: TEXT_PRIMARY,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  benefitNote: {
+    backgroundColor: ACCENT_WARM_TINT,
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+  },
+  benefitText: {
+    color: TEXT_SECONDARY,
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+});
+
+/* ─────────────────────────────────────────────────
+   ACTIVATION — reinforce local-first privacy
+───────────────────────────────────────────────── */
+
+const PRIVACY_ROWS = [
+  {
+    icon: 'device',
+    title: 'Stored on this device',
+    body: 'Your chart is local by default.',
+  },
+  {
+    icon: 'lock',
+    title: 'Optional cloud backup',
+    body: 'Turn it on later if you choose.',
+  },
+  {
+    icon: 'shield',
+    title: 'Export or delete',
+    body: 'Use your chart and data controls when you need them.',
+  },
+] as const;
+
+export function OnboardingPrivacyPanel(): React.JSX.Element {
+  return (
+    <View style={privacy.wrap}>
+      <View style={privacy.heroIcon}>
+        <LineIcon name="lock" size={48} />
+      </View>
+      {PRIVACY_ROWS.map((row) => (
+        <PhoneCard key={row.title}>
+          <View style={privacy.row}>
+            <LineIcon name={row.icon} size={22} />
+            <View style={privacy.copy}>
+              <Text style={privacy.title}>{row.title}</Text>
+              <Text style={privacy.body}>{row.body}</Text>
+            </View>
+          </View>
+        </PhoneCard>
+      ))}
+    </View>
+  );
+}
+
+const privacy = StyleSheet.create({
+  wrap: { gap: 10 },
+  heroIcon: {
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  row: {
+    minHeight: 53,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 13,
+  },
+  copy: {
+    flex: 1,
+  },
+  title: {
+    color: TEXT_PRIMARY,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  body: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 4,
+  },
+});
+
+/* ─────────────────────────────────────────────────
+   ACTIVATION — preview the direct first action
+───────────────────────────────────────────────── */
+
+const SHORT_WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const SHORT_MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+function currentWeek(date: Date): Date[] {
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay());
+  return Array.from(
+    { length: 7 },
+    (_, index) => new Date(start.getFullYear(), start.getMonth(), start.getDate() + index),
+  );
+}
+
+export function OnboardingFirstActionPanel(): React.JSX.Element {
+  const today = new Date();
+  const week = currentWeek(today);
+
+  return (
+    <View style={firstAction.wrap}>
+      <PhoneCard>
+        <View style={firstAction.weekRow}>
+          {week.map((date, index) => {
+            const isToday = date.toDateString() === today.toDateString();
+            return (
+              <View key={date.toISOString()} style={firstAction.weekDay}>
+                <Text style={firstAction.weekLabel}>{SHORT_WEEKDAYS[index]}</Text>
+                <View style={[firstAction.dayCircle, isToday && firstAction.dayCircleToday]}>
+                  <Text style={[firstAction.dayNumber, isToday && firstAction.dayNumberToday]}>
+                    {date.getDate()}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      </PhoneCard>
+
+      <PhoneCard>
+        <View style={firstAction.entryRow}>
+          <View>
+            <Text style={firstAction.entryTitle}>Today’s Observation</Text>
+            <Text style={firstAction.entryDate}>
+              {SHORT_MONTHS[today.getMonth()]} {today.getDate()}
+            </Text>
+          </View>
+          <LineIcon name="observe" size={25} />
+        </View>
+      </PhoneCard>
+
+      <View style={firstAction.intentNote}>
+        <View style={firstAction.checkCircle}>
+          <Text style={firstAction.checkText}>✓</Text>
+        </View>
+        <Text style={firstAction.intentText}>
+          Nothing is saved until you choose an observation.
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const firstAction = StyleSheet.create({
+  wrap: { gap: 11 },
+  weekRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  weekDay: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  weekLabel: {
+    color: TEXT_MUTED,
+    fontSize: 10,
+    fontWeight: '600',
+    marginBottom: 7,
+  },
+  dayCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: BG_NO_ENTRY,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dayCircleToday: {
+    backgroundColor: ACCENT_WARM,
+  },
+  dayNumber: {
+    color: TEXT_PRIMARY,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  dayNumberToday: {
+    color: '#FFFFFF',
+  },
+  entryRow: {
+    minHeight: 62,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  entryTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  entryDate: {
+    color: TEXT_MUTED,
+    fontSize: 13,
+    marginTop: 5,
+  },
+  intentNote: {
+    backgroundColor: BANNER_TONE_POSITIVE_BG,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  checkCircle: {
+    width: 21,
+    height: 21,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    borderColor: FERTILE_ACCENT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkText: {
+    color: FERTILE_ACCENT,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 15,
+  },
+  intentText: {
+    color: TEXT_SECONDARY,
+    fontSize: 12,
+    lineHeight: 17,
+    flex: 1,
+  },
+});
+
+/* ─────────────────────────────────────────────────
+   LEGACY — retained for older previews
 ───────────────────────────────────────────────── */
 
 export function OnboardingHistoryPanel(): React.JSX.Element {

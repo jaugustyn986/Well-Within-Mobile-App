@@ -6,7 +6,13 @@ import { Pressable, Text } from 'react-native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { EntryForm } from '../components/EntryForm';
 import { DailyEntry } from 'core-rules-engine';
-import { getDailyEntry, saveDailyEntry, deleteEntry } from '../services/storageV2';
+import {
+  getAllEntries,
+  getDailyEntry,
+  saveDailyEntry,
+  deleteEntry,
+} from '../services/storageV2';
+import { queueFirstSaveAcknowledgement } from '../features/guidedChartLearning/guidedChartLearningStorage';
 import { useSync } from '../context/SyncProvider';
 import { TEXT_SECONDARY } from '../theme/colors';
 
@@ -54,10 +60,28 @@ export function DailyEntryScreen(): React.JSX.Element {
   }, [date]);
 
   const handleSave = useCallback(async (entry: DailyEntry) => {
+    let entriesBeforeSave: Record<string, DailyEntry> = {};
+    try {
+      entriesBeforeSave = await getAllEntries();
+    } catch {
+      // The normal save remains authoritative if optional presentation-state
+      // discovery cannot read the prior chart.
+    }
     await saveDailyEntry(date, entry);
+    try {
+      await queueFirstSaveAcknowledgement({
+        entriesBeforeSave,
+        savedDate: date,
+        previousEntry: existing,
+        savedEntry: entry,
+      });
+    } catch {
+      // The entry is already saved. Presentation-state failure must never block
+      // the established return-to-Calendar flow or sync.
+    }
     void sync?.syncNow();
     navigation.goBack();
-  }, [date, navigation, sync]);
+  }, [date, existing, navigation, sync]);
 
   const handleDelete = useCallback(async () => {
     await deleteEntry(date);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -27,8 +27,13 @@ import type { RootStackParamList } from '../navigation/AppNavigator';
 import {
   BG_BLEEDING, BG_DRY, BG_NO_ENTRY, BG_PEAK_TYPE, BG_POST_PEAK, BG_PAGE, BG_CARD,
   FERTILE_ACCENT, PEAK_BORDER, BORDER_CARD, BORDER_TODAY, INTERCOURSE_ICON,
-  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED,
+  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, ACCENT_WARM,
 } from '../theme/colors';
+import { CHART_TIPS } from '../features/guidedChartLearning/guidedChartLearning';
+import {
+  getGuidedChartLearningPreferences,
+  setChartTipsEnabled,
+} from '../features/guidedChartLearning/guidedChartLearningStorage';
 
 interface AccordionItemData {
   id: string;
@@ -272,19 +277,98 @@ function AccordionItem({ item, initialOpen }: {
   );
 }
 
+function ChartTipsArchive({
+  enabled,
+  onEnabledChange,
+  onOpenLesson,
+}: {
+  enabled: boolean;
+  onEnabledChange: (enabled: boolean) => void;
+  onOpenLesson: (lessonId: (typeof CHART_TIPS)[number]['id']) => void;
+}): React.JSX.Element {
+  return (
+    <View style={chartTipStyles.container}>
+      <View style={chartTipStyles.toggleRow}>
+        <View style={chartTipStyles.toggleCopy}>
+          <Text style={chartTipStyles.toggleTitle}>Show chart tips on Calendar</Text>
+          <Text style={chartTipStyles.toggleBody}>
+            This changes only the optional lesson below Today&apos;s Observation.
+          </Text>
+        </View>
+        <Switch
+          value={enabled}
+          onValueChange={onEnabledChange}
+          trackColor={{ false: BORDER_CARD, true: ACCENT_WARM }}
+          thumbColor={BG_CARD}
+          accessibilityLabel="Show chart tips on Calendar"
+        />
+      </View>
+      <Text style={chartTipStyles.archiveLabel}>BROWSE CHART TIPS</Text>
+      {CHART_TIPS.map((lesson) => (
+        <Pressable
+          key={lesson.id}
+          style={({ pressed }) => [
+            chartTipStyles.lessonRow,
+            pressed && chartTipStyles.pressed,
+          ]}
+          onPress={() => onOpenLesson(lesson.id)}
+          accessibilityRole="button"
+        >
+          <View style={chartTipStyles.lessonCopy}>
+            <Text style={chartTipStyles.lessonTitle}>{lesson.title}</Text>
+            <Text style={chartTipStyles.lessonSummary}>{lesson.summary}</Text>
+          </View>
+          <Text style={chartTipStyles.chevron}>{'›'}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
 export function HelpScreen(): React.JSX.Element {
   const navigation = useNavigation<HelpNav>();
   const route = useRoute<RouteProp<RootStackParamList, 'Help'>>();
   const resetOnboarding = useResetOnboarding();
   const { cycles } = useCycleHistory();
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [chartTipsEnabled, setChartTipsEnabledState] = useState(true);
   const initialSection = route.params?.initialSection;
+  useEffect(() => {
+    void getGuidedChartLearningPreferences().then((preferences) => {
+      setChartTipsEnabledState(preferences.chartTipsEnabled);
+    });
+  }, []);
+
+  const handleChartTipsEnabledChange = (enabled: boolean) => {
+    setChartTipsEnabledState(enabled);
+    void setChartTipsEnabled(enabled);
+  };
+
+  const sections: AccordionItemData[] = [
+    ...SECTIONS,
+    {
+      id: 'chart_tips',
+      title: 'Chart tips',
+      icon: 'calendar',
+      renderContent: () => (
+        <ChartTipsArchive
+          enabled={chartTipsEnabled}
+          onEnabledChange={handleChartTipsEnabledChange}
+          onOpenLesson={(lessonId) => navigation.navigate('ChartTip', {
+            lessonId,
+            source: 'help',
+          })}
+        />
+      ),
+    },
+  ];
+
   const orderedSections = initialSection
     ? [
-        ...SECTIONS.filter((section) => section.id === initialSection),
-        ...SECTIONS.filter((section) => section.id !== initialSection),
+        ...sections.filter((section) => section.id === initialSection),
+        ...sections.filter((section) => section.id !== initialSection),
       ]
-    : SECTIONS;
+    : sections;
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
@@ -370,4 +454,64 @@ const styles = StyleSheet.create({
     marginTop: 24, padding: 14, backgroundColor: BORDER_CARD, borderRadius: 10, alignItems: 'center',
   },
   showOnboardingText: { fontSize: 14, color: TEXT_SECONDARY, fontWeight: '500' },
+});
+
+const chartTipStyles = StyleSheet.create({
+  container: { gap: 0 },
+  toggleRow: {
+    minHeight: 68,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingBottom: 14,
+  },
+  toggleCopy: { flex: 1 },
+  toggleTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  toggleBody: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 3,
+  },
+  archiveLabel: {
+    color: TEXT_MUTED,
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1,
+    paddingTop: 12,
+    paddingBottom: 8,
+    borderTopWidth: 1,
+    borderTopColor: BORDER_CARD,
+  },
+  lessonRow: {
+    minHeight: 64,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: BORDER_CARD,
+    paddingVertical: 9,
+  },
+  lessonCopy: { flex: 1, paddingRight: 10 },
+  lessonTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 14,
+    lineHeight: 19,
+    fontWeight: '600',
+  },
+  lessonSummary: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 2,
+  },
+  chevron: {
+    color: TEXT_MUTED,
+    fontSize: 22,
+    fontWeight: '300',
+  },
+  pressed: { opacity: 0.64 },
 });

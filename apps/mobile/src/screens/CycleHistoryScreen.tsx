@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -8,14 +8,36 @@ import { CycleSummaryPanel } from '../components/CycleSummaryPanel';
 import { CycleCard } from '../components/CycleCard';
 import { LineIcon } from '../components/LineIcon';
 import { BG_PAGE, TEXT_MUTED, TEXT_PRIMARY } from '../theme/colors';
+import { FirstCompletedChartAcknowledgement } from '../features/guidedChartLearning/GuidedChartLearningComponents';
+import {
+  DEFAULT_GUIDED_CHART_LEARNING_PREFERENCES,
+  firstCompletedCycle,
+  shouldShowFirstCompletedChartAcknowledgement,
+  type GuidedChartLearningPreferences,
+} from '../features/guidedChartLearning/guidedChartLearning';
+import {
+  acknowledgeFirstCompletedChart,
+  getGuidedChartLearningPreferences,
+} from '../features/guidedChartLearning/guidedChartLearningStorage';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'CycleHistory'>;
 
 export function CycleHistoryScreen(): React.JSX.Element {
   const navigation = useNavigation<Nav>();
   const { cycles, recordedHistorySummary, loading, refresh } = useCycleHistory();
+  const [guidedPreferences, setGuidedPreferences] =
+    useState<GuidedChartLearningPreferences>(
+      DEFAULT_GUIDED_CHART_LEARNING_PREFERENCES,
+    );
+  const [guidedPreferencesLoaded, setGuidedPreferencesLoaded] = useState(false);
 
-  useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
+  useFocusEffect(useCallback(() => {
+    refresh();
+    void getGuidedChartLearningPreferences().then((preferences) => {
+      setGuidedPreferences(preferences);
+      setGuidedPreferencesLoaded(true);
+    });
+  }, [refresh]));
 
   const goToDetail = useCallback(
     (cycleNumber: number) => navigation.navigate('CycleDetail', { cycleNumber }),
@@ -28,6 +50,18 @@ export function CycleHistoryScreen(): React.JSX.Element {
       intent: 'confirm_cycle_start',
     }),
     [navigation],
+  );
+  const firstCompleted = useMemo(() => firstCompletedCycle(cycles), [cycles]);
+  const showFirstCompletedAcknowledgement = (
+    guidedPreferencesLoaded
+    && shouldShowFirstCompletedChartAcknowledgement(cycles, guidedPreferences)
+  );
+  const completeFirstChartAcknowledgement = useCallback(
+    (review: boolean) => {
+      void acknowledgeFirstCompletedChart().then(setGuidedPreferences);
+      if (review && firstCompleted) goToDetail(firstCompleted.cycleNumber);
+    },
+    [firstCompleted, goToDetail],
   );
 
   if (loading) {
@@ -60,6 +94,13 @@ export function CycleHistoryScreen(): React.JSX.Element {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <CycleSummaryPanel summary={recordedHistorySummary} />
+
+        {showFirstCompletedAcknowledgement ? (
+          <FirstCompletedChartAcknowledgement
+            onReview={() => completeFirstChartAcknowledgement(true)}
+            onDismiss={() => completeFirstChartAcknowledgement(false)}
+          />
+        ) : null}
 
         <View style={styles.cardsSection}>
           <Text style={styles.cardsHeading}>Your Cycles</Text>

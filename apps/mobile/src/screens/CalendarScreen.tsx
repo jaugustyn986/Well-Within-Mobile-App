@@ -1,7 +1,8 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useCycleData } from '../hooks/useCycleData';
 import { useCycleHistory } from '../hooks/useCycleHistory';
@@ -28,11 +29,33 @@ import {
   BRAND_NAME, ACCENT_WARM, ACCENT_WARM_TINT,
 } from '../theme/colors';
 import { shouldShowRetrospectivePeakMarkers } from '../components/dayPresentationContract';
+import {
+  ChartTipOptionsModal,
+  ContextualChartTip,
+  FirstCompletedChartAcknowledgement,
+  FirstSaveConfirmationModal,
+} from '../features/guidedChartLearning/GuidedChartLearningComponents';
+import {
+  DEFAULT_GUIDED_CHART_LEARNING_PREFERENCES,
+  firstCompletedCycle,
+  selectContextualChartTip,
+  shouldShowFirstCompletedChartAcknowledgement,
+  type ChartTipDefinition,
+  type GuidedChartLearningPreferences,
+} from '../features/guidedChartLearning/guidedChartLearning';
+import {
+  acknowledgeFirstCompletedChart,
+  acknowledgeFirstSave,
+  getGuidedChartLearningPreferences,
+  markChartTip,
+  setChartTipsEnabled,
+} from '../features/guidedChartLearning/guidedChartLearningStorage';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const logoSource = require('../../assets/icon-1024.png');
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'Calendar'>;
+type CalendarRoute = RouteProp<RootStackParamList, 'Calendar'>;
 
 function todayString(): string {
   const d = new Date();
@@ -41,14 +64,36 @@ function todayString(): string {
 
 export function CalendarScreen(): React.JSX.Element {
   const navigation = useNavigation<Nav>();
+  const route = useRoute<CalendarRoute>();
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollOffsetRef = useRef(0);
   const { entries, sortedEntries, result, loading, refresh } = useCycleData();
   const cycleHistory = useCycleHistory();
   const [activeTab, setActiveTab] = useState<TabKey>('calendar');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [guidedPreferences, setGuidedPreferences] =
+    useState<GuidedChartLearningPreferences>(
+      DEFAULT_GUIDED_CHART_LEARNING_PREFERENCES,
+    );
+  const [guidedPreferencesLoaded, setGuidedPreferencesLoaded] = useState(false);
+  const lastChartTipsEnabledRef = useRef(
+    DEFAULT_GUIDED_CHART_LEARNING_PREFERENCES.chartTipsEnabled,
+  );
+  const [suppressContextualLesson, setSuppressContextualLesson] = useState(false);
+  const [lessonWithOpenOptions, setLessonWithOpenOptions] =
+    useState<ChartTipDefinition | null>(null);
 
   useFocusEffect(useCallback(() => {
     refresh();
     cycleHistory.refresh();
+    void getGuidedChartLearningPreferences().then((preferences) => {
+      if (!lastChartTipsEnabledRef.current && preferences.chartTipsEnabled) {
+        setSuppressContextualLesson(false);
+      }
+      lastChartTipsEnabledRef.current = preferences.chartTipsEnabled;
+      setGuidedPreferences(preferences);
+      setGuidedPreferencesLoaded(true);
+    });
   }, [refresh, cycleHistory.refresh]));
   const today = todayString();
 
@@ -83,6 +128,51 @@ export function CalendarScreen(): React.JSX.Element {
     : null;
 
   const cycleSummary = useCurrentCycleSummaryFromCycles(cycleHistory.cycles);
+
+  const contextualLesson = useMemo(
+    () => (
+      guidedPreferencesLoaded && !suppressContextualLesson
+        ? selectContextualChartTip({
+            entries,
+            cycles: cycleHistory.cycles,
+            explanationTarget: cycleSummary.explanationTarget,
+            preferences: guidedPreferences,
+          })
+        : null
+    ),
+    [
+      cycleHistory.cycles,
+      cycleSummary.explanationTarget,
+      entries,
+      guidedPreferences,
+      guidedPreferencesLoaded,
+      suppressContextualLesson,
+    ],
+  );
+
+  const firstCompleted = useMemo(
+    () => firstCompletedCycle(cycleHistory.cycles),
+    [cycleHistory.cycles],
+  );
+  const showFirstCompletedAcknowledgement = (
+    guidedPreferencesLoaded
+    && shouldShowFirstCompletedChartAcknowledgement(
+      cycleHistory.cycles,
+      guidedPreferences,
+    )
+  );
+
+  useEffect(() => {
+    const restoreScrollY = route.params?.restoreScrollY;
+    if (loading || cycleHistory.loading || restoreScrollY == null) return;
+
+    const timeout = setTimeout(() => {
+      scrollRef.current?.scrollTo({ y: restoreScrollY, animated: false });
+      scrollOffsetRef.current = restoreScrollY;
+      navigation.setParams({ restoreScrollY: undefined });
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, [cycleHistory.loading, loading, navigation, route.params?.restoreScrollY]);
 
   const todayRank = useMemo(() => {
     if (currentCycleSlice) {
@@ -166,6 +256,47 @@ export function CalendarScreen(): React.JSX.Element {
     [navigation],
   );
 
+  const dismissFirstSaveConfirmation = useCallback(() => {
+    void acknowledgeFirstSave().then(setGuidedPreferences);
+  }, []);
+
+  const openLesson = useCallback((lesson: ChartTipDefinition) => {
+    setSuppressContextualLesson(true);
+    void markChartTip(lesson.id, lesson.contentVersion, 'viewed').then(
+      setGuidedPreferences,
+    );
+    navigation.navigate('ChartTip', {
+      lessonId: lesson.id,
+      source: 'calendar',
+      returnScrollY: scrollOffsetRef.current,
+    });
+  }, [navigation]);
+
+  const dismissLesson = useCallback(() => {
+    if (!lessonWithOpenOptions) return;
+    const lesson = lessonWithOpenOptions;
+    setLessonWithOpenOptions(null);
+    setSuppressContextualLesson(true);
+    void markChartTip(lesson.id, lesson.contentVersion, 'dismissed').then(
+      setGuidedPreferences,
+    );
+  }, [lessonWithOpenOptions]);
+
+  const hideChartTips = useCallback(() => {
+    setLessonWithOpenOptions(null);
+    setSuppressContextualLesson(true);
+    lastChartTipsEnabledRef.current = false;
+    void setChartTipsEnabled(false).then(setGuidedPreferences);
+  }, []);
+
+  const completeFirstChartAcknowledgement = useCallback(
+    (review: boolean) => {
+      void acknowledgeFirstCompletedChart().then(setGuidedPreferences);
+      if (review && firstCompleted) goToDetail(firstCompleted.cycleNumber);
+    },
+    [firstCompleted, goToDetail],
+  );
+
   if (loading || cycleHistory.loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -198,7 +329,13 @@ export function CalendarScreen(): React.JSX.Element {
 
       <SegmentedToggle activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <ScrollView>
+      <ScrollView
+        ref={scrollRef}
+        onScroll={(event) => {
+          scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+        }}
+        scrollEventThrottle={32}
+      >
         {activeTab === 'calendar' ? (
           <>
             <StatusBanner
@@ -262,6 +399,14 @@ export function CalendarScreen(): React.JSX.Element {
               })}
             />
 
+            {contextualLesson ? (
+              <ContextualChartTip
+                lesson={contextualLesson}
+                onOpen={() => openLesson(contextualLesson)}
+                onMore={() => setLessonWithOpenOptions(contextualLesson)}
+              />
+            ) : null}
+
             <Pressable
               style={styles.helpLink}
               onPress={() => navigation.navigate('Help')}
@@ -288,6 +433,13 @@ export function CalendarScreen(): React.JSX.Element {
               <View style={styles.historyContent}>
                 <CycleSummaryPanel summary={cycleHistory.recordedHistorySummary} />
 
+                {showFirstCompletedAcknowledgement ? (
+                  <FirstCompletedChartAcknowledgement
+                    onReview={() => completeFirstChartAcknowledgement(true)}
+                    onDismiss={() => completeFirstChartAcknowledgement(false)}
+                  />
+                ) : null}
+
                 <View style={styles.cardsSection}>
                   <Text style={styles.cardsHeading}>Your Cycles</Text>
                   {reversedCycles.map((c) => (
@@ -305,6 +457,22 @@ export function CalendarScreen(): React.JSX.Element {
           </>
         )}
       </ScrollView>
+
+      <FirstSaveConfirmationModal
+        visible={
+          guidedPreferencesLoaded
+          && guidedPreferences.pendingFirstSaveAcknowledgement
+        }
+        onDismiss={dismissFirstSaveConfirmation}
+      />
+
+      <ChartTipOptionsModal
+        visible={lessonWithOpenOptions !== null}
+        lesson={lessonWithOpenOptions}
+        onDismissLesson={dismissLesson}
+        onHideAll={hideChartTips}
+        onCancel={() => setLessonWithOpenOptions(null)}
+      />
 
       <FeedbackModal
         visible={showFeedbackModal}
