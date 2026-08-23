@@ -143,11 +143,6 @@ export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNex
           <LegendItem color={BG_POST_PEAK} label="P+1–P+3" />
         ) : null}
       </View>
-      <Text style={styles.legendKey}>
-        {showDerivedLegend
-          ? 'Gray = Peak-type sign · outline = Peak Day · dot = mucus · S/B = spotting or brown'
-          : 'Gray = Peak-type sign · dot = mucus · S/B = spotting or brown'}
-      </Text>
     </View>
   );
 }
@@ -234,11 +229,4 @@ const styles = StyleSheet.create({
   },
   legendBabyDot: { width: 6, height: 6, borderRadius: 3 },
   legendText: { fontSize: 11, color: TEXT_SUBTLE },
-  legendKey: {
-    marginTop: 8,
-    textAlign: 'center',
-    fontSize: 10,
-    lineHeight: 14,
-    color: TEXT_MUTED,
-  },
 });
