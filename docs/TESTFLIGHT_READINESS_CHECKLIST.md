@@ -179,8 +179,8 @@ Recommended location: `Settings -> Support`
 ## Internal Testing
 
 - [x] `[INT-BLOCKER]` build uploaded to App Store Connect
-- [x] `[INT-BLOCKER]` build processed by Apple (2.1.1 build 21, `VALID`/`Complete`)
-- [x] `[INT-BLOCKER]` internal testers added (`Team (Expo)` group; one invite shown)
+- [x] `[INT-BLOCKER]` build processed by Apple (2.1.5 build 26, `VALID`)
+- [x] `[INT-BLOCKER]` internal testers added (`Team (Expo)` group includes build 26; one invite shown)
 - [ ] `[INT-BLOCKER]` internal testers can install build
 
 TestFlight build management: https://appstoreconnect.apple.com/apps/6760519448/testflight/ios
@@ -202,12 +202,12 @@ Notes:
 # 10. Release Blockers (Populate During Audit)
 
 - Production baseline: version 2.1.4 is live in the App Store.
-- TestFlight upload succeeded for version 2.1.5, build 25: Apple build ID `fee5b2c7-a746-4bfa-8a08-da9b45a4cf85`, EAS build ID `2257de1f-2747-474d-a81d-3b5cc84a3b81`, and EAS submission ID `963df21f-d727-4334-9f0c-c0e2421e8580`.
-- App Store Connect reports 2.1.5 build 25 as `VALID` and not expired.
+- TestFlight upload succeeded for version 2.1.5, build 26: Apple build ID `6b3e24ce-7dd4-4000-a297-9ebed517a53f`, EAS build ID `97f4bf04-43ff-4708-8163-12958ef1d5fa`, and EAS submission ID `37a7a75e-eb78-4ab1-88c2-ee232a2eff4b`.
+- App Store Connect reports 2.1.5 build 26 as `VALID`, not expired, and included in the internal `Team (Expo)` group.
 - Apple agreements are current for this free release; the Free Apps Agreement is active.
 - Public privacy-policy and support URLs are published and saved in App Store Connect.
-- 2.1.5 automated verification, native iOS Release smoke, and native PDF preview passed; see [Action 7 report](strategy/action-7-multiple-observations-2026-07-25/REPORT.md).
-- Remaining internal validation: install build 25 through TestFlight and collect feedback.
+- The combined Actions 9 and 10 release passed 245 engine tests, 135 mobile tests with 1 pre-existing skip, both typechecks, engine lint, Expo validation, full browser journey review, and a native iOS Release build/device check; see the [Action 10 implementation report](strategy/action-10-guided-chart-progress-2026-08-09/IMPLEMENTATION_REPORT.md).
+- Remaining internal validation: install build 26 through TestFlight and collect feedback.
 - FINAL OWNER GATE: do not create or submit a 2.1.5 App Store version without a separate owner decision after TestFlight feedback.
 
 ---
@@ -216,7 +216,7 @@ Notes:
 
 - First EAS build and submit to TestFlight completed successfully. For future releases: **`npm run mobile:release:testflight`** (preflight + build + submit), or stepwise `mobile:build:ios:testflight` then `mobile:submit:ios:production` (non-interactive when `.p8` is in `apps/mobile/credentials/` and `eas.json` has `ascAppId` + API key fields).
 - Privacy policy URL and support URL are configured in App Store Connect.
-- App Store Connect privacy details are reconciled and published; 2.1.4 is the live production baseline and 2.1.5 build 25 is valid in TestFlight.
+- App Store Connect privacy details are reconciled and published; 2.1.4 is the live production baseline and 2.1.5 build 26 is valid in TestFlight.
 - Run **`git fetch --all --prune`** and **`npm run mobile:preflight:release`** before building. Preflight now checks Expo config, intended feature-branch coverage, and App Store Connect/TestFlight version-train state.
 - Use **`npm run version:ios:bump --workspace well-within-mobile`** when opening a new TestFlight/App Store marketing-version train.
 - Optionally run **`npm run mobile:preflight:release:with-doctor`**; treat **expo-doctor** failures from flaky Expo API or Metro hints as **advisory** unless they indicate a real misconfiguration.

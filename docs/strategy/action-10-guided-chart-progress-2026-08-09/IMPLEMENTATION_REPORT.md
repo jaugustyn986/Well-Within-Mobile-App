@@ -1,7 +1,7 @@
 # Action 10 Implementation Report
 
 Date: August 23, 2026
-Status: Implementation and verification complete; TestFlight release in progress
+Status: Implementation and verification complete; version 2.1.5 build 26 is valid in TestFlight
 
 ## Outcome
 
@@ -52,4 +52,13 @@ The new Calendar lesson is inserted only between Today's Observation and Help. T
 
 ## Release status
 
-The implementation is ready for release preflight. The next TestFlight build will remain on the open 2.1.5 train. App Store submission is outside this authorization and remains a separate owner decision.
+Version 2.1.5 build 26 was built from release commit `cac2c9823ed9c62f0c6c1ec1dcb6ab10a98f13a1`, uploaded to App Store Connect, and accepted as a valid TestFlight build.
+
+- EAS build ID: `97f4bf04-43ff-4708-8163-12958ef1d5fa`
+- EAS submission ID: `37a7a75e-eb78-4ab1-88c2-ee232a2eff4b`
+- Apple build ID: `6b3e24ce-7dd4-4000-a297-9ebed517a53f`
+- App Store Connect processing state: `VALID`
+- Expired: `false`
+- Internal group: `Team (Expo)` includes build 26
+
+Remaining: install build 26 through TestFlight and collect internal feedback. App Store submission is outside this authorization and remains a separate owner decision.
