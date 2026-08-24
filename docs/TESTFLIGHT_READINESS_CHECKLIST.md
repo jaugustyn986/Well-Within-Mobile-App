@@ -207,8 +207,8 @@ Notes:
 - Apple agreements are current for this free release; the Free Apps Agreement is active.
 - Public privacy-policy and support URLs are published and saved in App Store Connect.
 - The combined Actions 9 and 10 release passed 245 engine tests, 135 mobile tests with 1 pre-existing skip, both typechecks, engine lint, Expo validation, full browser journey review, and a native iOS Release build/device check; see the [Action 10 implementation report](strategy/action-10-guided-chart-progress-2026-08-09/IMPLEMENTATION_REPORT.md).
-- Remaining internal validation: install build 27 through TestFlight and collect feedback.
-- FINAL OWNER GATE: do not create or submit a 2.1.5 App Store version without a separate owner decision after TestFlight feedback.
+- Owner authorized App Store publication on August 23, 2026. Version 2.1.5 build 27 is submitted and `WAITING_FOR_REVIEW`.
+- Remaining: Apple review. TestFlight installation and feedback can continue as release follow-up.
 
 ---
 
@@ -216,7 +216,7 @@ Notes:
 
 - First EAS build and submit to TestFlight completed successfully. For future releases: **`npm run mobile:release:testflight`** (preflight + build + submit), or stepwise `mobile:build:ios:testflight` then `mobile:submit:ios:production` (non-interactive when `.p8` is in `apps/mobile/credentials/` and `eas.json` has `ascAppId` + API key fields).
 - Privacy policy URL and support URL are configured in App Store Connect.
-- App Store Connect privacy details are reconciled and published; 2.1.4 is the live production baseline and 2.1.5 build 27 is valid in TestFlight.
+- App Store Connect privacy details are reconciled and published; 2.1.4 is the live production baseline and 2.1.5 build 27 is waiting for Apple review.
 - Run **`git fetch --all --prune`** and **`npm run mobile:preflight:release`** before building. Preflight now checks Expo config, intended feature-branch coverage, and App Store Connect/TestFlight version-train state.
 - Use **`npm run version:ios:bump --workspace well-within-mobile`** when opening a new TestFlight/App Store marketing-version train.
 - Optionally run **`npm run mobile:preflight:release:with-doctor`**; treat **expo-doctor** failures from flaky Expo API or Metro hints as **advisory** unless they indicate a real misconfiguration.
@@ -225,7 +225,7 @@ Notes:
 
 # 12. UX Changes Required (Populate During Audit)
 
-- Add a support email/contact surface before external TestFlight/App Store submission.
+- A dedicated in-app support email surface remains a follow-up; the submission uses the published support URL and the verified App Review contact.
 
 ---
 
@@ -239,12 +239,15 @@ Notes:
 
 # 14. Current Release Status (Update Every Audit)
 
-Build Status: version **2.1.5**, build **27**, is `VALID`, not expired, and available to the internal `Team (Expo)` group.
+Build Status: version **2.1.5**, build **27**, is `VALID`, not expired, available to the internal `Team (Expo)` group, and `WAITING_FOR_REVIEW` for the App Store.
 Version: **2.1.5** · next iOS build number: **remote auto-increment**
 
 EAS Build ID: `1e76a376-8bb5-4fba-a2e3-f06ea07c8224` — [Expo build](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/builds/1e76a376-8bb5-4fba-a2e3-f06ea07c8224)
 EAS Submission ID: `89ea3a3c-6ea0-4a66-a29d-439330d21741` — [Submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/89ea3a3c-6ea0-4a66-a29d-439330d21741)
 Apple Build ID: `509e8327-1a03-43f1-8f5b-84a6d36e7a17`
+App Store Version ID: `31a5577b-c1dc-4f9a-b390-d3d5e7bf3eef`
+Review Submission ID: `22ae2d08-20eb-43b5-aac4-52c551807a84`
+Release Type: `AFTER_APPROVAL`
 
 TestFlight: https://appstoreconnect.apple.com/apps/6760519448/testflight/ios
 
@@ -255,13 +258,15 @@ Release notes (build 27): cumulative Actions 9 and 10 release, plus removal of t
 
 Release verification: mobile typecheck, 11 focused Calendar presentation tests, release preflight, signed iOS build, Apple upload/processing, and internal-group inclusion all passed.
 
+App Store submission: description and What’s New were refreshed; all six live screenshots were inherited unchanged and remain `COMPLETE`. Apple accepted the review submission at `2026-08-24T00:56:24.123Z`.
+
 ---
 
 # 15. Release Decision
 
 Before building for TestFlight:
 
-- [ ] no `[INT-BLOCKER]` items remain open
-- [ ] iOS build succeeds with intended profile
-- [ ] privacy and claims checks pass
-- [ ] reviewer smoke flow passes without crashes
+- [x] no release-blocking `[INT-BLOCKER]` items remain open
+- [x] iOS build succeeds with intended profile
+- [x] privacy and claims checks pass
+- [x] reviewer smoke flow passes without crashes

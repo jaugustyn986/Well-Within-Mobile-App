@@ -2,7 +2,7 @@
 
 Date: July 16, 2026
 
-Status: **2.1.4 build 24, refreshed metadata, and all six screenshots are staged in App Store Connect; stopped before review submission**
+Status: **2.1.4 is live; follow-on version 2.1.5 build 27 is waiting for Apple review with refreshed copy and the same six screenshots**
 
 ## Outcome
 
@@ -57,7 +57,7 @@ The remaining release gates are:
 - [x] Build 24 accepted by Apple and available in TestFlight.
 - [ ] Release candidate receives the short VoiceOver/Larger Text/contrast and retrospective-vs-prediction comprehension check recorded in the backlog.
 - [x] Owner authorized the App Store Connect save/upload actions completed in this package.
-- [ ] Owner separately confirms **Submit for Review** after reviewing the staged 2.1.4 record. The workflow is intentionally stopped at Apple's review confirmation.
+- [x] Owner authorized review submission; 2.1.4 is live and the follow-on 2.1.5 release is waiting for Apple review.
 
 Drafting does not constitute clinical, legal, regulatory, privacy, trademark, licensing, accessibility, or App Store approval.
 
@@ -71,6 +71,7 @@ Drafting does not constitute clinical, legal, regulatory, privacy, trademark, li
 - [Capture and review runbook](CAPTURE_RUNBOOK.md)
 - [Capture manifest](CAPTURE_MANIFEST.md)
 - [App Store submission packet](APP_STORE_SUBMISSION_PACKET.md)
+- [2.1.5 App Store release record](APP_STORE_2.1.5_RELEASE.md)
 - [Privacy policy copy ready for publication](PRIVACY_POLICY_DRAFT.md)
 - [Support page copy ready for publication](SUPPORT_PAGE_DRAFT.md)
 - [Synthetic fixture](capture-fixture.mjs)

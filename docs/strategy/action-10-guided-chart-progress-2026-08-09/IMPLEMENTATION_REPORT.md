@@ -1,7 +1,7 @@
 # Action 10 Implementation Report
 
 Date: August 23, 2026
-Status: Implementation and verification complete; version 2.1.5 build 27 is valid in TestFlight
+Status: Implementation and verification complete; version 2.1.5 build 27 is waiting for Apple review
 
 ## Outcome
 
@@ -62,4 +62,6 @@ Version 2.1.5 build 27 was built from release commit `2f99d4298c0f5214cae815b2cb
 - Expired: `false`
 - Internal group: `Team (Expo)` includes build 27
 
-Remaining: install build 27 through TestFlight and collect internal feedback. App Store submission is outside this authorization and remains a separate owner decision.
+On August 23, 2026, the owner authorized App Store publication. Version 2.1.5 was created with build 27, refreshed description and What’s New copy, the unchanged six-screen screenshot set, and automatic release after approval. Apple accepted review submission `22ae2d08-20eb-43b5-aac4-52c551807a84`; the App Store version and review submission both report `WAITING_FOR_REVIEW`.
+
+Remaining: Apple review. TestFlight installation and feedback can continue as release follow-up while the submission is pending.
