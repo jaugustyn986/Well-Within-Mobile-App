@@ -179,8 +179,8 @@ Recommended location: `Settings -> Support`
 ## Internal Testing
 
 - [x] `[INT-BLOCKER]` build uploaded to App Store Connect
-- [x] `[INT-BLOCKER]` build processed by Apple (2.1.5 build 26, `VALID`)
-- [x] `[INT-BLOCKER]` internal testers added (`Team (Expo)` group includes build 26; one invite shown)
+- [x] `[INT-BLOCKER]` build processed by Apple (2.1.5 build 27, `VALID`)
+- [x] `[INT-BLOCKER]` internal testers added (`Team (Expo)` group includes build 27; one invite shown)
 - [ ] `[INT-BLOCKER]` internal testers can install build
 
 TestFlight build management: https://appstoreconnect.apple.com/apps/6760519448/testflight/ios
@@ -202,12 +202,12 @@ Notes:
 # 10. Release Blockers (Populate During Audit)
 
 - Production baseline: version 2.1.4 is live in the App Store.
-- TestFlight upload succeeded for version 2.1.5, build 26: Apple build ID `6b3e24ce-7dd4-4000-a297-9ebed517a53f`, EAS build ID `97f4bf04-43ff-4708-8163-12958ef1d5fa`, and EAS submission ID `37a7a75e-eb78-4ab1-88c2-ee232a2eff4b`.
-- App Store Connect reports 2.1.5 build 26 as `VALID`, not expired, and included in the internal `Team (Expo)` group.
+- TestFlight upload succeeded for version 2.1.5, build 27: Apple build ID `509e8327-1a03-43f1-8f5b-84a6d36e7a17`, EAS build ID `1e76a376-8bb5-4fba-a2e3-f06ea07c8224`, and EAS submission ID `89ea3a3c-6ea0-4a66-a29d-439330d21741`.
+- App Store Connect reports 2.1.5 build 27 as `VALID`, not expired, and included in the internal `Team (Expo)` group.
 - Apple agreements are current for this free release; the Free Apps Agreement is active.
 - Public privacy-policy and support URLs are published and saved in App Store Connect.
 - The combined Actions 9 and 10 release passed 245 engine tests, 135 mobile tests with 1 pre-existing skip, both typechecks, engine lint, Expo validation, full browser journey review, and a native iOS Release build/device check; see the [Action 10 implementation report](strategy/action-10-guided-chart-progress-2026-08-09/IMPLEMENTATION_REPORT.md).
-- Remaining internal validation: install build 26 through TestFlight and collect feedback.
+- Remaining internal validation: install build 27 through TestFlight and collect feedback.
 - FINAL OWNER GATE: do not create or submit a 2.1.5 App Store version without a separate owner decision after TestFlight feedback.
 
 ---
@@ -216,7 +216,7 @@ Notes:
 
 - First EAS build and submit to TestFlight completed successfully. For future releases: **`npm run mobile:release:testflight`** (preflight + build + submit), or stepwise `mobile:build:ios:testflight` then `mobile:submit:ios:production` (non-interactive when `.p8` is in `apps/mobile/credentials/` and `eas.json` has `ascAppId` + API key fields).
 - Privacy policy URL and support URL are configured in App Store Connect.
-- App Store Connect privacy details are reconciled and published; 2.1.4 is the live production baseline and 2.1.5 build 26 is valid in TestFlight.
+- App Store Connect privacy details are reconciled and published; 2.1.4 is the live production baseline and 2.1.5 build 27 is valid in TestFlight.
 - Run **`git fetch --all --prune`** and **`npm run mobile:preflight:release`** before building. Preflight now checks Expo config, intended feature-branch coverage, and App Store Connect/TestFlight version-train state.
 - Use **`npm run version:ios:bump --workspace well-within-mobile`** when opening a new TestFlight/App Store marketing-version train.
 - Optionally run **`npm run mobile:preflight:release:with-doctor`**; treat **expo-doctor** failures from flaky Expo API or Metro hints as **advisory** unless they indicate a real misconfiguration.
@@ -239,26 +239,21 @@ Notes:
 
 # 14. Current Release Status (Update Every Audit)
 
-Build Status: native 2.1.1 Release verification is in progress; new EAS/TestFlight build is blocked until the Account Holder accepts the updated Apple Developer Program License Agreement.
-Version: **2.1.1** · next iOS build number: **remote auto-increment**
+Build Status: version **2.1.5**, build **27**, is `VALID`, not expired, and available to the internal `Team (Expo)` group.
+Version: **2.1.5** · next iOS build number: **remote auto-increment**
 
-Previous TestFlight record (does **not** contain Action 5/6): version **0.2.1**, build **20**.
-EAS Build ID: `1e849556-1aa7-4f92-a8bb-ef385eb6ad55` — [Expo build](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/builds/1e849556-1aa7-4f92-a8bb-ef385eb6ad55)
-EAS Submission ID: `23981b9a-df5e-49ee-86d1-f4d83bf2e4bd` — [Submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/23981b9a-df5e-49ee-86d1-f4d83bf2e4bd)
-Do not select build 20 for the 2.1.1 App Store version.
+EAS Build ID: `1e76a376-8bb5-4fba-a2e3-f06ea07c8224` — [Expo build](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/builds/1e76a376-8bb5-4fba-a2e3-f06ea07c8224)
+EAS Submission ID: `89ea3a3c-6ea0-4a66-a29d-439330d21741` — [Submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/89ea3a3c-6ea0-4a66-a29d-439330d21741)
+Apple Build ID: `509e8327-1a03-43f1-8f5b-84a6d36e7a17`
 
 TestFlight: https://appstoreconnect.apple.com/apps/6760519448/testflight/ios
 
-Last Audit Date: 2026-07-14
+Last Audit Date: 2026-08-23
 Audited By: Codex
 
-Release notes (latest push): support/resource links now open through native Safari handoff after the confirmation modal is dismissed, fixing the Find Care freeze/unresponsive state observed in simulator. Build also includes catch-up missing days, Find Care resources, and feedback collection improvements.
+Release notes (build 27): cumulative Actions 9 and 10 release, plus removal of the redundant explanatory sentence beneath the Calendar visual key. The full key, Calendar layout, core UX, and rules engine remain unchanged.
 
-Release notes (this push): magic-link auth callback hardening across query/fragment/code/token_hash callback formats; deep-link + Supabase setup docs clarified for dev/TestFlight/production redirect URLs.
-
-Release notes (next push — magic-link session landing): switched Supabase client session storage from the `expo-sqlite/localStorage` shim to `AsyncStorage` (Supabase's official React Native recommendation) so magic-link sessions persist reliably across app relaunches. Moved deep-link URL handling into `AuthProvider` (fixes a race where the callback fired before `onAuthStateChange` was subscribed). Surfaced any auth-callback failure as a calm banner on the sign-in screen instead of failing silently. Diagnostics before this change: Supabase auth logs confirm magic-link verify returns 303 and server-side `login (implicit)` succeeds — the gap was entirely in app-side session application/persistence.
-
-Commands used: `npm run mobile:preflight:release`, `npm test --workspace well-within-mobile`, iPhone 17 simulator smoke test of `Settings -> Care -> Find Care`, then `npm run mobile:release:testflight`.
+Release verification: mobile typecheck, 11 focused Calendar presentation tests, release preflight, signed iOS build, Apple upload/processing, and internal-group inclusion all passed.
 
 ---
 

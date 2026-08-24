@@ -2,7 +2,7 @@
 
 Date: August 9, 2026
 Revised: August 23, 2026
-Status: Implemented and verified; version 2.1.5 build 26 is valid in TestFlight
+Status: Implemented and verified; version 2.1.5 build 27 is valid in TestFlight
 
 ## Decision package
 
