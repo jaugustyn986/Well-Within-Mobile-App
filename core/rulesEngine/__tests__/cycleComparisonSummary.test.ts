@@ -3,7 +3,7 @@ import {
   buildCycleComparisonStructured,
   getPriorCompleted,
 } from '../src/cycleComparisonSummary';
-import { CycleSlice } from '../src/multiCycle';
+import { CycleSlice, splitIntoCycles } from '../src/multiCycle';
 import { CycleResult } from '../src/types';
 
 const emptyResult = {} as CycleResult;
@@ -19,11 +19,36 @@ function makeSlice(
     result: emptyResult,
     peakDay: 14,
     lutealPhase: 14,
+    cycleBoundary: {
+      index: 0,
+      date: '2025-01-01',
+      source: 'inferred_heavy_moderate',
+      eligibility: 'eligible',
+      reason: 'unambiguous_heavy_moderate_start',
+    },
     ...overrides,
   };
 }
 
 describe('getPriorCompleted', () => {
+  it('includes a completed cycle using its latest qualifying Peak sequence', () => {
+    const cycles = splitIntoCycles([
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-01-03', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-04', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-05', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-06', bleeding: 'none', mucusRankOverride: 3 },
+      { date: '2026-01-07', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-08', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-01-09', bleeding: 'none', mucusRankOverride: 0 },
+      { date: '2026-02-01', bleeding: 'heavy', mucusRankOverride: 0 },
+    ]);
+    const priors = getPriorCompleted(cycles[1], cycles);
+    expect(priors.map((cycle) => cycle.cycleNumber)).toEqual([1]);
+    expect(priors[0].peakDay).toBe(6);
+  });
+
   it('returns only completed cycles before current', () => {
     const all = [
       makeSlice({ cycleNumber: 1, status: 'complete', length: 28 }),
@@ -95,6 +120,39 @@ describe('buildCycleComparisonStructured', () => {
     const cur = makeSlice({ cycleNumber: 3, status: 'in_progress', length: 5, peakDay: null, lutealPhase: null });
     const s = buildCycleComparisonStructured(cur, [c1, c2, cur]);
     expect(s.avgFertileStartDay).toBe(9);
+  });
+
+  it('computes avgFertileStartDay from calendar dates rather than row indexes', () => {
+    const resultWithFertile = { ...emptyResult, fertileStartIndex: 1 } as CycleResult;
+    const c1 = makeSlice({
+      cycleNumber: 1,
+      status: 'complete',
+      length: 28,
+      entries: [
+        { date: '2026-01-01', bleeding: 'heavy' },
+        { date: '2026-01-05', bleeding: 'none' },
+      ],
+      result: resultWithFertile,
+    });
+    const c2 = makeSlice({
+      cycleNumber: 2,
+      status: 'complete',
+      length: 28,
+      entries: [
+        { date: '2026-02-01', bleeding: 'heavy' },
+        { date: '2026-02-07', bleeding: 'none' },
+      ],
+      result: resultWithFertile,
+    });
+    const cur = makeSlice({
+      cycleNumber: 3,
+      status: 'in_progress',
+      length: 5,
+      peakDay: null,
+      lutealPhase: null,
+    });
+    const s = buildCycleComparisonStructured(cur, [c1, c2, cur]);
+    expect(s.avgFertileStartDay).toBe(6);
   });
 
   it('returns null avgFertileStartDay when no prior fertile data', () => {

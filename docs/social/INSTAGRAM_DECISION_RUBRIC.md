@@ -2,9 +2,21 @@
 
 Use this when choosing the next Well Within Instagram post. The goal is controlled learning, not random content.
 
-## Default Rule
+## July 2026 Growth Reset Override
 
-If there is no clear performance winner, choose the current recommended or highest-fit draft in `docs/social/INSTAGRAM_DRAFT_QUEUE.md`.
+As of `docs/social/SOCIAL_GROWTH_RESET_2026-07-04.md`, do not choose a next post directly from this rubric until the measurement spine is repaired.
+
+Before any new package:
+
+1. Fill or mark unavailable the prior post metrics using `docs/social/SOCIAL_METRICS_DASHBOARD.md`.
+2. Choose from `docs/social/SOCIAL_HYPOTHESIS_BACKLOG.md`, not from the old draft queue.
+3. Confirm the idea passes the no-slop gate: one audience, one user job, one evidence source, one hypothesis, one target metric, and one decision rule.
+
+If those conditions are not met, the correct output is a measurement, research, or listening task, not a content package.
+
+## Legacy Default Rule
+
+This section applies only after the July 2026 Growth Reset Override passes. If there is no clear performance winner after metrics are current and the hypothesis backlog has been checked, output a research/listening task or choose a backlog hypothesis for a bounded test. Use `INSTAGRAM_DRAFT_QUEUE.md` only as a historical idea inventory.
 
 Always use `docs/social/INSTAGRAM_MEMORY.md` and recent external-account research as pattern input. Do not copy posts, captions, layouts, or artwork from other accounts.
 
@@ -57,10 +69,10 @@ Action: turn the pattern into a reusable template, update `INSTAGRAM_MEMORY.md`,
 
 ## Choosing The Next Post
 
-Use this order:
+Use this order only after the July 2026 Growth Reset Override passes:
 
 1. If a recent post crushed the target metric, create a controlled sibling of that post.
-2. If metrics are low or unclear, choose the current recommended draft.
+2. If metrics are low or unclear, produce an audience-language, measurement, or listening task.
 3. If the account needs discovery, prioritize reach-first identity/trust or clear beginner education.
 4. If saves/shares are the goal, prioritize educational carousel templates.
 5. If comments are the goal, use a community prompt template.

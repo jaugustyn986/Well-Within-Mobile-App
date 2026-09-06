@@ -1,10 +1,12 @@
 import React from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import fixture from 'core-rules-engine/fixtures/simple-peak.json';
-import { recalculateCycle } from 'core-rules-engine';
+import { cycleDayForEntryIndex, recalculateCycle } from 'core-rules-engine';
+import type { DailyEntry } from 'core-rules-engine';
 
-export function EngineDemoScreen(): JSX.Element {
-  const result = recalculateCycle(fixture.entries);
+export function EngineDemoScreen(): React.JSX.Element {
+  const entries = fixture.entries as DailyEntry[];
+  const result = recalculateCycle(entries);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -12,7 +14,7 @@ export function EngineDemoScreen(): JSX.Element {
       <ScrollView>
         {result.phaseLabels.map((phase, index) => (
           <View key={index} style={[styles.row, index === result.peakIndex ? styles.peakRow : undefined]}>
-            <Text style={styles.text}>Day {index}</Text>
+            <Text style={styles.text}>Day {cycleDayForEntryIndex(entries, index)}</Text>
             <Text style={styles.text}>Rank {result.mucusRanks[index] ?? 'missing'}</Text>
             <Text style={styles.text}>{phase}</Text>
           </View>

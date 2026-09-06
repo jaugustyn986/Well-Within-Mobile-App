@@ -60,7 +60,7 @@ export function FeedbackModal({
   initialFeedbackType = null,
   initialCategory = null,
   cycles,
-}: FeedbackModalProps): JSX.Element {
+}: FeedbackModalProps): React.JSX.Element {
   const [feedbackType, setFeedbackType] = useState<FeedbackType | null>(initialFeedbackType);
   const [category, setCategory] = useState<FeedbackCategory | null>(initialCategory);
   const [confidence, setConfidence] = useState<FeedbackConfidence | null>(null);

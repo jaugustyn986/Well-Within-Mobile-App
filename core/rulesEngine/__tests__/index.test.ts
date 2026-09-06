@@ -12,6 +12,10 @@ import {
   buildCycleComparisonNarrative,
   buildCycleComparisonStructured,
   buildCurrentCycleSummary,
+  buildPossibleFertilePatternPresentation,
+  buildPossibleFertilePatternHistoryPresentation,
+  buildFirstReleasePossibleFertilePatternEligibility,
+  resolveCycleBoundaries,
 } from '../src';
 
 describe('package index exports', () => {
@@ -29,5 +33,9 @@ describe('package index exports', () => {
     expect(typeof buildCycleComparisonNarrative).toBe('function');
     expect(typeof buildCycleComparisonStructured).toBe('function');
     expect(typeof buildCurrentCycleSummary).toBe('function');
+    expect(typeof buildPossibleFertilePatternPresentation).toBe('function');
+    expect(typeof buildPossibleFertilePatternHistoryPresentation).toBe('function');
+    expect(typeof buildFirstReleasePossibleFertilePatternEligibility).toBe('function');
+    expect(typeof resolveCycleBoundaries).toBe('function');
   });
 });

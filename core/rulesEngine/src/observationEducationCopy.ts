@@ -3,6 +3,60 @@
  * Keep aligned with docs/RULES_ENGINE_SPEC.md, rank.ts, and creightonCode.ts.
  */
 
+import type { BleedingType } from './types';
+
+export interface BleedingEducationItem {
+  value: BleedingType;
+  label: string;
+  code: 'H' | 'M' | 'L' | 'VL' | 'B' | null;
+  description: string;
+}
+
+/** Creighton-aligned recording labels. These describe observations, not their cause. */
+export const BLEEDING_EDUCATION: readonly BleedingEducationItem[] = [
+  {
+    value: 'none',
+    label: 'None',
+    code: null,
+    description: 'No red, brown, or black bleeding observed.',
+  },
+  {
+    value: 'spotting',
+    label: 'Spotting',
+    code: 'VL',
+    description: 'Very light red bleeding. Also record any mucus you observe.',
+  },
+  {
+    value: 'light',
+    label: 'Light',
+    code: 'L',
+    description: 'Light red flow. Also record any mucus you observe.',
+  },
+  {
+    value: 'moderate',
+    label: 'Moderate',
+    code: 'M',
+    description: 'Moderate red flow.',
+  },
+  {
+    value: 'heavy',
+    label: 'Heavy',
+    code: 'H',
+    description: 'Heavy red flow.',
+  },
+  {
+    value: 'brown',
+    label: 'Brown',
+    code: 'B',
+    description: 'Brown or black bleeding or discharge.',
+  },
+];
+
+export const HELP_BLEEDING_TYPES_TITLE = 'What do the bleeding types mean?';
+
+export const BLEEDING_EDUCATION_NOTE =
+  'These categories describe what you observe, not why bleeding is happening. If you are unsure which category to use, review your chart with a trained practitioner.';
+
 /** Column header for PDF / tables: chart strength from mucusRank (not numeric rank). */
 export const PDF_CHART_STRENGTH_HEADER = 'Chart';
 
@@ -37,30 +91,28 @@ export const HELP_HOW_TO_OBSERVE_BODY =
   '\u2022 Note the sensation (what you feel)\n' +
   '\u2022 Note the appearance of any mucus on the tissue (what you see)\n' +
   '\u2022 Check before and after toileting throughout the day\n' +
-  '\u2022 Make a final observation at bedtime\n' +
-  '\u2022 Record the most fertile sign you noticed all day \u2014 not just the last check';
+  '\u2022 Record distinct changes you want to remember\n' +
+  '\u2022 Well Within keeps each observation and uses the one with the most fertile signs for that day\u2019s chart';
 
 export const HELP_SENSATION_APPEARANCE_TITLE = 'How do sensation and appearance work together?';
 
 export const HELP_SENSATION_APPEARANCE_BODY =
   'Each day, you record what you feel (sensation) and what you see (appearance).\n\n' +
-  'The app looks at both and identifies the most fertile sign of the day.\n\n' +
-  'Sensation describes how it feels (dry, damp, wet, slippery).\n' +
-  'Appearance describes what you see (cloudy, clear, stretchy, etc.).\n\n' +
-  'When both are present, the app uses the strongest fertility sign from either one.\n\n' +
+  'The app looks at both and places the strongest recorded observation on your chart.\n\n' +
+  'Sensation includes dry, damp, wet, shiny, sticky, tacky, and stretchy.\n' +
+  'Appearance includes brown, cloudy, clear, gummy, lubricative, pasty, red, and yellow.\n\n' +
+  'When both are present, the app uses the strongest recorded sign from either one.\n\n' +
   'Examples:\n\n' +
   'Dry sensation with no mucus \u2192 dry day\n' +
-  'Damp or sticky mucus \u2192 early fertile pattern\n' +
+  'Damp or sticky mucus \u2192 non-Peak mucus observation\n' +
   'Clear, stretchy, or lubricative mucus \u2192 peak-type pattern\n\n' +
-  'If you record multiple observations in one day, the app uses the most fertile one.\n\n' +
-  'During your period\n\n' +
-  'If you are experiencing menstrual flow, bleeding is the primary sign. Mucus observations during this time are not used to identify fertility.';
+  'If you record multiple observations in one day, the app keeps them all and uses the observation with the most fertile signs for that day\u2019s chart. Observation time helps organize your entries but does not change the result.\n\n' +
+  'When bleeding is also recorded\n\n' +
+  'Heavy, moderate, or light menstrual flow remains the primary chart sign. Spotting and brown stay visible alongside the dry, non-Peak, or Peak-type observation you record. A spotting or brown day can also carry a retrospective P+ marker when it is one of three completed observations after a possible Peak.';
 
 export const HELP_TRYING_TO_CONCEIVE_BODY =
-  'Best timing:\n' +
-  'Have intercourse every 1\u20132 days starting when you first see non-dry mucus on your chart (the first day that is not a dry day) and continue through Peak Day.\n\n' +
-  'The fertile window is approximately 6 days before ovulation through 1 day after. Your chances are highest 1\u20132 days before ovulation.\n\n' +
-  'Tip: Don\u2019t wait for peak-type mucus to start. Sperm can survive in fertile mucus for several days, so starting when you first notice fertile signs improves your chances.';
+  'Your chart can help you discuss the timing of observed fertile signs with a qualified fertility-awareness educator or clinician.\n\n' +
+  'Well Within records and interprets observations. It does not confirm ovulation, predict pregnancy chances, or replace individualized care.';
 
 /** Color guide: day with non-peak mucus signal (green dot on calendar). */
 export const HELP_COLOR_GUIDE_NON_PEAK_MUCUS =
@@ -74,8 +126,9 @@ export const HELP_WHAT_IS_PEAK_DAY_TITLE = 'What is the Peak Day?';
 
 export const HELP_WHAT_IS_PEAK_DAY_BODY =
   'The Peak Day is the last day of peak-type mucus (clear, stretchy, or lubricative).\n\n' +
-  'It is only confirmed after three full days of lower-quality observations.\n\n' +
-  'Why it matters: Ovulation typically occurs within 1\u20132 days after the Peak Day. Once Peak is confirmed, the fertile window is considered closed.';
+  'Well Within marks it after you log three full days without another Peak-type mucus sign.\n\n' +
+  'Spotting or brown does not erase a mucus observation. If a Peak-type sign is recorded with either one, the day remains a Peak-type observation. If no Peak-type sign is recorded, an explicitly completed spotting or brown observation can be one of the three follow-up days.\n\n' +
+  'Peak Day is an observation-based charting marker. It does not confirm ovulation on its own.';
 
 export interface HelpStatusMessageSection {
   title: string;
@@ -85,38 +138,57 @@ export interface HelpStatusMessageSection {
 /** Glossary for status headlines (Understanding Your Chart). */
 export const HELP_STATUS_MESSAGE_SECTIONS: readonly HelpStatusMessageSection[] = [
   {
-    title: 'Menstrual flow',
+    title: 'Your pattern is still taking shape',
     body:
-      'You\u2019re in your period. Bleeding is the primary sign during this time, and fertility is not assessed.',
+      'No Peak-type pattern appears in the observations shown on the card yet. Keep charting normally; the card updates whenever an observation is added or changed.',
   },
   {
-    title: 'Tracking',
+    title: 'A few days need context',
     body:
-      'You\u2019re recording observations, but no fertile signs have been identified yet.',
+      'An open calendar date, a day marked not observed, or a saved day that still needs a sensation or appearance falls within a part of the chart Well Within uses to mark Peak or show a phase summary. If the saved observation is incomplete, open that date and choose a sensation—including Dry. A not-observed day can stay as it is. Either way, keep charting.',
   },
   {
-    title: 'Fertile pattern',
+    title: 'This day was marked not observed',
     body:
-      'Mucus has been observed. This may be the start of your fertile window.',
+      'There is no observation for Well Within to interpret on this day. That is okay. Keep charting, and add an observation later only if you remember it.',
   },
   {
-    title: 'Fertile pattern \u2014 Peak not confirmed yet',
+    title: 'Menstrual flow recorded',
     body:
-      'Fertile signs are present, but Peak has not been confirmed. The pattern is still developing.',
+      'This day is recorded as menstrual flow. Mucus can still be saved, but Well Within does not interpret it as Peak-type while flow is selected.',
   },
   {
-    title: 'Peak day identified',
+    title: 'Spotting recorded',
     body:
-      'A Peak Day has been identified. Ovulation likely occurred within the last 1\u20132 days.',
+      'Spotting stays visible alongside the sensation and appearance recorded for the day. A Peak-type sign remains Peak-type; a completed non-Peak observation may also carry a P+ marker when it follows the chart’s possible Peak.',
   },
   {
-    title: 'Post-peak phase',
+    title: 'Brown recorded',
     body:
-      'You are past Peak. Three days of lower-quality mucus confirm the end of the fertile window.',
+      'Brown stays visible as a small B marker. The day’s fill still follows the dry, non-Peak, or Peak-type observation you recorded.',
   },
   {
-    title: 'Missing observation',
+    title: 'Your chart shows mucus signs',
     body:
-      'A required observation is missing. This can prevent the app from confirming Peak or identifying the fertile window accurately.',
+      'Mucus signs are present in your observations, but the pattern does not show a Peak-type day yet. Keep charting as the pattern develops.',
+  },
+  {
+    title: 'Your chart shows a possible Peak Day',
+    body:
+      'A Peak-type mucus sign is recorded in your chart. Well Within waits for three days without another Peak-type sign before marking that earlier day as Peak Day.',
+  },
+  {
+    title: 'Your chart marks a Peak Day',
+    body:
+      'Well Within marks the last Peak-type day after you log three days without another Peak-type mucus sign. This is an interpretation of the observations in your chart, not confirmation of ovulation.',
+  },
+  {
+    title: 'Your chart shows a post-Peak pattern',
+    body:
+      'Three days without another Peak-type mucus sign follow the Peak Day marked on your chart. Keep charting each day; the summary updates whenever you add or change an observation.',
+  },
+  {
+    title: 'Your chart is ready when you are',
+    body: 'Your first daily observation begins the chart. Start whenever you are ready.',
   },
 ];

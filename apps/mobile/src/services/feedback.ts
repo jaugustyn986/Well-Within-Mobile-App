@@ -9,7 +9,7 @@ export type FeedbackType = (typeof FEEDBACK_TYPES)[number];
 
 export const FEEDBACK_CATEGORIES = [
   'Peak timing',
-  'Fertile window',
+  'Possible pattern',
   'Cycle summary',
   'Daily entry',
   'Sync / account',

@@ -2,6 +2,21 @@
 import { DailyEntry } from '../src/types';
 
 describe('recalculateCycle interpretation warnings', () => {
+  it('treats days beyond the last recorded row as a developing Peak pattern, not calendar gaps', () => {
+    const entries: DailyEntry[] = [
+      { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2026-01-02', bleeding: 'none', mucusRankOverride: 1 },
+      { date: '2026-01-03', bleeding: 'none', mucusRankOverride: 3 },
+    ];
+    const r = recalculateCycle(entries);
+    expect(r.peakCandidateIndex).toBe(2);
+    expect(r.peakIndex).toBeNull();
+    expect(r.interpretationWarnings).toContain('peak_confirmation_incomplete');
+    expect(r.interpretationWarnings).not.toContain(
+      'calendar_gap_blocks_peak_confirmation',
+    );
+  });
+
   it('adds calendar_gap_blocks_peak_confirmation when the calendar day after Peak-type is missing from the slice', () => {
     const entries: DailyEntry[] = [
       { date: '2026-01-01', bleeding: 'heavy', mucusRankOverride: 0 },
@@ -42,4 +57,3 @@ describe('recalculateCycle interpretation warnings', () => {
     expect(r.interpretationWarnings).toContain('uncertain_fertile_start');
   });
 });
-

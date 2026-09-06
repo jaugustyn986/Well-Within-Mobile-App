@@ -9,7 +9,11 @@ jest.mock('../../config/env', () => ({ hasSupabaseEnv: () => true }));
 const remoteRows = [
   {
     entry_date: '2025-01-01',
-    entry_payload: { date: '2025-01-01', bleeding: 'light' },
+    entry_payload: {
+      date: '2025-01-01',
+      bleeding: 'light',
+      menstrualFlowStart: 'uncertain',
+    },
     client_updated_at: '2025-01-01T12:00:00Z',
     deleted_at: null,
   },
@@ -22,13 +26,21 @@ const remoteRows = [
 ];
 
 const mockSupabase = {
-  from: () => ({
-    select: () => ({
-      eq: () => ({
-        order: () => Promise.resolve({ data: remoteRows, error: null }),
-      }),
-    }),
-  }),
+  from: (table: string) => table === 'profiles'
+    ? {
+        select: () => ({
+          eq: () => ({
+            maybeSingle: () => Promise.resolve({ data: null, error: null }),
+          }),
+        }),
+      }
+    : {
+        select: () => ({
+          eq: () => ({
+            order: () => Promise.resolve({ data: remoteRows, error: null }),
+          }),
+        }),
+      },
 };
 jest.mock('../../lib/supabase', () => ({ supabase: mockSupabase }));
 
@@ -54,7 +66,11 @@ describe('sync - second device restore', () => {
     const result = await pullRemoteEntries('user-123');
     expect(result.error).toBeNull();
     const state = await getStoredState();
-    expect(state.entriesByDate['2025-01-01']?.entry).toMatchObject({ date: '2025-01-01', bleeding: 'light' });
+    expect(state.entriesByDate['2025-01-01']?.entry).toMatchObject({
+      date: '2025-01-01',
+      bleeding: 'light',
+      menstrualFlowStart: 'uncertain',
+    });
     expect(state.entriesByDate['2025-01-02']?.entry).toMatchObject({ date: '2025-01-02', sensation: 'dry' });
     const entries = await getAllEntries();
     expect(Object.keys(entries)).toHaveLength(2);

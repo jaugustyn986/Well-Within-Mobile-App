@@ -6,6 +6,45 @@ beforeEach(() => {
 });
 
 describe('storageV2 migration and state', () => {
+  test('light-flow start marker survives a local save and read', async () => {
+    const { saveDailyEntry, getDailyEntry } = await import('../storageV2');
+    await saveDailyEntry('2026-01-01', {
+      date: '2026-01-01',
+      bleeding: 'light',
+      sensation: 'dry',
+      menstrualFlowStart: 'confirmed',
+    });
+
+    await expect(getDailyEntry('2026-01-01')).resolves.toMatchObject({
+      bleeding: 'light',
+      menstrualFlowStart: 'confirmed',
+    });
+  });
+
+  test('canonical save preserves observations and refreshes the legacy projection', async () => {
+    const { saveDailyEntry, getDailyEntry } = await import('../storageV2');
+    await saveDailyEntry('2026-07-18', {
+      date: '2026-07-18',
+      bleeding: 'none',
+      sensation: 'dry',
+      appearances: [],
+      observations: [
+        { id: 'morning', observedAt: '08:10', sensation: 'damp', appearances: ['cloudy'], frequency: 1 },
+        { id: 'evening', observedAt: '20:30', sensation: 'stretchy', appearances: ['clear'], frequency: 2 },
+      ],
+    });
+
+    await expect(getDailyEntry('2026-07-18')).resolves.toMatchObject({
+      sensation: 'stretchy',
+      appearances: ['clear'],
+      frequency: 2,
+      observations: [
+        { id: 'morning', observedAt: '08:10', sensation: 'damp', appearances: ['cloudy'], frequency: 1 },
+        { id: 'evening', observedAt: '20:30', sensation: 'stretchy', appearances: ['clear'], frequency: 2 },
+      ],
+    });
+  });
+
   test('legacy migration succeeds - entries become versioned envelope', async () => {
     const { STORAGE_KEY_V1, getAllEntries, ensureMigrationDone } = await import('../storageV2');
     const store = global.AsyncStorageMock;

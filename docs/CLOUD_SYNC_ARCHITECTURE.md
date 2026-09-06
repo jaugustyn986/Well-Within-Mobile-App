@@ -8,7 +8,7 @@ This document explains the local-first sync design, versioned storage, merge rul
 
 - **Primary source of truth is the device.** The app reads and writes to local storage first. Sync with the remote server is optional and runs in the background when the user is signed in.
 - **Offline-first:** The app works without an account or network. Entries are stored locally in a versioned envelope. When the user signs in, sync uploads dirty data and merges remote data into local without replacing the whole store.
-- **Empty or failed remote never wipes local.** If pull fails or returns no rows, existing local entries are kept. Merge always combines remote into local; we never replace the entire local store with remote.
+- **Empty or failed remote never wipes local.** If pull fails or returns no rows, existing local entries are kept. The only exception is a newer authenticated `chart_data_deleted_at` marker created by an explicit permanent-deletion action.
 
 ---
 
@@ -22,6 +22,7 @@ Local storage uses a single versioned envelope (key: `wellwithin_entries_state_v
 - **entriesByDate** – map of date string to per-entry record.
 - **lastSuccessfulSyncAt** – ISO timestamp or null.
 - **lastSyncError** – string or null (for UI/status).
+- **lastCloudResetAt** – the newest permanent cloud-deletion marker this device has acknowledged.
 
 **Per-entry record:**
 
@@ -36,7 +37,7 @@ Legacy keys (`holistic_cycle_entries`, etc.) are read once during migration and 
 
 ## Sync lifecycle
 
-1. **On app start (when signed in):** After migration, sync runs (pull then push). Pull fetches remote rows, validates each `entry_payload`, and merges into local. Push sends dirty local records (upsert; soft delete via `deleted_at`). Only successfully pushed rows are marked clean.
+1. **On app start (when signed in):** After migration, sync runs (pull then push). Pull first checks the account's cloud-reset marker; a newer marker clears stale local rows before any push. Pull then fetches remote rows, validates each `entry_payload`, and merges into local. Push sends dirty local records (upsert; soft delete via `deleted_at`). Only successfully pushed rows are marked clean.
 2. **After local save or delete:** When the user is signed in, a sync is triggered so dirty data is pushed and remote changes can be pulled.
 3. **On sign-out:** Local data is kept. Sync is effectively off until the next sign-in.
 
@@ -54,8 +55,9 @@ Merge is implemented as a pure function in `apps/mobile/src/services/merge.ts` a
 
 ## Delete model
 
-- **No hard deletes.** The client never issues SQL `DELETE` on `daily_entries`. RLS has no DELETE policy for `daily_entries`.
-- **Soft delete:** To “delete” an entry, the client upserts a row with `deleted_at` set. Locally, the per-entry record has `deleted: true`. Merge propagates deletes so both sides converge.
+- **Single-entry delete:** The client upserts a tombstone with `deleted_at` set. Locally, the per-entry record has `deleted: true`. Merge propagates deletes so both sides converge.
+- **Permanent chart reset:** The authenticated `delete_my_chart_data()` function hard-deletes all of the caller's rows and advances `chart_data_deleted_at`. Devices must acknowledge that marker before pushing.
+- **Account delete:** The privileged `delete-account` backend adapter removes the auth user. Database cascades remove the profile, daily entries, and associated authenticated feedback.
 
 ---
 

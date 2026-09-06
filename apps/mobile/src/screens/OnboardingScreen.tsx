@@ -14,19 +14,28 @@ import {
   type ListRenderItemInfo,
   type ViewToken,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  BG_PAGE, ACCENT_WARM, BORDER_CARD,
-  TEXT_PRIMARY, TEXT_SECONDARY, TEXT_MUTED, TEXT_SUBTLE,
+  ACCENT_WARM,
+  BG_PAGE,
+  BORDER_CARD,
+  TEXT_PRIMARY,
+  TEXT_SECONDARY,
+  TEXT_MUTED,
 } from '../theme/colors';
 import {
-  OnboardingCalendarUncertaintyPanel,
-  OnboardingStatusBannerPanel,
+  OnboardingChartContextPanel,
   OnboardingEntryPanel,
-  OnboardingHistoryPanel,
-  OnboardingEmptyCalendarPanel,
+  OnboardingFirstActionPanel,
+  OnboardingIntercoursePanel,
+  OnboardingPrivacyPanel,
 } from '../components/OnboardingPanels';
+import {
+  ONBOARDING_SLIDES,
+  onboardingPrimaryActionLabel,
+  type OnboardingSlideDefinition,
+} from './onboardingFlow';
 
-/* ---------- Asset imports ---------- */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const logoSource = require('../../assets/icon-1024.png');
 
@@ -36,91 +45,267 @@ interface Props {
   onComplete: () => void;
 }
 
-interface Slide {
-  id: string;
+function IdentitySlide({
+  headline,
+  body,
+}: {
   headline: string;
   body: string;
-  renderPanel?: () => JSX.Element;
-  isIdentity?: boolean;
-  isStatusList?: boolean;
-  footerTitle?: string;
-  footerBody?: string;
-}
-
-/* ---------- Slide data ---------- */
-
-const SLIDES: Slide[] = [
-  {
-    id: '1',
-    headline: 'well within',
-    body: 'Understand your cycle with clear, structured charting.',
-    isIdentity: true,
-  },
-  {
-    id: '2',
-    headline: 'Not sure what your chart means?',
-    body: "It's common to feel unsure where you are in your cycle or what your observations indicate.",
-    renderPanel: () => <OnboardingCalendarUncertaintyPanel />,
-  },
-  {
-    id: '3',
-    headline: 'Structured, rules-based charting',
-    body: 'We follow clear rules based on your observations—no guessing or predictions.',
-    isStatusList: true,
-  },
-  {
-    id: '4',
-    headline: 'See where you are in your cycle',
-    body: 'The app identifies your fertile window, Peak, and post-peak phase based on what you record.',
-    renderPanel: () => <OnboardingStatusBannerPanel />,
-  },
-  {
-    id: '5',
-    headline: 'Record a simple observation each day',
-    body: 'Consistency helps the app interpret your cycle clearly.',
-    renderPanel: () => <OnboardingEntryPanel />,
-    footerTitle: 'Consistency matters',
-    footerBody:
-      'Daily observations help the app interpret your cycle correctly. Missing even one day can delay or prevent confirming Peak.',
-  },
-  {
-    id: '6',
-    headline: 'Understand your pattern over time',
-    body: "See how your cycles compare and recognize what's consistent or changing.",
-    renderPanel: () => <OnboardingHistoryPanel />,
-  },
-  {
-    id: '7',
-    headline: 'Start your first cycle',
-    body: 'Small steps today. Greater clarity over time.',
-    renderPanel: () => <OnboardingEmptyCalendarPanel />,
-  },
-];
-
-/* ================================================================
-   IDENTITY SLIDE — Screen 1
-   ================================================================ */
-
-function IdentitySlide({ headline, body }: { headline: string; body: string }): JSX.Element {
+}): React.JSX.Element {
   return (
-    <View style={iS.container}>
-      <View style={iS.decorativeLayer}>
-        <View style={iS.blob1} />
-        <View style={iS.blob2} />
-        <View style={iS.blob3} />
+    <View style={identity.container}>
+      <View style={identity.decorativeLayer} importantForAccessibility="no-hide-descendants">
+        <View style={identity.blob1} />
+        <View style={identity.blob2} />
+        <View style={identity.blob3} />
       </View>
-      <View style={iS.content}>
-        <View style={iS.logoBox}>
-          <Image source={logoSource} style={iS.logo} resizeMode="contain" />
+      <View style={identity.content}>
+        <View style={identity.logoBox}>
+          <Image
+            source={logoSource}
+            style={identity.logo}
+            resizeMode="contain"
+            accessibilityIgnoresInvertColors
+          />
         </View>
-        <Text style={iS.brandName}>{headline}</Text>
-        <Text style={iS.tagline}>{body}</Text>
+        <Text style={identity.brandName}>{headline}</Text>
+        <Text style={identity.tagline}>{body}</Text>
+        <View style={identity.promiseCard}>
+          <Text style={identity.promise}>
+            Record what you observe. See it in context. Keep control of your chart.
+          </Text>
+        </View>
       </View>
     </View>
   );
 }
 
-const iS = StyleSheet.create({
+function OnboardingTopNav({
+  step,
+  total,
+  onBack,
+}: {
+  step: number;
+  total: number;
+  onBack: () => void;
+}): React.JSX.Element {
+  return (
+    <View style={panel.topNav}>
+      <Pressable
+        onPress={onBack}
+        hitSlop={10}
+        accessibilityRole="button"
+        accessibilityLabel="Previous onboarding screen"
+        style={({ pressed }) => [panel.backButton, pressed && panel.pressed]}
+      >
+        <Text style={panel.backText}>{'‹ Back'}</Text>
+      </Pressable>
+      <Text
+        style={panel.stepText}
+        accessibilityLabel={`Step ${step} of ${total}`}
+      >
+        {step} of {total}
+      </Text>
+      <View style={panel.topNavSpacer} />
+    </View>
+  );
+}
+
+function PanelSlide({
+  headline,
+  body,
+  renderPanel,
+  step,
+  total,
+  onBack,
+}: {
+  headline: string;
+  body: string;
+  renderPanel: () => React.JSX.Element;
+  step: number;
+  total: number;
+  onBack: () => void;
+}): React.JSX.Element {
+  return (
+    <View style={panel.container}>
+      <OnboardingTopNav step={step} total={total} onBack={onBack} />
+      <ScrollView
+        style={panel.scroll}
+        contentContainerStyle={panel.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={panel.textBlock}>
+          <Text style={panel.headline}>{headline}</Text>
+          <Text style={panel.body}>{body}</Text>
+        </View>
+        <View style={panel.panelArea}>
+          {renderPanel()}
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+function renderPanelForKind(
+  item: OnboardingSlideDefinition,
+): () => React.JSX.Element {
+  switch (item.kind) {
+    case 'chart_context':
+      return () => <OnboardingChartContextPanel />;
+    case 'observation':
+      return () => <OnboardingEntryPanel />;
+    case 'intercourse':
+      return () => <OnboardingIntercoursePanel />;
+    case 'privacy':
+      return () => <OnboardingPrivacyPanel />;
+    case 'first_action':
+      return () => <OnboardingFirstActionPanel />;
+    case 'identity':
+      throw new Error('Identity slides do not render a panel.');
+  }
+}
+
+function renderSlideContent(
+  item: OnboardingSlideDefinition,
+  index: number,
+  onBack: () => void,
+): React.JSX.Element {
+  if (item.kind === 'identity') {
+    return <IdentitySlide headline={item.headline} body={item.body} />;
+  }
+
+  return (
+    <PanelSlide
+      headline={item.headline}
+      body={item.body}
+      renderPanel={renderPanelForKind(item)}
+      step={index + 1}
+      total={ONBOARDING_SLIDES.length}
+      onBack={onBack}
+    />
+  );
+}
+
+export function OnboardingScreen({ onComplete }: Props): React.JSX.Element {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeIndexRef = useRef(0);
+  const flatListRef = useRef<FlatList<OnboardingSlideDefinition>>(null);
+
+  const goToIndex = (nextIndex: number) => {
+    const bounded = Math.max(0, Math.min(ONBOARDING_SLIDES.length - 1, nextIndex));
+    setActiveIndex(bounded);
+    activeIndexRef.current = bounded;
+    flatListRef.current?.scrollToOffset({ offset: bounded * SW, animated: true });
+  };
+
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      if (viewableItems.length > 0 && viewableItems[0].index != null) {
+        activeIndexRef.current = viewableItems[0].index;
+        setActiveIndex(viewableItems[0].index);
+      }
+    },
+  ).current;
+
+  const onScroll = useRef(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const index = Math.round(event.nativeEvent.contentOffset.x / SW);
+      if (index !== activeIndexRef.current) {
+        activeIndexRef.current = index;
+        setActiveIndex(index);
+      }
+    },
+  ).current;
+
+  const handleNext = () => {
+    if (activeIndex >= ONBOARDING_SLIDES.length - 1) {
+      onComplete();
+      return;
+    }
+    goToIndex(activeIndex + 1);
+  };
+
+  const handleBack = () => {
+    goToIndex(activeIndex - 1);
+  };
+
+  const renderItem = ({
+    item,
+    index,
+  }: ListRenderItemInfo<OnboardingSlideDefinition>) => (
+    <View style={[styles.slide, { width: SW }]}>
+      {renderSlideContent(item, index, handleBack)}
+    </View>
+  );
+
+  const navFooter = (
+    <View style={styles.navFooter}>
+      <View
+        style={styles.dots}
+        accessibilityRole="progressbar"
+        accessibilityValue={{
+          min: 1,
+          max: ONBOARDING_SLIDES.length,
+          now: activeIndex + 1,
+        }}
+      >
+        {ONBOARDING_SLIDES.map((slide, index) => (
+          <View
+            key={slide.id}
+            style={[styles.dot, index === activeIndex && styles.dotActive]}
+          />
+        ))}
+      </View>
+      <Pressable
+        style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+        onPress={handleNext}
+        accessibilityRole="button"
+      >
+        <Text style={styles.buttonText}>
+          {onboardingPrimaryActionLabel(activeIndex)}
+        </Text>
+      </Pressable>
+    </View>
+  );
+
+  if (Platform.OS === 'web') {
+    const item = ONBOARDING_SLIDES[activeIndex];
+    return (
+      <View style={styles.container}>
+        <View style={styles.slide}>
+          {renderSlideContent(item, activeIndex, handleBack)}
+        </View>
+        {navFooter}
+      </View>
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <FlatList
+        ref={flatListRef}
+        data={ONBOARDING_SLIDES}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
+        onScroll={onScroll}
+        scrollEventThrottle={32}
+        getItemLayout={(_, index) => ({
+          length: SW,
+          offset: SW * index,
+          index,
+        })}
+      />
+      {navFooter}
+    </SafeAreaView>
+  );
+}
+
+const identity = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -132,9 +317,9 @@ const iS = StyleSheet.create({
   },
   blob1: {
     position: 'absolute',
-    width: SW * 1.0,
-    height: SW * 1.0,
-    borderRadius: SW * 0.5,
+    width: SW,
+    height: SW,
+    borderRadius: SW / 2,
     backgroundColor: '#EDE8DC',
     opacity: 0.65,
     top: SH * 0.02,
@@ -157,7 +342,7 @@ const iS = StyleSheet.create({
     borderRadius: SW * 0.275,
     backgroundColor: '#D9E5DC',
     opacity: 0.45,
-    bottom: SH * 0.12,
+    bottom: SH * 0.08,
     left: SW * 0.08,
   },
   content: {
@@ -196,322 +381,89 @@ const iS = StyleSheet.create({
     color: TEXT_SECONDARY,
     textAlign: 'center',
     lineHeight: 24,
-    maxWidth: 280,
+    maxWidth: 300,
+  },
+  promiseCard: {
+    marginTop: 30,
+    maxWidth: 330,
+    paddingHorizontal: 20,
+    paddingVertical: 17,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    backgroundColor: 'rgba(253, 252, 251, 0.78)',
+  },
+  promise: {
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
+    color: TEXT_SECONDARY,
   },
 });
 
-/* ================================================================
-   STATUS LIST SLIDE — Screen 3
-   ================================================================ */
-
-function StatusListSlide({ headline, body }: { headline: string; body: string }): JSX.Element {
-  const terms = [
-    { label: 'Tracking', desc: 'Recording observations, no fertile signs yet' },
-    { label: 'Fertile pattern', desc: 'Mucus observed, possible fertile window' },
-    { label: 'Peak identified', desc: 'Most fertile day confirmed' },
-    { label: 'Post-peak', desc: 'Past the fertile window' },
-  ];
-
-  return (
-    <View style={sS.container}>
-      <Text style={sS.headline}>{headline}</Text>
-      <Text style={sS.body}>{body}</Text>
-
-      <View style={sS.card}>
-        {terms.map((t, idx) => (
-          <View
-            key={t.label}
-            style={[sS.row, idx === 0 && sS.rowFirst]}
-          >
-            <View style={sS.dot} />
-            <View style={sS.rowContent}>
-              <Text style={sS.termLabel}>{t.label}</Text>
-              <Text style={sS.termDesc}>{t.desc}</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-const sS = StyleSheet.create({
+const panel = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 52,
+  },
+  topNav: {
+    minHeight: 52,
+    paddingTop: 16,
     paddingHorizontal: 28,
-  },
-  headline: {
-    fontSize: 26,
-    fontWeight: '600',
-    color: TEXT_PRIMARY,
-    letterSpacing: -0.3,
-    lineHeight: 32,
-    marginBottom: 10,
-  },
-  body: {
-    fontSize: 15,
-    fontWeight: '400',
-    color: TEXT_SECONDARY,
-    lineHeight: 22,
-    marginBottom: 28,
-  },
-  card: {
-    backgroundColor: '#FDFCFB',
-    borderRadius: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-  row: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: 16,
-    borderTopWidth: 1,
-    borderTopColor: BORDER_CARD,
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  rowFirst: {
-    borderTopWidth: 0,
+  backButton: {
+    width: 76,
+    minHeight: 44,
+    justifyContent: 'center',
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: ACCENT_WARM,
-    marginTop: 5,
-    marginRight: 16,
-    flexShrink: 0,
-  },
-  rowContent: {
-    flex: 1,
-  },
-  termLabel: {
+  backText: {
+    color: ACCENT_WARM,
     fontSize: 16,
     fontWeight: '600',
-    color: TEXT_PRIMARY,
-    marginBottom: 3,
   },
-  termDesc: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: TEXT_SECONDARY,
-    lineHeight: 20,
+  stepText: {
+    color: TEXT_MUTED,
+    fontSize: 13,
+    fontWeight: '600',
   },
-});
-
-/* ================================================================
-   PANEL SLIDE — Screens 2, 4, 5, 6, 7
-   Renders code-based UI panels instead of image assets so content
-   is always pixel-perfect at every display resolution.
-   ================================================================ */
-
-function PanelSlide({
-  headline,
-  body,
-  renderPanel,
-  footerTitle,
-  footerBody,
-}: {
-  headline: string;
-  body: string;
-  renderPanel: () => JSX.Element;
-  footerTitle?: string;
-  footerBody?: string;
-}): JSX.Element {
-  const hasFooter = footerTitle != null && footerBody != null;
-
-  return (
-    <ScrollView
-      style={pS.container}
-      contentContainerStyle={pS.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={pS.textBlock}>
-        <Text style={pS.headline}>{headline}</Text>
-        <Text style={pS.body}>{body}</Text>
-        {hasFooter ? (
-          <View style={pS.footer}>
-            <Text style={pS.footerTitle}>{footerTitle}</Text>
-            <Text style={pS.footerBody}>{footerBody}</Text>
-          </View>
-        ) : null}
-      </View>
-      <View style={pS.panelArea}>
-        {renderPanel()}
-      </View>
-    </ScrollView>
-  );
-}
-
-const pS = StyleSheet.create({
-  container: {
+  topNavSpacer: {
+    width: 76,
+  },
+  pressed: {
+    opacity: 0.55,
+  },
+  scroll: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 8,
+    paddingBottom: 12,
   },
   textBlock: {
-    paddingTop: 52,
+    paddingTop: 12,
     paddingHorizontal: 28,
     paddingBottom: 20,
   },
   headline: {
-    fontSize: 26,
+    fontSize: 30,
     fontWeight: '600',
     color: TEXT_PRIMARY,
-    letterSpacing: -0.3,
-    lineHeight: 32,
-    marginBottom: 10,
+    letterSpacing: -0.6,
+    lineHeight: 35,
+    marginBottom: 12,
   },
   body: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '400',
     color: TEXT_SECONDARY,
-    lineHeight: 22,
-  },
-  footer: {
-    marginTop: 16,
-    paddingTop: 14,
-    borderTopWidth: 1,
-    borderTopColor: BORDER_CARD,
-  },
-  footerTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: TEXT_MUTED,
-    marginBottom: 5,
-  },
-  footerBody: {
-    fontSize: 13,
-    fontWeight: '400',
-    color: TEXT_SUBTLE,
-    lineHeight: 19,
+    lineHeight: 24,
   },
   panelArea: {
     paddingHorizontal: 28,
-    justifyContent: 'flex-start',
   },
 });
-
-/* ================================================================
-   MAIN COMPONENT
-   ================================================================ */
-
-function renderSlideContent(item: Slide): JSX.Element | null {
-  if (item.isIdentity) {
-    return <IdentitySlide headline={item.headline} body={item.body} />;
-  }
-  if (item.isStatusList) {
-    return <StatusListSlide headline={item.headline} body={item.body} />;
-  }
-  if (item.renderPanel != null) {
-    return (
-      <PanelSlide
-        headline={item.headline}
-        body={item.body}
-        renderPanel={item.renderPanel}
-        footerTitle={item.footerTitle}
-        footerBody={item.footerBody}
-      />
-    );
-  }
-  return null;
-}
-
-export function OnboardingScreen({ onComplete }: Props): JSX.Element {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeIndexRef = useRef(0);
-  const flatListRef = useRef<FlatList<Slide>>(null);
-
-  /* ---- Swipe tracking (iOS only — FlatList is reliable there) ---- */
-  const onViewableItemsChanged = useRef(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      if (viewableItems.length > 0 && viewableItems[0].index != null) {
-        activeIndexRef.current = viewableItems[0].index;
-        setActiveIndex(viewableItems[0].index);
-      }
-    },
-  ).current;
-
-  const onScroll = useRef(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const idx = Math.round(e.nativeEvent.contentOffset.x / SW);
-      if (idx !== activeIndexRef.current) {
-        activeIndexRef.current = idx;
-        setActiveIndex(idx);
-      }
-    },
-  ).current;
-
-  const isLast = activeIndex === SLIDES.length - 1;
-
-  const handleNext = () => {
-    const next = activeIndex + 1;
-    if (activeIndex >= SLIDES.length - 1) {
-      onComplete();
-    } else {
-      setActiveIndex(next);
-      activeIndexRef.current = next;
-      flatListRef.current?.scrollToOffset({ offset: next * SW, animated: true });
-    }
-  };
-
-  const renderItem = ({ item }: ListRenderItemInfo<Slide>) => (
-    <View style={[styles.slide, { width: SW }]}>
-      {renderSlideContent(item)}
-    </View>
-  );
-
-  const navFooter = (
-    <View style={styles.navFooter}>
-      <View style={styles.dots}>
-        {SLIDES.map((_, idx) => (
-          <View key={idx} style={[styles.dot, idx === activeIndex && styles.dotActive]} />
-        ))}
-      </View>
-      <Pressable style={styles.btn} onPress={handleNext}>
-        <Text style={styles.btnText}>{isLast ? 'Begin Charting' : 'Next'}</Text>
-      </Pressable>
-    </View>
-  );
-
-  /* ---- Web: simple state-driven single-slide view ---- */
-  if (Platform.OS === 'web') {
-    return (
-      <View style={styles.container}>
-        <View style={styles.slide}>
-          {renderSlideContent(SLIDES[activeIndex])}
-        </View>
-        {navFooter}
-      </View>
-    );
-  }
-
-  /* ---- iOS: FlatList with swipe gestures ---- */
-  return (
-    <View style={styles.container}>
-      <FlatList
-        ref={flatListRef}
-        data={SLIDES}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 50 }}
-        onScroll={onScroll}
-        scrollEventThrottle={32}
-      />
-      {navFooter}
-    </View>
-  );
-}
 
 const styles = StyleSheet.create({
   container: {
@@ -523,36 +475,51 @@ const styles = StyleSheet.create({
   },
   navFooter: {
     paddingHorizontal: 28,
-    paddingBottom: 44,
-    paddingTop: 16,
+    paddingBottom: 36,
+    paddingTop: 12,
     alignItems: 'center',
     backgroundColor: BG_PAGE,
   },
   dots: {
     flexDirection: 'row',
-    marginBottom: 20,
-    gap: 6,
+    alignItems: 'center',
+    marginBottom: 14,
+    gap: 7,
   },
   dot: {
-    width: 8,
-    height: 8,
+    width: 7,
+    height: 7,
     borderRadius: 4,
-    backgroundColor: BORDER_CARD,
+    backgroundColor: '#D6D0CA',
   },
   dotActive: {
+    width: 9,
+    height: 9,
+    borderRadius: 5,
     backgroundColor: ACCENT_WARM,
-    width: 20,
   },
-  btn: {
+  button: {
     backgroundColor: ACCENT_WARM,
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: 16,
+    minHeight: 58,
     width: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 18,
+    shadowColor: ACCENT_WARM,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.14,
+    shadowRadius: 12,
+    elevation: 3,
   },
-  btnText: {
+  buttonPressed: {
+    opacity: 0.78,
+  },
+  buttonText: {
     color: '#FFFFFF',
     fontSize: 17,
+    lineHeight: 22,
     fontWeight: '600',
+    textAlign: 'center',
   },
 });

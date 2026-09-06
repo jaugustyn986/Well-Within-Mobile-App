@@ -1,7 +1,8 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useCycleData } from '../hooks/useCycleData';
 import { useCycleHistory } from '../hooks/useCycleHistory';
@@ -12,37 +13,88 @@ import { CalendarGrid } from '../components/CalendarGrid';
 import { TodayEntryCard } from '../components/TodayEntryCard';
 import { SegmentedToggle, TabKey } from '../components/SegmentedToggle';
 import { CycleSummaryPanel } from '../components/CycleSummaryPanel';
-import { PatternInsights } from '../components/PatternInsights';
-import { PeakAlignedOverlay } from '../components/PeakAlignedOverlay';
 import { CycleCard } from '../components/CycleCard';
-import { PhaseLabel, PrimaryDayClass } from 'core-rules-engine';
+import {
+  buildFirstReleasePossibleFertilePatternEligibility,
+  buildPossibleFertilePatternPresentation,
+  type PhaseLabel,
+  type PrimaryDayClass,
+  resolveDailyMucus,
+} from 'core-rules-engine';
 import { LineIcon } from '../components/LineIcon';
+import { buildCurrentCycleCatchUpDates, formatCatchUpCount } from '../utils/catchUpDays';
 import {
   BG_PAGE, BG_CARD, BORDER_CARD,
   TEXT_PRIMARY, TEXT_MUTED, TEXT_SUBTLE, TEXT_SECONDARY,
-  BRAND_NAME,
+  BRAND_NAME, ACCENT_WARM, ACCENT_WARM_TINT,
 } from '../theme/colors';
+import { shouldShowRetrospectivePeakMarkers } from '../components/dayPresentationContract';
+import {
+  ChartTipOptionsModal,
+  ContextualChartTip,
+  FirstCompletedChartAcknowledgement,
+  FirstSaveConfirmationModal,
+} from '../features/guidedChartLearning/GuidedChartLearningComponents';
+import {
+  DEFAULT_GUIDED_CHART_LEARNING_PREFERENCES,
+  chartTipById,
+  firstCompletedCycle,
+  selectContextualChartTip,
+  shouldShowFirstCompletedChartAcknowledgement,
+  type ChartTipDefinition,
+  type GuidedChartLearningPreferences,
+} from '../features/guidedChartLearning/guidedChartLearning';
+import {
+  acknowledgeFirstCompletedChart,
+  acknowledgeFirstSave,
+  getGuidedChartLearningPreferences,
+  markChartTip,
+  setChartTipsEnabled,
+} from '../features/guidedChartLearning/guidedChartLearningStorage';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const logoSource = require('../../assets/icon-1024.png');
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'Calendar'>;
+type CalendarRoute = RouteProp<RootStackParamList, 'Calendar'>;
 
 function todayString(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export function CalendarScreen(): JSX.Element {
+export function CalendarScreen(): React.JSX.Element {
   const navigation = useNavigation<Nav>();
+  const route = useRoute<CalendarRoute>();
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollOffsetRef = useRef(0);
   const { entries, sortedEntries, result, loading, refresh } = useCycleData();
   const cycleHistory = useCycleHistory();
   const [activeTab, setActiveTab] = useState<TabKey>('calendar');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [guidedPreferences, setGuidedPreferences] =
+    useState<GuidedChartLearningPreferences>(
+      DEFAULT_GUIDED_CHART_LEARNING_PREFERENCES,
+    );
+  const [guidedPreferencesLoaded, setGuidedPreferencesLoaded] = useState(false);
+  const lastChartTipsEnabledRef = useRef(
+    DEFAULT_GUIDED_CHART_LEARNING_PREFERENCES.chartTipsEnabled,
+  );
+  const [suppressContextualLesson, setSuppressContextualLesson] = useState(false);
+  const [lessonWithOpenOptions, setLessonWithOpenOptions] =
+    useState<ChartTipDefinition | null>(null);
 
   useFocusEffect(useCallback(() => {
     refresh();
     cycleHistory.refresh();
+    void getGuidedChartLearningPreferences().then((preferences) => {
+      if (!lastChartTipsEnabledRef.current && preferences.chartTipsEnabled) {
+        setSuppressContextualLesson(false);
+      }
+      lastChartTipsEnabledRef.current = preferences.chartTipsEnabled;
+      setGuidedPreferences(preferences);
+      setGuidedPreferencesLoaded(true);
+    });
   }, [refresh, cycleHistory.refresh]));
   const today = todayString();
 
@@ -66,12 +118,62 @@ export function CalendarScreen(): JSX.Element {
   }, []);
 
   const todayEntry = entries[today] ?? null;
+  const catchUpDates = useMemo(
+    () => buildCurrentCycleCatchUpDates(sortedEntries, entries, today),
+    [sortedEntries, entries, today],
+  );
+  const showCatchUpPrompt = catchUpDates.length > 1;
 
   const currentCycleSlice = cycleHistory.cycles.length > 0
     ? cycleHistory.cycles[cycleHistory.cycles.length - 1]
     : null;
 
   const cycleSummary = useCurrentCycleSummaryFromCycles(cycleHistory.cycles);
+
+  const contextualLesson = useMemo(
+    () => (
+      guidedPreferencesLoaded && !suppressContextualLesson
+        ? selectContextualChartTip({
+            entries,
+            cycles: cycleHistory.cycles,
+            explanationTarget: cycleSummary.explanationTarget,
+            preferences: guidedPreferences,
+          })
+        : null
+    ),
+    [
+      cycleHistory.cycles,
+      cycleSummary.explanationTarget,
+      entries,
+      guidedPreferences,
+      guidedPreferencesLoaded,
+      suppressContextualLesson,
+    ],
+  );
+
+  const firstCompleted = useMemo(
+    () => firstCompletedCycle(cycleHistory.cycles),
+    [cycleHistory.cycles],
+  );
+  const showFirstCompletedAcknowledgement = (
+    guidedPreferencesLoaded
+    && shouldShowFirstCompletedChartAcknowledgement(
+      cycleHistory.cycles,
+      guidedPreferences,
+    )
+  );
+
+  useEffect(() => {
+    const restoreScrollY = route.params?.restoreScrollY;
+    if (loading || cycleHistory.loading || restoreScrollY == null) return;
+
+    const timeout = setTimeout(() => {
+      scrollRef.current?.scrollTo({ y: restoreScrollY, animated: false });
+      scrollOffsetRef.current = restoreScrollY;
+      navigation.setParams({ restoreScrollY: undefined });
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, [cycleHistory.loading, loading, navigation, route.params?.restoreScrollY]);
 
   const todayRank = useMemo(() => {
     if (currentCycleSlice) {
@@ -98,16 +200,28 @@ export function CalendarScreen(): JSX.Element {
   const dayInfos = useMemo(() => {
     const dateMap = new Map<
       string,
-      { phaseLabel: PhaseLabel; mucusRank: number | null; primaryDayClass: PrimaryDayClass }
+      {
+        phaseLabel: PhaseLabel;
+        mucusRank: number | null;
+        primaryDayClass: PrimaryDayClass;
+        showDerivedMarkers: boolean;
+      }
     >();
 
     for (const slice of cycleHistory.cycles) {
+      const presentation = buildPossibleFertilePatternPresentation(
+        slice.entries,
+        slice.result,
+        buildFirstReleasePossibleFertilePatternEligibility(slice.cycleBoundary),
+      );
+      const showDerivedMarkers = shouldShowRetrospectivePeakMarkers(presentation);
       for (let i = 0; i < slice.entries.length; i++) {
         const date = slice.entries[i].date ?? '';
         dateMap.set(date, {
           phaseLabel: slice.result.phaseLabels[i],
           mucusRank: slice.result.mucusRanks[i],
           primaryDayClass: slice.result.primaryDayClassByDay[i],
+          showDerivedMarkers,
         });
       }
     }
@@ -122,7 +236,10 @@ export function CalendarScreen(): JSX.Element {
         isToday: date === today,
         primaryDayClass: cycleInfo?.primaryDayClass ?? result.primaryDayClassByDay[idx],
         mucusRank: cycleInfo?.mucusRank ?? null,
+        showDerivedMarkers: cycleInfo?.showDerivedMarkers ?? false,
+        bleeding: entry.bleeding,
         intercourse: !!entry.intercourse,
+        observationCount: resolveDailyMucus(entry).observations.length,
       };
     });
   }, [cycleHistory.cycles, sortedEntries, result, today]);
@@ -130,6 +247,67 @@ export function CalendarScreen(): JSX.Element {
   const goToDetail = useCallback(
     (cycleNumber: number) => navigation.navigate('CycleDetail', { cycleNumber }),
     [navigation],
+  );
+  const resolveCycleStart = useCallback(
+    (date: string) => navigation.navigate('DailyEntry', {
+      date,
+      existingEntry: true,
+      intent: 'confirm_cycle_start',
+    }),
+    [navigation],
+  );
+
+  const dismissFirstSaveConfirmation = useCallback(() => {
+    void acknowledgeFirstSave().then(setGuidedPreferences);
+  }, []);
+
+  const openLesson = useCallback((lesson: ChartTipDefinition) => {
+    setSuppressContextualLesson(true);
+    void markChartTip(lesson.id, lesson.contentVersion, 'viewed').then(
+      setGuidedPreferences,
+    );
+    navigation.navigate('ChartTip', {
+      lessonId: lesson.id,
+      source: 'calendar',
+      returnScrollY: scrollOffsetRef.current,
+    });
+  }, [navigation]);
+
+  const openFirstSaveGuide = useCallback(() => {
+    setGuidedPreferences((current) => ({
+      ...current,
+      firstSaveAcknowledged: true,
+      pendingFirstSaveAcknowledgement: false,
+    }));
+    void acknowledgeFirstSave().then((preferences) => {
+      setGuidedPreferences(preferences);
+      openLesson(chartTipById('observation-on-calendar'));
+    });
+  }, [openLesson]);
+
+  const dismissLesson = useCallback(() => {
+    if (!lessonWithOpenOptions) return;
+    const lesson = lessonWithOpenOptions;
+    setLessonWithOpenOptions(null);
+    setSuppressContextualLesson(true);
+    void markChartTip(lesson.id, lesson.contentVersion, 'dismissed').then(
+      setGuidedPreferences,
+    );
+  }, [lessonWithOpenOptions]);
+
+  const hideChartTips = useCallback(() => {
+    setLessonWithOpenOptions(null);
+    setSuppressContextualLesson(true);
+    lastChartTipsEnabledRef.current = false;
+    void setChartTipsEnabled(false).then(setGuidedPreferences);
+  }, []);
+
+  const completeFirstChartAcknowledgement = useCallback(
+    (review: boolean) => {
+      void acknowledgeFirstCompletedChart().then(setGuidedPreferences);
+      if (review && firstCompleted) goToDetail(firstCompleted.cycleNumber);
+    },
+    [firstCompleted, goToDetail],
   );
 
   if (loading || cycleHistory.loading) {
@@ -155,6 +333,8 @@ export function CalendarScreen(): JSX.Element {
           style={styles.gearBtn}
           onPress={() => navigation.navigate('Settings')}
           hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Settings"
         >
           <LineIcon name="gear" size={20} />
         </Pressable>
@@ -162,15 +342,50 @@ export function CalendarScreen(): JSX.Element {
 
       <SegmentedToggle activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <ScrollView>
+      <ScrollView
+        ref={scrollRef}
+        onScroll={(event) => {
+          scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+        }}
+        scrollEventThrottle={32}
+      >
         {activeTab === 'calendar' ? (
           <>
-            <StatusBanner summary={cycleSummary} />
+            <StatusBanner
+              summary={cycleSummary}
+              onUnderstandStatus={() =>
+                navigation.navigate('Help', {
+                  initialSection: cycleSummary.explanationTarget ?? 'status_messages',
+                })
+              }
+              onFindChartingSupport={() => navigation.navigate('FindCare')}
+            />
+            {showCatchUpPrompt ? (
+              <Pressable
+                style={styles.catchUpCard}
+                onPress={() => navigation.navigate('CatchUpMissingDays')}
+              >
+                <View style={styles.catchUpIconWrap}>
+                  <LineIcon name="calendar" size={18} />
+                </View>
+                <View style={styles.catchUpBody}>
+                  <Text style={styles.catchUpTitle}>
+                    {formatCatchUpCount(catchUpDates.length)} still open in this cycle
+                  </Text>
+                  <Text style={styles.catchUpText}>
+                    Add what you remember, or mark a day as not observed.
+                  </Text>
+                </View>
+                <Text style={styles.catchUpAction}>Catch up</Text>
+              </Pressable>
+            ) : null}
             <Pressable
               style={styles.feedbackLink}
               onPress={() => setShowFeedbackModal(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Report an app issue"
             >
-              <Text style={styles.feedbackText}>Something looks off? Send feedback</Text>
+              <Text style={styles.feedbackText}>Something looks off? Report an app issue</Text>
             </Pressable>
 
             <CalendarGrid
@@ -189,12 +404,27 @@ export function CalendarScreen(): JSX.Element {
               mucusRank={todayRank}
               primaryDayClass={todayPrimaryClass}
               date={today}
-              onPress={() => navigation.navigate('DailyEntry', { date: today, existingEntry: !!todayEntry })}
+              onReview={() => navigation.navigate('DailyEntry', { date: today, existingEntry: !!todayEntry })}
+              onAddObservation={() => navigation.navigate('DailyEntry', {
+                date: today,
+                existingEntry: !!todayEntry,
+                intent: 'add_observation',
+              })}
             />
+
+            {contextualLesson ? (
+              <ContextualChartTip
+                lesson={contextualLesson}
+                onOpen={() => openLesson(contextualLesson)}
+                onMore={() => setLessonWithOpenOptions(contextualLesson)}
+              />
+            ) : null}
 
             <Pressable
               style={styles.helpLink}
               onPress={() => navigation.navigate('Help')}
+              accessibilityRole="button"
+              accessibilityLabel="Help understanding your chart"
             >
               <Text style={styles.helpText}>Need help understanding your chart?</Text>
               <Text style={styles.helpSub}>Learn about sensation, appearance, peak day, and more</Text>
@@ -214,9 +444,14 @@ export function CalendarScreen(): JSX.Element {
               </View>
             ) : (
               <View style={styles.historyContent}>
-                <CycleSummaryPanel summary={cycleHistory.summary} />
-                <PatternInsights insights={cycleHistory.insights} />
-                <PeakAlignedOverlay cycles={cycleHistory.cycles} onCyclePress={goToDetail} />
+                <CycleSummaryPanel summary={cycleHistory.recordedHistorySummary} />
+
+                {showFirstCompletedAcknowledgement ? (
+                  <FirstCompletedChartAcknowledgement
+                    onReview={() => completeFirstChartAcknowledgement(true)}
+                    onDismiss={() => completeFirstChartAcknowledgement(false)}
+                  />
+                ) : null}
 
                 <View style={styles.cardsSection}>
                   <Text style={styles.cardsHeading}>Your Cycles</Text>
@@ -226,6 +461,7 @@ export function CalendarScreen(): JSX.Element {
                       cycle={c}
                       allCycles={cycleHistory.cycles}
                       onPress={() => goToDetail(c.cycleNumber)}
+                      onResolveCycleStart={resolveCycleStart}
                     />
                   ))}
                 </View>
@@ -234,6 +470,23 @@ export function CalendarScreen(): JSX.Element {
           </>
         )}
       </ScrollView>
+
+      <FirstSaveConfirmationModal
+        visible={
+          guidedPreferencesLoaded
+          && guidedPreferences.pendingFirstSaveAcknowledgement
+        }
+        onLearn={openFirstSaveGuide}
+        onDismiss={dismissFirstSaveConfirmation}
+      />
+
+      <ChartTipOptionsModal
+        visible={lessonWithOpenOptions !== null}
+        lesson={lessonWithOpenOptions}
+        onDismissLesson={dismissLesson}
+        onHideAll={hideChartTips}
+        onCancel={() => setLessonWithOpenOptions(null)}
+      />
 
       <FeedbackModal
         visible={showFeedbackModal}
@@ -259,6 +512,31 @@ const styles = StyleSheet.create({
   topBarLogo: { width: 32, height: 32, backgroundColor: 'transparent' },
   appName: { fontSize: 28, fontWeight: '600', color: BRAND_NAME, letterSpacing: -0.2 },
   gearBtn: { padding: 8 },
+  catchUpCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: BG_CARD,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_CARD,
+    marginHorizontal: 16,
+    marginTop: 12,
+    padding: 14,
+  },
+  catchUpIconWrap: { marginRight: 12 },
+  catchUpBody: { flex: 1, paddingRight: 10 },
+  catchUpTitle: { fontSize: 15, fontWeight: '600', color: TEXT_PRIMARY },
+  catchUpText: { fontSize: 13, color: TEXT_SUBTLE, lineHeight: 19, marginTop: 3 },
+  catchUpAction: {
+    overflow: 'hidden',
+    borderRadius: 999,
+    backgroundColor: ACCENT_WARM_TINT,
+    color: ACCENT_WARM,
+    fontSize: 13,
+    fontWeight: '600',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
   feedbackLink: {
     alignSelf: 'flex-start',
     marginHorizontal: 16,

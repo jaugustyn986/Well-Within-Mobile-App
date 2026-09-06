@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import type { CompactSupportField, CurrentCycleSummary, SummaryTone } from 'core-rules-engine';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { CurrentCycleSummary, SummaryTone } from 'core-rules-engine';
 import {
   BG_CARD_GRADIENT_START,
   BANNER_TONE_CAUTION_BG,
@@ -9,10 +9,15 @@ import {
   TEXT_SECONDARY,
   TEXT_SUBTLE,
   TEXT_MUTED,
+  ACCENT_WARM,
+  BORDER_CARD,
 } from '../theme/colors';
+import { formatPossibleFertilePatternLimit } from '../utils/dateDisplay';
 
 interface Props {
   summary: CurrentCycleSummary;
+  onUnderstandStatus?: () => void;
+  onFindChartingSupport?: () => void;
 }
 
 function backgroundForTone(tone: SummaryTone): string {
@@ -26,48 +31,84 @@ function backgroundForTone(tone: SummaryTone): string {
   }
 }
 
-function resolveSupportLine(
-  field: CompactSupportField,
-  summary: CurrentCycleSummary,
-): string | null {
-  switch (field) {
-    case 'guidance':
-      return summary.guidance;
-    case 'baselineContext':
-      return summary.baselineContext;
-    case 'completeness':
-      return summary.completeness;
-    case 'interpretationNote':
-      return summary.interpretationNotes[0] ?? null;
-    default:
-      return summary.guidance;
-  }
-}
-
-export function StatusBanner({ summary }: Props): JSX.Element {
+export function StatusBanner({
+  summary,
+  onUnderstandStatus,
+  onFindChartingSupport,
+}: Props): React.JSX.Element {
   const bg = backgroundForTone(summary.summaryTone);
   const { cycleDay } = summary;
-  const supportLine = resolveSupportLine(summary.compactSupportField, summary);
-  const showCompleteness =
-    summary.compactSupportField !== 'completeness' &&
-    summary.completeness.length > 0;
+  const supportLine = summary.guidance;
+  const completenessLabel =
+    summary.completeness === 'No gaps in your chart this cycle'
+      ? 'All days charted so far'
+      : summary.completeness;
+  const metadata = [
+    cycleDay !== null ? `Cycle Day ${cycleDay}` : null,
+    completenessLabel.length > 0 ? completenessLabel : null,
+  ].filter((value): value is string => value !== null).join(' · ');
+  const showStatusActions = summary.explanationTarget !== null;
+  const rawSupportingContext =
+    summary.interpretationReason === 'bleeding_mucus_ambiguity'
+      ? ''
+      : summary.supportingContext;
+  const supportingContext = rawSupportingContext && summary.possibleFertilePattern.limit
+    ? formatPossibleFertilePatternLimit(summary.possibleFertilePattern.limit)
+      ?? rawSupportingContext
+    : rawSupportingContext;
+  const understandLabel =
+    summary.explanationTarget === 'peak_day' &&
+    summary.interpretationStatus === 'summary_available'
+      ? 'See why your chart shows this'
+      : summary.explanationTarget === 'peak_day'
+        ? 'How Peak Day is identified'
+        : 'Learn what this means';
+  const showSupportLine = supportLine.length > 0 && !showStatusActions;
 
   return (
     <View style={[styles.container, { backgroundColor: bg }]}>
-      {summary.focusQualification ? (
-        <Text style={styles.focusQualification}>{summary.focusQualification}</Text>
-      ) : null}
-      <Text style={styles.headline}>{summary.headline}</Text>
-      <Text style={styles.confidence}>{summary.confidence}</Text>
-      {cycleDay !== null ? (
-        <Text style={styles.cycleDay}>Cycle Day {cycleDay}</Text>
-      ) : null}
-      {showCompleteness ? (
-        <Text style={styles.completeness}>{summary.completeness}</Text>
-      ) : null}
-      {supportLine ? (
-        <Text style={styles.supportLine}>{supportLine}</Text>
-      ) : null}
+      <View style={styles.content}>
+        {metadata ? (
+          <Text style={styles.metadata}>{metadata}</Text>
+        ) : null}
+        {summary.focusQualification ? (
+          <Text style={styles.focusQualification}>{summary.focusQualification}</Text>
+        ) : null}
+        <Text style={styles.headline}>{summary.headline}</Text>
+        <Text style={styles.statusLine}>{summary.statusLine}</Text>
+        {supportingContext ? (
+          <Text style={styles.supportingContext}>{supportingContext}</Text>
+        ) : null}
+        {showSupportLine ? (
+          <View style={styles.footer}>
+            <Text style={styles.supportLine}>{supportLine}</Text>
+          </View>
+        ) : null}
+        {showStatusActions && onUnderstandStatus ? (
+          <View style={[styles.footer, styles.actions]}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onUnderstandStatus}
+              hitSlop={6}
+              style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
+            >
+              <Text style={styles.actionText}>{understandLabel}</Text>
+              <Text style={styles.actionArrow}>{'›'}</Text>
+            </Pressable>
+            {summary.interpretationStatus === 'review_recommended' && onFindChartingSupport ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={onFindChartingSupport}
+                hitSlop={6}
+                style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
+              >
+                <Text style={styles.actionText}>Find charting support</Text>
+                <Text style={styles.actionArrow}>{'›'}</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -79,45 +120,80 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 8,
   },
+  content: {
+    width: '100%',
+    maxWidth: 680,
+  },
   focusQualification: {
     fontSize: 12,
     fontWeight: '400',
     color: TEXT_MUTED,
-    marginBottom: 6,
+    marginTop: 5,
     lineHeight: 16,
   },
   headline: {
-    fontSize: 21,
+    fontSize: 19,
     fontWeight: '600',
     color: TEXT_PRIMARY,
     letterSpacing: -0.2,
+    lineHeight: 24,
+    marginTop: 7,
   },
-  confidence: {
+  statusLine: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '400',
     color: TEXT_SECONDARY,
     marginTop: 10,
     lineHeight: 22,
   },
-  cycleDay: {
+  supportingContext: {
     fontSize: 13,
     fontWeight: '400',
     color: TEXT_SUBTLE,
     marginTop: 6,
-    lineHeight: 18,
+    lineHeight: 19,
   },
-  completeness: {
+  metadata: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: TEXT_MUTED,
+    lineHeight: 16,
+  },
+  supportLine: {
+    flex: 1,
     fontSize: 13,
     fontWeight: '400',
     color: TEXT_SUBTLE,
-    marginTop: 2,
-    lineHeight: 18,
+    lineHeight: 19,
   },
-  supportLine: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: TEXT_SECONDARY,
-    marginTop: 10,
-    lineHeight: 22,
+  footer: {
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: BORDER_CARD,
+  },
+  actions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 18,
+  },
+  action: {
+    minHeight: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  actionPressed: {
+    opacity: 0.55,
+  },
+  actionText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: ACCENT_WARM,
+  },
+  actionArrow: {
+    marginLeft: 4,
+    fontSize: 18,
+    lineHeight: 18,
+    color: ACCENT_WARM,
   },
 });

@@ -24,7 +24,7 @@ import {
   BANNER_TONE_CAUTION_BG,
 } from '../theme/colors';
 
-export function AuthScreen(): JSX.Element {
+export function AuthScreen(): React.JSX.Element {
   const auth = useAuth();
   const navigation = useNavigation();
   const [email, setEmail] = useState('');

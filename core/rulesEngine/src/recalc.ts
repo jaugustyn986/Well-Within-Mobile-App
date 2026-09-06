@@ -1,5 +1,6 @@
 import { deriveBleedingMetadata } from './bleedingDerive';
 import { addDaysIso, compareIsoDate, entryDateOrSynthetic } from './calendar';
+import { resolveCycleBoundaries } from './cycleBoundary';
 import { blocksFertileOpening } from './flowBleeding';
 import { detectFertileStartDetailed } from './fertileWindow';
 import { deriveMucusDerivedByDay } from './mucusClassification';
@@ -19,22 +20,6 @@ import {
 
 interface RecalcOptions {
   debug?: boolean;
-}
-
-function findCurrentCycleStart(entries: Array<DailyEntry | null>): number {
-  let startIndex = 0;
-  for (let i = 0; i < entries.length; i += 1) {
-    const bleeding = entries[i]?.bleeding;
-    if (bleeding === 'heavy' || bleeding === 'moderate') {
-      const prevBleeding = i > 0 ? entries[i - 1]?.bleeding : undefined;
-      const prevIsHeavyOrModerate =
-        prevBleeding === 'heavy' || prevBleeding === 'moderate';
-      if (!prevIsHeavyOrModerate) {
-        startIndex = i;
-      }
-    }
-  }
-  return startIndex;
 }
 
 function buildDateToIndex(entries: DailyEntry[]): Map<string, number> {
@@ -59,11 +44,20 @@ function collectInterpretationWarnings(
   if (peakCandidateIndex !== null && peakIndex === null) {
     const dateToIndex = buildDateToIndex(entries);
     const D = entryDateOrSynthetic(entries[peakCandidateIndex]?.date, peakCandidateIndex);
+    const lastRecordedDate = entries.reduce<string>((latest, entry, index) => {
+      const date = entryDateOrSynthetic(entry?.date, index);
+      return latest.length === 0 || compareIsoDate(date, latest) > 0
+        ? date
+        : latest;
+    }, '');
     let blockedByGapOrMissing = false;
     for (let k = 1; k <= 3; k += 1) {
       const nextD = addDaysIso(D, k);
       const idx = dateToIndex.get(nextD);
       if (idx === undefined) {
+        // A date beyond the last recorded row has not necessarily happened yet.
+        // Treat the sequence as developing; only an interior skipped date is a gap.
+        if (compareIsoDate(nextD, lastRecordedDate) > 0) break;
         w.push('calendar_gap_blocks_peak_confirmation');
         blockedByGapOrMissing = true;
         break;
@@ -89,7 +83,7 @@ export function recalculateCycle(
   const phaseLabels: PhaseLabel[] = new Array(safeEntries.length).fill('dry');
   const mucusRanks = safeEntries.map((entry) => computeMucusRank(entry));
   const mucusDerivedByDay = deriveMucusDerivedByDay(safeEntries, mucusRanks);
-  const cycleStartIndex = findCurrentCycleStart(safeEntries);
+  const cycleStartIndex = resolveCycleBoundaries(safeEntries).currentCycleStartIndex;
 
   const { fertileStartIndex, fertileStartReason } = detectFertileStartDetailed(
     safeEntries,

@@ -1,9 +1,5 @@
-﻿import { Appearance, DailyEntry, MucusDayClassification, MucusDerivedDay } from './types';
-
-function lubricativePromotion(sensation: string, appearances: Appearance[]): boolean {
-  if (!appearances.includes('lubricative')) return false;
-  return sensation === 'damp' || sensation === 'shiny' || sensation === 'wet';
-}
+﻿import { DailyEntry, MucusDayClassification, MucusDerivedDay } from './types';
+import { resolveDailyMucus } from './observationResolution';
 
 export function deriveMucusDay(
   entry: DailyEntry,
@@ -19,12 +15,9 @@ export function deriveMucusDay(
     };
   }
 
-  const sensation = entry.sensation ?? 'dry';
-  const appearances = entry.appearances ?? [];
-  const isStretchy = sensation === 'stretchy';
-  const isLubricative =
-    appearances.includes('lubricative') ||
-    lubricativePromotion(sensation, appearances);
+  const resolved = resolveDailyMucus(entry);
+  const isStretchy = resolved.hasStretchy;
+  const isLubricative = resolved.hasLubricative;
 
   const isPeakType = rank >= 3;
 

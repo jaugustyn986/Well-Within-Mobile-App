@@ -32,7 +32,7 @@ describe('buildFeedbackCycleContext', () => {
     ];
     const cycles = splitIntoCycles(entries);
     const ctx = buildFeedbackCycleContext(cycles, '2025-06-10');
-    expect(ctx.cycle_length).toBe(2);
+    expect(ctx.cycle_length).toBe(10);
     expect(typeof ctx.peak_detected).toBe('boolean');
     expect(ctx.cycles_tracked).toBeGreaterThanOrEqual(0);
     expect(ctx.current_phase).toBeTruthy();

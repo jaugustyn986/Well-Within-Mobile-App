@@ -95,8 +95,8 @@ describe('computeMucusRank', () => {
     expect(computeMucusRank({ sensation: 'unknown' as never, appearances: [] })).toBe(0);
   });
 
-  it('defaults missing sensation to dry and missing appearances to empty', () => {
-    expect(computeMucusRank({})).toBe(0);
+  it('does not infer dry when a legacy row has no mucus observation fields', () => {
+    expect(computeMucusRank({})).toBeNull();
     expect(computeMucusRank({ sensation: 'wet' })).toBe(2);
     expect(computeMucusRank({ appearances: ['clear'] })).toBe(3);
   });

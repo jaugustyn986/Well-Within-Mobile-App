@@ -17,7 +17,7 @@ const C = ACCENT_WARM;
 const BG = ACCENT_WARM_TINT;
 const BORDER = BORDER_CARD;
 
-export function LineIcon({ name, size = 24 }: Props): JSX.Element {
+export function LineIcon({ name, size = 24 }: Props): React.JSX.Element {
   const isLarge = size >= 60;
   const frameSize = isLarge ? size * 1.25 : size * 1.6;
   const frameRadius = isLarge ? 20 : 10;
@@ -33,7 +33,7 @@ export function LineIcon({ name, size = 24 }: Props): JSX.Element {
   );
 }
 
-function renderIcon(name: IconName, s: number): JSX.Element {
+function renderIcon(name: IconName, s: number): React.JSX.Element {
   const w = Math.max(1, s * 0.06);
 
   switch (name) {
@@ -55,7 +55,7 @@ function renderIcon(name: IconName, s: number): JSX.Element {
   }
 }
 
-function CycleIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function CycleIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   const r = s * 0.38;
   return (
     <View style={{ width: s, height: s, alignItems: 'center', justifyContent: 'center' }}>
@@ -79,7 +79,7 @@ function CycleIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function ObserveIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function ObserveIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   const pouchW = s * 0.55;
   const pouchH = s * 0.5;
   const foldH = s * 0.14;
@@ -125,7 +125,7 @@ function ObserveIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function ClockIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function ClockIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   const r = s * 0.28;
   const handW = Math.max(1, w);
   const hourLen = r * 0.4;
@@ -195,7 +195,7 @@ function ClockIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function CalendarIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function CalendarIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   return (
     <View style={{ width: s, height: s, alignItems: 'center', justifyContent: 'center' }}>
       <View style={{
@@ -227,7 +227,7 @@ function CalendarIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function EyeIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function EyeIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   return (
     <View style={{ width: s, height: s, alignItems: 'center', justifyContent: 'center' }}>
       <View style={{
@@ -245,7 +245,7 @@ function EyeIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function DropletIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function DropletIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   return (
     <View style={{ width: s, height: s, alignItems: 'center', justifyContent: 'center' }}>
       <View style={{
@@ -267,7 +267,7 @@ function DropletIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function SparkleIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function SparkleIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   const arm = s * 0.22;
   return (
     <View style={{ width: s, height: s, alignItems: 'center', justifyContent: 'center' }}>
@@ -290,7 +290,7 @@ function SparkleIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function HeartIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function HeartIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   const lobe = s * 0.2;
   return (
     <View style={{ width: s, height: s, alignItems: 'center', justifyContent: 'center' }}>
@@ -315,7 +315,7 @@ function HeartIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function ChartIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function ChartIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   const barW = s * 0.13;
   return (
     <View style={{ width: s, height: s, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: s * 0.15 }}>
@@ -331,7 +331,7 @@ function ChartIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function GridIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function GridIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   return (
     <View style={{ width: s, height: s, alignItems: 'center', justifyContent: 'center' }}>
       <View style={{
@@ -359,7 +359,7 @@ function GridIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function DeviceIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function DeviceIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   return (
     <View style={{ width: s, height: s, alignItems: 'center', justifyContent: 'center' }}>
       <View style={{
@@ -375,7 +375,7 @@ function DeviceIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function AnalyticsIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function AnalyticsIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   return (
     <View style={{ width: s, height: s, alignItems: 'center', justifyContent: 'center' }}>
       <View style={{
@@ -396,7 +396,7 @@ function AnalyticsIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function ShieldIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function ShieldIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   return (
     <View style={{ width: s, height: s, alignItems: 'center', justifyContent: 'center' }}>
       <View style={{
@@ -420,7 +420,7 @@ function ShieldIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function LockIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function LockIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   return (
     <View style={{ width: s, height: s, alignItems: 'center', justifyContent: 'center' }}>
       <View style={{
@@ -442,7 +442,7 @@ function LockIcon({ s, w }: { s: number; w: number }): JSX.Element {
   );
 }
 
-function GearIcon({ s, w }: { s: number; w: number }): JSX.Element {
+function GearIcon({ s, w }: { s: number; w: number }): React.JSX.Element {
   const r = s * 0.2;
   const toothSize = s * 0.08;
   return (

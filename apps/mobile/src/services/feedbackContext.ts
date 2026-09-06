@@ -1,5 +1,6 @@
 import {
   type CycleSlice,
+  calendarDaysBetween,
   compareIsoDate,
   computeCycleSummary,
   countCompletenessMissing,
@@ -24,15 +25,6 @@ function lastEntryDateAcrossCycles(cycles: CycleSlice[]): string | null {
     }
   }
   return max;
-}
-
-/** Calendar-day difference: later − earlier (non-negative when later >= earlier). */
-function calendarDaysFromTo(earlierIso: string, laterIso: string): number {
-  const [ey, em, ed] = earlierIso.split('-').map(Number);
-  const [ly, lm, ld] = laterIso.split('-').map(Number);
-  const a = new Date(ey, em - 1, ed);
-  const b = new Date(ly, lm - 1, ld);
-  return Math.round((b.getTime() - a.getTime()) / 86_400_000);
 }
 
 /**
@@ -70,7 +62,7 @@ export function buildFeedbackCycleContext(
   const lastEntry = lastEntryDateAcrossCycles(cycles);
   let days_since_last_entry: number | null = null;
   if (lastEntry && compareIsoDate(lastEntry, calendarAsOfDate) <= 0) {
-    days_since_last_entry = calendarDaysFromTo(lastEntry, calendarAsOfDate);
+    days_since_last_entry = calendarDaysBetween(lastEntry, calendarAsOfDate);
   }
 
   return {

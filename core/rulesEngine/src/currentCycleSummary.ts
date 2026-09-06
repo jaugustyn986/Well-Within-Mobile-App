@@ -1,5 +1,15 @@
-import { addDaysIso, compareIsoDate } from './calendar';
+import { addDaysIso, compareIsoDate, cycleDayForEntryIndex } from './calendar';
 import { CycleComparisonStructured } from './cycleComparisonSummary';
+import {
+  evaluateInterpretationSupport,
+  type InterpretationSupportReason,
+  type InterpretationSupportStatus,
+} from './interpretationSupport';
+import {
+  buildPossibleFertilePatternPresentation,
+  type PossibleFertilePatternEligibilityOptions,
+  type PossibleFertilePatternPresentation,
+} from './possibleFertilePattern';
 import {
   CycleResult,
   DailyEntry,
@@ -12,6 +22,11 @@ export type CycleSliceStatus = 'complete' | 'in_progress' | 'no_peak';
 
 export type SummaryTone = 'neutral' | 'caution' | 'positive';
 
+export type SummaryExplanationTarget =
+  | 'peak_day'
+  | 'status_messages'
+  | null;
+
 export type CompactSupportField =
   | 'guidance'
   | 'completeness'
@@ -23,9 +38,9 @@ export interface CurrentCycleSummary {
   /** 1-based cycle day for the focused row, or null when there are no entries. */
   cycleDay: number | null;
   headline: string;
-  /** Requirement 2: tier + variant only (engine-owned; UI must not infer). */
-  confidence: string;
-  /** Optional extra line; usually empty so copy lives in guidance (banner layout). */
+  /** Warm capability line for the interpretation support state. */
+  statusLine: string;
+  /** Optional limitation or context shown directly beneath the evidence line. */
   supportingContext: string;
   completeness: string;
   guidance: string;
@@ -37,6 +52,13 @@ export interface CurrentCycleSummary {
   compactSupportField: CompactSupportField;
   /** Historical context from prior cycles (observational, never predictive). */
   baselineContext: string | null;
+  /** What this app version can summarize; never a diagnosis or charting lock. */
+  interpretationStatus: InterpretationSupportStatus;
+  interpretationReason: InterpretationSupportReason;
+  /** Contextual Help destination, or null when the compact card is self-contained. */
+  explanationTarget: SummaryExplanationTarget;
+  /** Central Phase 1C model shared with detail, history, accessibility, and export. */
+  possibleFertilePattern: PossibleFertilePatternPresentation;
 }
 
 export interface BuildCurrentCycleSummaryParams {
@@ -52,6 +74,8 @@ export interface BuildCurrentCycleSummaryParams {
   calendarAsOfDate?: string;
   /** Prior-cycle comparison data; enables baseline context lines. */
   baselineComparison?: CycleComparisonStructured;
+  /** Explicit eligibility gate for exact Phase 1C boundaries. */
+  possibleFertilePatternEligibility?: PossibleFertilePatternEligibilityOptions;
 }
 
 const FOCUS_QUALIFICATION =
@@ -63,6 +87,24 @@ function recentWindowHasGap(
   result: CycleResult,
   focusIndex: number,
 ): boolean {
+  const firstDate = entries[0]?.date;
+  const focusDate = entries[focusIndex]?.date;
+  if (firstDate && focusDate) {
+    const indexByDate = new Map<string, number>();
+    entries.forEach((entry, index) => {
+      if (entry.date) indexByDate.set(entry.date, index);
+    });
+    for (let offset = 0; offset <= 2; offset += 1) {
+      const date = addDaysIso(focusDate, -offset);
+      if (compareIsoDate(date, firstDate) < 0) continue;
+      const index = indexByDate.get(date);
+      if (index === undefined) return true;
+      if (entries[index]?.missing === true) return true;
+      if (result.phaseLabels[index] === 'missing') return true;
+    }
+    return false;
+  }
+
   const start = Math.max(0, focusIndex - 2);
   for (let i = start; i <= focusIndex; i++) {
     if (entries[i]?.missing === true) return true;
@@ -172,129 +214,45 @@ function isFocusMissing(
   return phase === 'missing' || e?.missing === true || e == null;
 }
 
-/**
- * Deterministic confidence tier (Requirement 2 — Summary Confidence Indicator).
- * Evaluated top-to-bottom; High never applies when recent-window gaps exist.
- */
-function computeConfidenceLine(
-  focusMissing: boolean,
-  recentWindowMissing: boolean,
-  status: CycleSliceStatus,
-  phase: PhaseLabel,
-): string {
-  if (focusMissing) {
-    return 'Low confidence — missing observations';
-  }
-  if (recentWindowMissing) {
-    return 'Low confidence — recent observations missing';
-  }
-  if (status === 'no_peak') {
-    return 'Moderate confidence — pattern still forming';
-  }
-  if (phase === 'fertile_unconfirmed_peak') {
-    return 'Moderate confidence — pattern still forming';
-  }
-  if (phase === 'p_plus_1' || phase === 'p_plus_2') {
-    return 'Moderate confidence — pattern still forming';
-  }
-  if (
-    phase === 'peak_confirmed' ||
-    phase === 'p_plus_3' ||
-    phase === 'post_peak'
-  ) {
-    return 'High confidence — Peak confirmed';
-  }
-  if (
-    phase === 'fertile_open' ||
-    phase === 'dry' ||
-    phase === 'previous_cycle'
-  ) {
-    return 'Moderate confidence — pattern still forming';
-  }
-  return 'Moderate confidence — pattern still forming';
-}
-
-function headlineFromPhase(phase: PhaseLabel): string {
-  switch (phase) {
-    case 'dry':
-    case 'previous_cycle':
-      return 'Tracking';
-    case 'fertile_open':
-      return 'Fertile pattern';
-    case 'peak_confirmed':
-    case 'p_plus_1':
-    case 'p_plus_2':
-      return 'Peak day identified';
-    case 'p_plus_3':
-    case 'post_peak':
-      return 'Post-peak phase';
-    case 'fertile_unconfirmed_peak':
-      return 'Fertile pattern \u2014 Peak not confirmed yet';
-    case 'missing':
-      return 'Missing observation';
+function missingSupportLine(reason: InterpretationSupportReason): string {
+  switch (reason) {
+    case 'calendar_gap':
+      return 'An observation is missing from the three days after a possible Peak Day, so the app cannot complete this pattern.';
+    case 'not_observed':
+      return 'One of the three days after a possible Peak Day is marked Not observed, so the app cannot complete this pattern.';
+    case 'incomplete_observation':
+      return 'One of the three days after a possible Peak Day needs a sensation or appearance before the pattern can be completed.';
+    case 'earlier_gap_limits_boundary':
+      return 'An earlier day is open or marked Not observed, so the app cannot tell where this possible pattern began.';
     default:
-      return 'Tracking';
+      return 'Something in this chart needs more context before a clear pattern can be shown.';
   }
 }
 
-function buildBaselineContext(
-  phase: PhaseLabel,
-  cycleDay: number,
-  isLowConfidence: boolean,
-  comparison?: CycleComparisonStructured,
-): string | null {
-  if (!comparison) return null;
-  if (isLowConfidence) return null;
-  if (comparison.priorSampleSize < 2) return null;
-
-  switch (phase) {
-    case 'dry':
-    case 'previous_cycle': {
-      const avg = comparison.avgFertileStartDay;
-      if (avg !== null && cycleDay < avg) {
-        return `Your cycles have typically shown fertile signs starting around day ${avg}.`;
-      }
-      return null;
-    }
-    case 'fertile_open': {
-      const avg = comparison.avgPeakDay;
-      if (avg !== null) {
-        return `Peak has usually occurred around day ${avg} in your previous cycles.`;
-      }
-      return null;
-    }
-    case 'fertile_unconfirmed_peak': {
-      const avg = comparison.avgPeakDay;
-      if (avg !== null) {
-        return `Peak has usually occurred around day ${avg} in your previous cycles.`;
-      }
-      return null;
-    }
-    case 'peak_confirmed':
-    case 'post_peak': {
-      if (
-        comparison.peakVsPrior !== 'similar' &&
-        comparison.peakVsPrior !== 'not_comparable'
-      ) {
-        const dir = comparison.peakVsPrior === 'later' ? 'later' : 'earlier';
-        return `Peak occurred ${dir} than your usual pattern.`;
-      }
-      return null;
-    }
+function missingSupportHeading(reason: InterpretationSupportReason): string {
+  switch (reason) {
+    case 'calendar_gap':
+      return 'One observation is missing';
+    case 'not_observed':
+      return 'One day was not observed';
+    case 'incomplete_observation':
+      return 'One observation needs more detail';
+    case 'earlier_gap_limits_boundary':
+      return 'The start of this pattern is not clear';
     default:
-      return null;
+      return 'We cannot show a clear pattern yet';
   }
 }
 
 function resolveCompactSupportField(
-  isLowConfidence: boolean,
+  interpretationLimited: boolean,
   focusMissing: boolean,
   interpretationNotes: string[],
   missingCount: number,
   baselineContext: string | null,
 ): CompactSupportField {
   if (focusMissing && interpretationNotes.length > 0) return 'interpretationNote';
-  if (isLowConfidence && missingCount > 0) return 'completeness';
+  if (interpretationLimited && missingCount > 0) return 'completeness';
   if (baselineContext) return 'baselineContext';
   return 'guidance';
 }
@@ -306,21 +264,37 @@ function resolveCompactSupportField(
 export function buildCurrentCycleSummary(
   params: BuildCurrentCycleSummaryParams,
 ): CurrentCycleSummary {
-  const { entries, result, status, todayIndex, calendarAsOfDate, baselineComparison } = params;
+  const {
+    entries,
+    result,
+    status,
+    todayIndex,
+    calendarAsOfDate,
+    possibleFertilePatternEligibility,
+  } = params;
+  const possibleFertilePattern = buildPossibleFertilePatternPresentation(
+    entries,
+    result,
+    possibleFertilePatternEligibility,
+  );
 
   if (entries.length === 0) {
     return {
       cycleDay: null,
-      headline: 'Your cycle will appear here',
-      confidence: 'Moderate confidence — pattern still forming',
+      headline: 'Your chart is ready when you are',
+      statusLine: 'Your first observation gives Well Within a place to begin.',
       supportingContext: '',
-      completeness: 'Nothing charted in this cycle yet.',
-      guidance: 'Log today’s observation when you’re ready to begin.',
+      completeness: '',
+      guidance: 'Log today’s observation when you’re ready.',
       summaryTone: 'neutral',
       focusQualification: null,
       interpretationNotes: [],
       compactSupportField: 'guidance',
       baselineContext: null,
+      interpretationStatus: 'forming',
+      interpretationReason: 'insufficient_pattern_data',
+      explanationTarget: null,
+      possibleFertilePattern,
     };
   }
 
@@ -332,89 +306,166 @@ export function buildCurrentCycleSummary(
   const phase = result.phaseLabels[focusIndex] ?? 'dry';
   const primaryClass: PrimaryDayClass =
     result.primaryDayClassByDay[focusIndex] ?? 'dry';
+  const focusEntry = entries[focusIndex];
+  const focusRank = result.mucusRanks[focusIndex] ?? null;
+  const focusLayeredBleeding = focusEntry?.bleeding === 'spotting'
+    ? 'Spotting'
+    : focusEntry?.bleeding === 'brown'
+      ? 'Brown'
+      : null;
+  const focusObservationIncomplete =
+    focusLayeredBleeding !== null &&
+    focusRank === null &&
+    focusEntry?.missing !== true;
   const missingCount = countCompletenessMissing({
     entries,
     status,
     calendarAsOfDate,
   });
-  const focusMissing = isFocusMissing(entries, focusIndex, phase);
+  const focusMissing =
+    primaryClass === 'missing' && isFocusMissing(entries, focusIndex, phase);
   const recentWindowMissing = recentWindowHasGap(entries, result, focusIndex);
+  const interpretationSupport = evaluateInterpretationSupport(entries, result);
 
   const focusQualification =
     todayIndex === null ? FOCUS_QUALIFICATION : null;
+  const cycleDay = cycleDayForEntryIndex(entries, focusIndex);
 
-  const confidence = computeConfidenceLine(
-    focusMissing,
-    recentWindowMissing,
-    status,
-    phase,
-  );
+  let statusLine = 'Keep charting';
 
   const interpretationNotes = buildInterpretationNotes(result);
 
   let headline: string;
   let guidance: string;
   let summaryTone: SummaryTone;
+  let supportingContext = '';
+  let explanationTarget: SummaryExplanationTarget = null;
 
-  if (focusMissing) {
-    headline = 'Observation needed for this day';
+  const peakCycleDay =
+    result.peakIndex === null
+      ? null
+      : cycleDayForEntryIndex(entries, result.peakIndex);
+  const peakCandidateCycleDay =
+    result.peakCandidateIndex === null
+      ? null
+      : cycleDayForEntryIndex(entries, result.peakCandidateIndex);
+  const focusShowsConfirmedPeak =
+    interpretationSupport.status === 'summary_available' &&
+    peakCycleDay !== null &&
+    (phase === 'peak_confirmed' ||
+      phase === 'p_plus_1' ||
+      phase === 'p_plus_2' ||
+      phase === 'p_plus_3' ||
+      phase === 'post_peak');
+
+  if (focusShowsConfirmedPeak) {
+    const showsPostPeak = phase === 'p_plus_3' || phase === 'post_peak';
+    headline = showsPostPeak
+      ? 'Your chart shows a post-Peak pattern'
+      : `Your chart marks Cycle Day ${peakCycleDay} as Peak Day`;
+    statusLine =
+      `Cycle Day ${peakCycleDay} was the last Peak-type sign before three days without another one, ` +
+      'so your chart marks it as Peak Day.';
+    supportingContext =
+      'This reflects what you recorded; it does not confirm ovulation.';
     guidance =
-      'Add this day’s observation when you can so your chart stays accurate.';
+      'Keep charting daily. This summary updates when your observations change.';
+    summaryTone = showsPostPeak ? 'positive' : 'neutral';
+    explanationTarget = 'peak_day';
+  } else if (interpretationSupport.status === 'review_recommended') {
+    headline = possibleFertilePattern.heading ?? 'This chart needs a closer look';
+    statusLine = possibleFertilePattern.body ??
+      'Something in this chart needs more context before a clear pattern can be shown.';
+    supportingContext = possibleFertilePattern.limit?.detail ?? '';
+    guidance =
+      'Keep charting; we’ll check again whenever you add or update an observation.';
     summaryTone = 'caution';
-  } else if (primaryClass === 'menstrual_flow') {
-    headline = 'Menstrual flow';
+    explanationTarget = 'status_messages';
+  } else if (focusObservationIncomplete) {
+    headline = `${focusLayeredBleeding} recorded`;
+    statusLine = 'Choose a sensation—including Dry—to complete this observation.';
     guidance =
-      'This day is logged as menstrual flow. Mucus is still recorded but is not interpreted as Peak-type while flow is selected.';
+      'The day stays on your chart, but it will not count toward the three-day Peak follow-up until the observation is complete.';
+    summaryTone = 'caution';
+  } else if (interpretationSupport.status === 'blocked_by_missing') {
+    headline = missingSupportHeading(interpretationSupport.reason);
+    statusLine = missingSupportLine(interpretationSupport.reason);
+    supportingContext = possibleFertilePattern.limit?.detail ?? '';
+    guidance =
+      'Keep charting. If you remember an open day, you can add it; days marked not observed stay part of your record.';
+    summaryTone = 'caution';
+    explanationTarget = 'status_messages';
+  } else if (focusMissing) {
+    headline = 'This day was marked not observed';
+    statusLine = 'There is no observation to interpret for this day.';
+    guidance =
+      'That’s okay—keep charting. You can add an observation later if you remember it.';
+    summaryTone = 'caution';
+    explanationTarget = 'status_messages';
+  } else if (primaryClass === 'menstrual_flow') {
+    headline = 'Menstrual flow recorded';
+    statusLine = 'This day is recorded as menstrual flow.';
+    guidance =
+      'Mucus may still be saved, but Well Within does not interpret it as Peak-type while flow is selected.';
     summaryTone = 'neutral';
   } else if (primaryClass === 'spotting') {
-    headline = 'Spotting';
+    headline = 'Spotting recorded';
+    statusLine = 'You recorded spotting with a dry observation.';
     guidance =
-      'Light bleeding or spotting is noted; combine with your mucus signs for a full picture of the day.';
+      'Spotting stays visible on the day and does not replace the observation you recorded.';
     summaryTone = 'neutral';
+  } else if (
+    possibleFertilePattern.state === 'developing' &&
+    possibleFertilePattern.reason === 'later_peak_type_reopens_pattern'
+  ) {
+    headline = possibleFertilePattern.heading ?? 'Possible fertile pattern may be developing';
+    statusLine = possibleFertilePattern.body ??
+      'A later Peak-type sign was recorded. Keep charting while the new three-day follow-up develops.';
+    supportingContext = '';
+    guidance = 'Keep charting daily. This card updates when your observations change.';
+    summaryTone = 'caution';
+    explanationTarget = 'status_messages';
   } else if (phase === 'fertile_unconfirmed_peak') {
-    headline = headlineFromPhase(phase);
-    guidance =
-      result.peakCandidateIndex !== null
-        ? 'A Peak-type day has been noted. Continue observing to confirm the pattern.'
-        : 'Fertile signs are present. Continue daily observations for clarity.';
+    if (peakCandidateCycleDay !== null) {
+      headline = 'Your chart shows a possible Peak Day';
+      statusLine =
+        `Cycle Day ${peakCandidateCycleDay} has a Peak-type sign. ` +
+        'The chart waits three days to see whether another one appears before marking a Peak Day.';
+      guidance = 'Keep charting daily as the pattern develops.';
+      explanationTarget = 'peak_day';
+    } else {
+      headline = 'Your chart shows mucus signs';
+      statusLine =
+        'Mucus signs are present, but the pattern does not show a Peak-type day yet.';
+      guidance = 'Keep charting daily as the pattern develops.';
+    }
     summaryTone = 'caution';
   } else {
-    headline = headlineFromPhase(phase);
     summaryTone = 'neutral';
 
-    if (phase === 'peak_confirmed') {
-      guidance =
-        'The three days after Peak Day confirm the pattern on your chart.';
-    } else if (phase === 'p_plus_1') {
-      guidance = 'Day 1 of 3 after Peak \u2014 continue observing to confirm.';
-    } else if (phase === 'p_plus_2') {
-      guidance = 'Day 2 of 3 after Peak \u2014 continue observing to confirm.';
-    } else if (phase === 'p_plus_3') {
-      guidance = 'Three days past Peak confirm the post-Peak phase.';
-      summaryTone = 'positive';
-    } else if (phase === 'post_peak') {
-      guidance = 'Your chart reflects the post-Peak phase.';
-      summaryTone = 'positive';
-    } else if (phase === 'fertile_open') {
-      guidance =
-        'Fertile signs are present; more logged days will sharpen the picture.';
-    } else if (phase === 'dry' || phase === 'previous_cycle') {
-      guidance = 'As you add days, your cycle pattern becomes clearer.';
+    if (phase === 'fertile_open') {
+      headline = 'Your chart shows mucus signs';
+      statusLine =
+        'Mucus signs are present, but the pattern does not show a Peak-type day yet.';
+      guidance = 'Keep charting daily as the pattern develops.';
     } else {
-      guidance = 'Continue your daily observations when you can.';
+      headline = 'Your pattern is still taking shape';
+      statusLine = 'No mucus signs are recorded for this day.';
+      guidance =
+        'Keep charting daily. This card will update as your observations change.';
     }
   }
 
-  let supportingContext = '';
   if (
-    !focusMissing &&
+    focusLayeredBleeding !== null &&
+    !focusObservationIncomplete &&
     primaryClass !== 'menstrual_flow' &&
-    primaryClass !== 'spotting' &&
-    result.peakCandidateIndex !== null &&
-    !result.peakConfirmed
+    primaryClass !== 'spotting'
   ) {
-    supportingContext =
-      'Your chart shows a Peak-type day; the next step is confirming it with the usual three days after.';
+    const bleedingContext = `${focusLayeredBleeding} was also recorded on this day.`;
+    supportingContext = supportingContext
+      ? `${bleedingContext} ${supportingContext}`
+      : bleedingContext;
   }
 
   let completeness: string;
@@ -426,38 +477,43 @@ export function buildCurrentCycleSummary(
     completeness = `${missingCount} days still open in this cycle`;
   }
 
-  const isLowConfidence = confidence.startsWith('Low confidence');
-  const suppressBaseline =
-    focusMissing ||
-    primaryClass === 'menstrual_flow';
-  const baselineContext = suppressBaseline
-    ? null
-    : buildBaselineContext(
-        phase,
-        focusIndex + 1,
-        isLowConfidence,
-        baselineComparison,
-      );
+  const interpretationLimited =
+    interpretationSupport.status === 'blocked_by_missing' ||
+    interpretationSupport.status === 'review_recommended' ||
+    recentWindowMissing;
+  // Phase 1C keeps history retrospective. Average/usually context is not
+  // placed on an active cycle, even when the underlying historical fact exists.
+  const baselineContext = null;
 
   const compactSupportField = resolveCompactSupportField(
-    isLowConfidence,
+    interpretationLimited,
     focusMissing,
     interpretationNotes,
     missingCount,
     baselineContext,
   );
 
+  const resolvedCompactSupportField =
+    interpretationSupport.status === 'blocked_by_missing' ||
+    interpretationSupport.status === 'review_recommended'
+      ? 'guidance'
+      : compactSupportField;
+
   return {
-    cycleDay: focusIndex + 1,
+    cycleDay,
     headline,
-    confidence,
+    statusLine,
     supportingContext,
     completeness,
     guidance,
     summaryTone,
     focusQualification,
     interpretationNotes,
-    compactSupportField,
+    compactSupportField: resolvedCompactSupportField,
     baselineContext,
+    interpretationStatus: interpretationSupport.status,
+    interpretationReason: interpretationSupport.reason,
+    explanationTarget,
+    possibleFertilePattern,
   };
 }

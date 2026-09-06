@@ -18,17 +18,18 @@ Use these requirement tags:
 
 ## Build Configuration
 
-- [ ] `[INT-BLOCKER]` iOS build succeeds in release mode
+- [x] `[INT-BLOCKER]` iOS build succeeds in release mode
 - [x] `[INT-BLOCKER]` Expo / EAS build configuration verified
 - [x] `[INT-BLOCKER]` `eas.json` includes `production` profile with auto-increment
 - [x] `[INT-BLOCKER]` bundle identifier is configured
 - [x] `[INT-BLOCKER]` version number exists
 - [x] `[INT-BLOCKER]` build number strategy is configured (manual or auto-increment)
+- [x] `[INT-BLOCKER]` `npm run mobile:preflight:release` validates Expo config, unmerged non-Android app feature branches, and iOS/TestFlight version-train sanity
 
 Expected baseline:
 
-Version: 1.0.0
-Build: 1
+Version: 2.1.1
+Build: remote auto-increment
 
 ## Project Configuration
 
@@ -60,9 +61,12 @@ Build: 1
 
 These are not required for internal TestFlight, but should be prepared early.
 
-- [ ] `[STORE-REQ]` iPhone 6.7" screenshots
-- [ ] `[STORE-REQ]` iPhone 6.5" screenshots
-- [ ] `[POLISH]` screenshots demonstrate onboarding, charting, history, and daily entry
+- [x] `[STORE-REQ]` six-frame iPhone 6.9" screenshot story at an Apple-accepted size (master: 1320x2868)
+- [ ] `[STORE-REQ]` separate iPhone 6.5" screenshots only if the final upload intentionally omits 6.9" screenshots
+- [x] `[POLISH]` screenshots demonstrate daily entry, calendar, optional backup, retrospective chart context, history, and export
+- [ ] `[STORE-REQ]` exact final screenshots pass clinical/claims, privacy, accessibility, comprehension, IP, and prohibited-claim review
+
+Action 6 package: [App Store story and privacy reconciliation](strategy/action-6-app-store-story-2026-07-14/README.md). Apple currently accepts one to ten screenshots and lists 1320x2868 as a 6.9-inch portrait size: [screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications).
 
 ---
 
@@ -86,27 +90,30 @@ Because the app handles reproductive health data, privacy transparency is requir
 
 ## Privacy Policy and Labels
 
-- [x] `[INT-BLOCKER]` in-app privacy explanation exists and is accurate
-- [ ] `[EXT-REQ]` App Store Connect privacy details are configured accurately
-- [ ] `[STORE-REQ]` publicly accessible privacy policy URL exists
-- [ ] `[STORE-REQ]` privacy policy URL is added to App Store metadata
+- [x] `[INT-BLOCKER]` in-app privacy explanation is reconciled with the implementation/data map and publication draft
+- [x] `[INT-BLOCKER]` proposed App Store Connect privacy answers are reconciled with device, account, cloud-backup, feedback, export, and deletion behavior
+- [ ] `[EXT-REQ]` reconciled App Store Connect privacy answers are saved in the owner account
+- [x] `[STORE-REQ]` publicly accessible privacy policy URL exists
+- [x] `[STORE-REQ]` privacy policy URL is present in live App Store metadata
+- [ ] `[STORE-REQ]` prepared public policy content is published at the live URL
 
-Example in-app wording:
-
-> Well Within stores your charting data locally on your device.  
-> We do not sell or share personal health data.
+Do not reuse absolute example wording without checking optional cloud backup, feedback, infrastructure providers, retention, and Apple privacy-label definitions. See the [Action 6 privacy reconciliation worksheet](strategy/action-6-app-store-story-2026-07-14/PRIVACY_RECONCILIATION.md).
 
 ---
 
 # 5. Data Control
 
-Users must be able to delete locally stored data.
+Users must be able to distinguish local clearing, cloud-chart deletion, and account deletion.
 
 Recommended location: `Settings -> Clear All Data`
 
 - [x] `[INT-BLOCKER]` clear data option exists
 - [x] `[INT-BLOCKER]` clear data confirmation prompt exists
 - [x] `[INT-BLOCKER]` clearing data resets stored app state
+- [x] `[INT-BLOCKER]` signed-in UI distinguishes device-only, cloud-chart, and account deletion
+- [x] `[EXT-REQ]` deletion schema and `delete-account` Edge Function are deployed
+- [x] `[INT-BLOCKER]` cloud deletion is verified with a production throwaway account plus the simulated stale-second-device regression
+- [x] `[INT-BLOCKER]` account deletion is verified with a throwaway account and associated feedback row
 
 ---
 
@@ -150,7 +157,7 @@ Acceptable framing:
 - [ ] `[INT-BLOCKER]` no disallowed health claims in app UI copy
 - [ ] `[STORE-REQ]` no disallowed health claims in App Store metadata
 
-Audit note (2026-03-12): User-facing copy was audited (OnboardingScreen, StatusBanner, EntryForm, HelpScreen, Settings). No diagnosis, treatment, or guaranteed conception claims found. Phrases such as "Ovulation likely occurred within the last 1–2 days" are retrospective (post–peak day), not prediction of future ovulation; "your chances are highest" in Help is educational. Manual review of App Store metadata still required when submitting.
+Audit note (2026-07-14): The Action 5 implementation uses observation-bound, retrospective chart language and explicitly says Peak does not confirm ovulation. The live App Store listing still contains stale certainty, method-affiliation, `not algorithms`, and privacy wording; replace it with the [Action 6 metadata draft](strategy/action-6-app-store-story-2026-07-14/METADATA_DRAFT.md) only after the listed review gates close.
 
 ---
 
@@ -161,8 +168,9 @@ Apple expects users to have a support path.
 Recommended location: `Settings -> Support`
 
 - [ ] `[EXT-REQ]` support email exists
-- [ ] `[EXT-REQ]` support screen or support link exists
+- [x] `[EXT-REQ]` support screen or support link exists (`Settings -> Care -> Find Care`)
 - [ ] `[STORE-REQ]` support URL exists for App Store metadata
+- [x] `[INT-BLOCKER]` support resource links were simulator-tested for external-open and return-to-app responsiveness
 
 ---
 
@@ -171,8 +179,8 @@ Recommended location: `Settings -> Support`
 ## Internal Testing
 
 - [x] `[INT-BLOCKER]` build uploaded to App Store Connect
-- [ ] `[INT-BLOCKER]` build processed by Apple (typically 5–10 min; check email)
-- [ ] `[INT-BLOCKER]` internal testers added
+- [x] `[INT-BLOCKER]` build processed by Apple (2.1.6 build 29, `VALID`)
+- [x] `[INT-BLOCKER]` internal testers added (`Team (Expo)` is an internal group with access to all builds, including build 29)
 - [ ] `[INT-BLOCKER]` internal testers can install build
 
 TestFlight build management: https://appstoreconnect.apple.com/apps/6760519448/testflight/ios
@@ -193,24 +201,34 @@ Notes:
 
 # 10. Release Blockers (Populate During Audit)
 
-- First production TestFlight upload succeeded; build is processed by Apple. Record build number/ID in App Store Connect when processing completes if needed for tracking.
-- BLOCKER: publicly accessible privacy policy URL is not yet configured in release metadata (required for external TestFlight / App Store).
-- BLOCKER: App Store Connect privacy details/export compliance answers are not yet recorded for this app.
+- Production baseline: version 2.1.4 is live in the App Store.
+- TestFlight upload succeeded for version 2.1.5, build 27: Apple build ID `509e8327-1a03-43f1-8f5b-84a6d36e7a17`, EAS build ID `1e76a376-8bb5-4fba-a2e3-f06ea07c8224`, and EAS submission ID `89ea3a3c-6ea0-4a66-a29d-439330d21741`.
+- App Store Connect reports 2.1.5 build 27 as `VALID`, not expired, and included in the internal `Team (Expo)` group.
+- Version 2.1.5 build 28 was rejected during ingestion with `ITMS-90186` and `ITMS-90062` because the 2.1.5 pre-release train had closed after approval.
+- Version 2.1.6 build 29 corrected the marketing version, uploaded successfully, and is `VALID` and not expired. Apple build ID: `0c6eff51-3fe7-4dad-8b40-fe577e3bfbe6`; EAS build ID: `c37bf2f9-80ac-4999-98e0-297f7b070d25`; EAS submission ID: `9791a5ec-63be-4173-9c6d-999ccffedbf3`.
+- The internal `Team (Expo)` group has access to all builds, so build 29 is available to that group without changing tester membership.
+- Apple agreements are current for this free release; the Free Apps Agreement is active.
+- Public privacy-policy and support URLs are published and saved in App Store Connect.
+- The combined Actions 9 and 10 release passed 245 engine tests, 135 mobile tests with 1 pre-existing skip, both typechecks, engine lint, Expo validation, full browser journey review, and a native iOS Release build/device check; see the [Action 10 implementation report](strategy/action-10-guided-chart-progress-2026-08-09/IMPLEMENTATION_REPORT.md).
+- Owner authorized App Store publication on August 23, 2026. Version 2.1.5 build 27 is submitted and `WAITING_FOR_REVIEW`.
+- Remaining: Apple review. TestFlight installation and feedback can continue as release follow-up.
 
 ---
 
 # 11. Non-UX Changes Required (Populate During Audit)
 
 - First EAS build and submit to TestFlight completed successfully. For future releases: **`npm run mobile:release:testflight`** (preflight + build + submit), or stepwise `mobile:build:ios:testflight` then `mobile:submit:ios:production` (non-interactive when `.p8` is in `apps/mobile/credentials/` and `eas.json` has `ascAppId` + API key fields).
-- Configure privacy policy URL and support URL values for App Store Connect metadata (before external TestFlight or App Store).
-- Complete App Store Connect privacy details and export compliance questionnaire.
-- Run **`npm run mobile:preflight:release`** before building (fast `expo config` check). Optionally run **`npm run mobile:preflight:release:with-doctor`**; treat **expo-doctor** failures from flaky Expo API or Metro hints as **advisory** unless they indicate a real misconfiguration.
+- Privacy policy URL and support URL are configured in App Store Connect.
+- App Store Connect privacy details are reconciled and published; 2.1.4 is the live production baseline and 2.1.5 build 27 is waiting for Apple review.
+- Run **`git fetch --all --prune`** and **`npm run mobile:preflight:release`** before building. Preflight now checks Expo config, intended feature-branch coverage, and App Store Connect/TestFlight version-train state.
+- Use **`npm run version:ios:bump --workspace well-within-mobile`** when opening a new TestFlight/App Store marketing-version train.
+- Optionally run **`npm run mobile:preflight:release:with-doctor`**; treat **expo-doctor** failures from flaky Expo API or Metro hints as **advisory** unless they indicate a real misconfiguration.
 
 ---
 
 # 12. UX Changes Required (Populate During Audit)
 
-- Add a support contact surface in-app (`Settings -> Support`) before external TestFlight/App Store submission.
+- A dedicated in-app support email surface remains a follow-up; the submission uses the published support URL and the verified App Review contact.
 
 ---
 
@@ -224,23 +242,26 @@ Notes:
 
 # 14. Current Release Status (Update Every Audit)
 
-Build Status: EAS build **uploaded**; **submit** was started with `--id` for this build — **confirm** on the [submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/6a7b4250-d68c-4bb9-9db3-e91b54582af8) page that status is **Finished** (then check TestFlight for processing).  
-Version: **0.2.0** · iOS build number: **14** (remote auto-increment)  
-EAS Build ID: `4ed6b654-a1c5-49e1-93da-9bdda243d465` — [Expo build](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/builds/4ed6b654-a1c5-49e1-93da-9bdda243d465)  
-EAS Submission ID: `6a7b4250-d68c-4bb9-9db3-e91b54582af8` — [Submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/6a7b4250-d68c-4bb9-9db3-e91b54582af8)  
-TestFlight: After Apple processing (often 5–15 min), build **14** should appear in [App Store Connect → TestFlight](https://appstoreconnect.apple.com/apps/6760519448/testflight/ios).  
-Internal Testing: Add or confirm internal testers when the build shows as **Ready to Test**.
+Build Status: version **2.1.6**, build **29**, is `VALID`, not expired, and available to the internal `Team (Expo)` group. Version 2.1.5 build 27 remains `WAITING_FOR_REVIEW` for the App Store.
+Version: **2.1.6** · next iOS build number: **remote auto-increment**
+
+EAS Build ID: `c37bf2f9-80ac-4999-98e0-297f7b070d25` — [Expo build](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/builds/c37bf2f9-80ac-4999-98e0-297f7b070d25)
+EAS Submission ID: `9791a5ec-63be-4173-9c6d-999ccffedbf3` — [Submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/9791a5ec-63be-4173-9c6d-999ccffedbf3)
+Apple Build ID: `0c6eff51-3fe7-4dad-8b40-fe577e3bfbe6`
+App Store Version ID (2.1.5 review): `31a5577b-c1dc-4f9a-b390-d3d5e7bf3eef`
+Review Submission ID (2.1.5): `22ae2d08-20eb-43b5-aac4-52c551807a84`
+Release Type: `AFTER_APPROVAL`
 
 TestFlight: https://appstoreconnect.apple.com/apps/6760519448/testflight/ios
 
-Last Audit Date: 2026-04-16  
-Audited By: Cursor Agent
+Last Audit Date: 2026-09-05
+Audited By: Codex
 
-Release notes (this push): magic-link auth callback hardening across query/fragment/code/token_hash callback formats; deep-link + Supabase setup docs clarified for dev/TestFlight/production redirect URLs.
+Release notes (build 29): observation-confidence improvements, including clearer onboarding, in-context Sensation and Appearance guides, intercourse education, and the two-step calendar walkthrough. Existing charting data contracts and rules-engine behavior remain unchanged.
 
-Release notes (next push — magic-link session landing): switched Supabase client session storage from the `expo-sqlite/localStorage` shim to `AsyncStorage` (Supabase's official React Native recommendation) so magic-link sessions persist reliably across app relaunches. Moved deep-link URL handling into `AuthProvider` (fixes a race where the callback fired before `onAuthStateChange` was subscribed). Surfaced any auth-callback failure as a calm banner on the sign-in screen instead of failing silently. Diagnostics before this change: Supabase auth logs confirm magic-link verify returns 303 and server-side `login (implicit)` succeeds — the gap was entirely in app-side session application/persistence.
+Release verification: 140 mobile tests passed with 1 existing skip; mobile typecheck, release preflight, native iOS simulator build, browser flow review, EAS production build, Apple upload/processing, and internal-group availability all passed.
 
-Commands used (from `apps/mobile`): `npx eas build --platform ios --profile production --non-interactive --no-wait`, then `npx eas submit --platform ios --profile production --non-interactive --id <build-id>`. Preflight: `npm run mobile:preflight:release` hit **expo-doctor** failures (Expo API timeout + Metro warnings); **`npx expo config --type public`** was used as a successful config gate before building.
+App Store submission: description and What’s New were refreshed; all six live screenshots were inherited unchanged and remain `COMPLETE`. Apple accepted the review submission at `2026-08-24T00:56:24.123Z`.
 
 ---
 
@@ -248,7 +269,7 @@ Commands used (from `apps/mobile`): `npx eas build --platform ios --profile prod
 
 Before building for TestFlight:
 
-- [ ] no `[INT-BLOCKER]` items remain open
-- [ ] iOS build succeeds with intended profile
-- [ ] privacy and claims checks pass
-- [ ] reviewer smoke flow passes without crashes
+- [x] no release-blocking `[INT-BLOCKER]` items remain open
+- [x] iOS build succeeds with intended profile
+- [x] privacy and claims checks pass
+- [x] reviewer smoke flow passes without crashes

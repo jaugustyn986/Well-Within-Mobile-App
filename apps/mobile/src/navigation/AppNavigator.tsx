@@ -1,8 +1,13 @@
 import React, { useCallback, createContext, useContext, useEffect, useState } from 'react';
+import { Pressable, StyleSheet, Text } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  createNavigationContainerRef,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '../context/AuthProvider';
 import { SyncProvider } from '../context/SyncProvider';
 import { CalendarScreen } from '../screens/CalendarScreen';
@@ -11,18 +16,44 @@ import { CycleHistoryScreen } from '../screens/CycleHistoryScreen';
 import { CycleDetailScreen } from '../screens/CycleDetailScreen';
 import { DailyEntryScreen } from '../screens/DailyEntryScreen';
 import { HelpScreen } from '../screens/HelpScreen';
+import { FindCareScreen } from '../screens/FindCareScreen';
 import { EngineDemoScreen } from '../screens/EngineDemoScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
+import { buildFirstEntryParams } from '../screens/onboardingFlow';
 import { SettingsScreen } from '../screens/SettingsScreen';
 import { AuthScreen } from '../screens/AuthScreen';
+import { CatchUpMissingDaysScreen } from '../screens/CatchUpMissingDaysScreen';
+import { ChartTipScreen } from '../features/guidedChartLearning/ChartTipScreen';
+import type { ChartTipId } from '../features/guidedChartLearning/guidedChartLearning';
+import { TEXT_PRIMARY } from '../theme/colors';
 
 export type RootStackParamList = {
-  Calendar: undefined;
+  Calendar: { restoreScrollY?: number } | undefined;
   Timeline: undefined;
   CycleHistory: undefined;
   CycleDetail: { cycleNumber: number };
-  DailyEntry: { date: string; existingEntry?: boolean };
-  Help: undefined;
+  DailyEntry: {
+    date: string;
+    existingEntry?: boolean;
+    intent?: 'confirm_cycle_start' | 'add_observation';
+  };
+  CatchUpMissingDays: undefined;
+  Help: {
+    initialSection?:
+      | 'observe'
+      | 'sensation_appearance'
+      | 'peak_day'
+      | 'status_messages'
+      | 'possible_fertile_pattern'
+      | 'calendar_colors'
+      | 'chart_tips';
+  } | undefined;
+  ChartTip: {
+    lessonId: ChartTipId;
+    source: 'calendar' | 'help';
+    returnScrollY?: number;
+  };
+  FindCare: undefined;
   Settings: undefined;
   Auth: undefined;
   EngineDemo: undefined;
@@ -31,9 +62,24 @@ export type RootStackParamList = {
 const ONBOARDING_KEY = 'well_within_onboarding_done';
 const ONBOARDING_KEY_LEGACY = 'holistic_cycle_onboarding_done';
 const Stack = createNativeStackNavigator<RootStackParamList>();
+const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
 type OnboardingContextValue = { resetOnboarding: () => void };
 const OnboardingContext = createContext<OnboardingContextValue | null>(null);
+
+function CalendarHeaderAction({ onPress }: { onPress: () => void }): React.JSX.Element {
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={8}
+      accessibilityRole="button"
+      accessibilityLabel="Return to Calendar"
+      style={({ pressed }) => [styles.calendarHeaderAction, pressed && styles.pressed]}
+    >
+      <Text style={styles.calendarHeaderActionText}>{'‹ Calendar'}</Text>
+    </Pressable>
+  );
+}
 
 export function useResetOnboarding(): OnboardingContextValue | null {
   return useContext(OnboardingContext);
@@ -41,8 +87,9 @@ export function useResetOnboarding(): OnboardingContextValue | null {
 
 WebBrowser.maybeCompleteAuthSession();
 
-export function AppNavigator(): JSX.Element {
+export function AppNavigator(): React.JSX.Element {
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
+  const [pendingFirstEntry, setPendingFirstEntry] = useState(false);
 
   useEffect(() => {
     AsyncStorage.getItem(ONBOARDING_KEY).then((val) => {
@@ -62,26 +109,39 @@ export function AppNavigator(): JSX.Element {
   }, []);
 
   const handleOnboardingComplete = useCallback(() => {
-    AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+    void AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+    setPendingFirstEntry(true);
     setShowOnboarding(false);
   }, []);
 
   const resetOnboarding = useCallback(() => {
     void AsyncStorage.removeItem(ONBOARDING_KEY).then(() => AsyncStorage.removeItem(ONBOARDING_KEY_LEGACY));
+    setPendingFirstEntry(false);
     setShowOnboarding(true);
   }, []);
+
+  const openPendingFirstEntry = useCallback(() => {
+    if (!pendingFirstEntry || !navigationRef.isReady()) return;
+
+    setPendingFirstEntry(false);
+    navigationRef.navigate('DailyEntry', buildFirstEntryParams());
+  }, [pendingFirstEntry]);
 
   if (showOnboarding === null) return <></>;
 
   if (showOnboarding) {
-    return <OnboardingScreen onComplete={handleOnboardingComplete} />;
+    return (
+      <SafeAreaProvider>
+        <OnboardingScreen onComplete={handleOnboardingComplete} />
+      </SafeAreaProvider>
+    );
   }
 
   return (
     <AuthProvider>
     <SyncProvider>
     <OnboardingContext.Provider value={{ resetOnboarding }}>
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef} onReady={openPendingFirstEntry}>
       <Stack.Navigator initialRouteName="Calendar">
         <Stack.Screen
           name="Calendar"
@@ -112,9 +172,37 @@ export function AppNavigator(): JSX.Element {
           }}
         />
         <Stack.Screen
+          name="CatchUpMissingDays"
+          component={CatchUpMissingDaysScreen}
+          options={{
+            title: 'Catch Up',
+            presentation: 'modal',
+          }}
+        />
+        <Stack.Screen
           name="Help"
           component={HelpScreen}
-          options={{ title: 'Understanding Your Chart' }}
+          options={({ navigation }) => ({
+            title: 'Understanding Your Chart',
+            headerLeft: () => (
+              <CalendarHeaderAction onPress={() => navigation.popToTop()} />
+            ),
+          })}
+        />
+        <Stack.Screen
+          name="ChartTip"
+          component={ChartTipScreen}
+          options={{ title: 'Chart tip' }}
+        />
+        <Stack.Screen
+          name="FindCare"
+          component={FindCareScreen}
+          options={({ navigation }) => ({
+            title: 'Find Care',
+            headerLeft: () => (
+              <CalendarHeaderAction onPress={() => navigation.popToTop()} />
+            ),
+          })}
         />
         <Stack.Screen
           name="Settings"
@@ -138,3 +226,17 @@ export function AppNavigator(): JSX.Element {
     </AuthProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  calendarHeaderAction: {
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingRight: 12,
+  },
+  calendarHeaderActionText: {
+    color: TEXT_PRIMARY,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  pressed: { opacity: 0.55 },
+});

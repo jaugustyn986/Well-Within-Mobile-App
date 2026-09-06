@@ -1,28 +1,20 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { PhaseLabel, PrimaryDayClass } from 'core-rules-engine';
 import {
   BG_BLEEDING, BG_CARD, BG_DRY, BG_NO_ENTRY, BG_PEAK_TYPE, BG_POST_PEAK,
   FERTILE_ACCENT, PEAK_BORDER,
   TEXT_PRIMARY, TEXT_MUTED, TEXT_SUBTLE,
   BORDER_TODAY, BORDER_CARD, INTERCOURSE_ICON,
 } from '../theme/colors';
-
-interface DayInfo {
-  date: string;
-  hasEntry: boolean;
-  phaseLabel?: PhaseLabel;
-  isToday: boolean;
-  /** Engine primary class; drives color with phase/mucus (not raw bleeding alone). */
-  primaryDayClass?: PrimaryDayClass;
-  mucusRank?: number | null;
-  intercourse?: boolean;
-}
+import {
+  getCalendarDayPresentation,
+  type CalendarDayInfo,
+} from './calendarDayPresentation';
 
 interface Props {
   year: number;
   month: number;
-  days: DayInfo[];
+  days: CalendarDayInfo[];
   onDayPress: (date: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -34,51 +26,7 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
-// Colors follow engine `primaryDayClass` + phase (see docs/RULES_ENGINE_SPEC — bleeding override).
-function getDayBackground(day: DayInfo): string {
-  if (!day.hasEntry) return BG_NO_ENTRY;
-
-  const pc = day.primaryDayClass;
-  if (pc === 'menstrual_flow' || pc === 'spotting') return BG_BLEEDING;
-  if (pc === 'missing') return BG_NO_ENTRY;
-
-  switch (day.phaseLabel) {
-    case 'p_plus_1':
-    case 'p_plus_2':
-    case 'p_plus_3':
-      return BG_POST_PEAK;
-    case 'fertile_open':
-    case 'fertile_unconfirmed_peak':
-      if (day.mucusRank !== null && day.mucusRank !== undefined && day.mucusRank >= 3) return BG_PEAK_TYPE;
-      if (day.mucusRank !== null && day.mucusRank !== undefined && day.mucusRank >= 1) return BG_DRY;
-      return BG_DRY;
-    case 'peak_confirmed':
-      return BG_PEAK_TYPE;
-    case 'dry':
-    case 'post_peak':
-      return BG_DRY;
-    case 'missing':
-    case 'previous_cycle':
-      return BG_NO_ENTRY;
-    default:
-      return BG_DRY;
-  }
-}
-
-function getIndicatorColor(day: DayInfo): string | null {
-  if (!day.hasEntry) return null;
-  const pc = day.primaryDayClass;
-  if (pc === 'menstrual_flow' || pc === 'spotting') return null;
-  if (day.phaseLabel === 'peak_confirmed') return null;
-
-  const rank = day.mucusRank;
-  if (rank === null || rank === undefined) return null;
-  if (pc === 'peak_type' || rank >= 3) return null;
-  if (rank >= 1) return FERTILE_ACCENT;
-  return null;
-}
-
-function getDayTextColor(_day: DayInfo): string {
+function getDayTextColor(_day: CalendarDayInfo): string {
   return TEXT_PRIMARY;
 }
 
@@ -87,12 +35,16 @@ function todayString(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNextMonth }: Props): JSX.Element {
+export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNextMonth }: Props): React.JSX.Element {
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const today = todayString();
+  const visibleMonthPrefix = `${year}-${String(month + 1).padStart(2, '0')}-`;
+  const showDerivedLegend = days.some(
+    (day) => day.date.startsWith(visibleMonthPrefix) && day.showDerivedMarkers === true,
+  );
 
-  const cells: (DayInfo | null)[] = [];
+  const cells: (CalendarDayInfo | null)[] = [];
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
@@ -101,7 +53,7 @@ export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNex
   }
   while (cells.length % 7 !== 0) cells.push(null);
 
-  const rows: (DayInfo | null)[][] = [];
+  const rows: (CalendarDayInfo | null)[][] = [];
   for (let i = 0; i < cells.length; i += 7) {
     rows.push(cells.slice(i, i + 7));
   }
@@ -109,11 +61,21 @@ export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNex
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Pressable onPress={onPrevMonth} hitSlop={12}>
+        <Pressable
+          onPress={onPrevMonth}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Previous month"
+        >
           <Text style={styles.navArrow}>{'<'}</Text>
         </Pressable>
         <Text style={styles.monthTitle}>{MONTHS[month]} {year}</Text>
-        <Pressable onPress={onNextMonth} hitSlop={12}>
+        <Pressable
+          onPress={onNextMonth}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Next month"
+        >
           <Text style={styles.navArrow}>{'>'}</Text>
         </Pressable>
       </View>
@@ -129,25 +91,36 @@ export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNex
           {row.map((cell, ci) => {
             if (!cell) return <View key={ci} style={styles.cell} />;
             const dayNum = parseInt(cell.date.split('-')[2], 10);
-            const bg = getDayBackground(cell);
+            const presentation = getCalendarDayPresentation(cell);
             const textColor = getDayTextColor(cell);
-            const indicatorColor = getIndicatorColor(cell);
-            const isPeakConfirmed = cell.phaseLabel === 'peak_confirmed';
+            const isPeakConfirmed = presentation.showsPeakMarker;
+            const isFuture = cell.date > today;
             return (
               <Pressable
                 key={ci}
                 style={[
                   styles.cell,
-                  { backgroundColor: bg },
+                  { backgroundColor: presentation.backgroundColor },
                   cell.isToday && !isPeakConfirmed && styles.todayBorder,
                   isPeakConfirmed && styles.peakBorder,
+                  isFuture && styles.futureCell,
                 ]}
                 onPress={() => onDayPress(cell.date)}
+                disabled={isFuture}
+                accessibilityRole="button"
+                accessibilityLabel={`${MONTHS[month]} ${dayNum}, ${year}. ${presentation.stateLabel}${(cell.observationCount ?? 0) > 1 ? `. ${cell.observationCount} mucus observations` : ''}`}
+                accessibilityState={{ disabled: isFuture }}
               >
                 <Text style={[styles.dayText, { color: textColor }]}>{dayNum}</Text>
-                {indicatorColor && (
-                  <View style={[styles.babyDot, { backgroundColor: indicatorColor }]} />
+                {presentation.indicatorColor && (
+                  <View style={[styles.babyDot, { backgroundColor: presentation.indicatorColor }]} />
                 )}
+                {presentation.bleedingMarker ? (
+                  <Text style={styles.bleedingMarker}>{presentation.bleedingMarker}</Text>
+                ) : null}
+                {presentation.patternMarkerLabel ? (
+                  <Text style={styles.patternMarker}>{presentation.patternMarkerLabel}</Text>
+                ) : null}
                 {cell.intercourse && (
                   <Text style={styles.roseIcon}>{INTERCOURSE_ICON}</Text>
                 )}
@@ -161,18 +134,39 @@ export function CalendarGrid({ year, month, days, onDayPress, onPrevMonth, onNex
         <LegendItem color={BG_NO_ENTRY} label="No entry" />
         <LegendItem color={BG_BLEEDING} label="Bleeding" />
         <LegendItem color={BG_DRY} label="Dry" />
-        <LegendItem color={BG_DRY} dotColor={FERTILE_ACCENT} label="Mucus" />
-        <LegendItem color={BG_PEAK_TYPE} label="Peak-type" />
-        <LegendItem color={BG_POST_PEAK} label="Post-peak" />
+        <LegendItem color={BG_DRY} dotColor={FERTILE_ACCENT} label="Non-peak mucus" />
+        <LegendItem color={BG_PEAK_TYPE} label="Peak-type sign" />
+        {showDerivedLegend ? (
+          <LegendItem color={BG_PEAK_TYPE} outlineColor={PEAK_BORDER} label="Peak Day" />
+        ) : null}
+        {showDerivedLegend ? (
+          <LegendItem color={BG_POST_PEAK} label="P+1–P+3" />
+        ) : null}
       </View>
     </View>
   );
 }
 
-function LegendItem({ color, dotColor, label }: { color: string; dotColor?: string; label: string }): JSX.Element {
+function LegendItem({
+  color,
+  dotColor,
+  outlineColor,
+  label,
+}: {
+  color: string;
+  dotColor?: string;
+  outlineColor?: string;
+  label: string;
+}): React.JSX.Element {
   return (
     <View style={styles.legendItem}>
-      <View style={[styles.legendSwatch, { backgroundColor: color }]}>
+      <View
+        style={[
+          styles.legendSwatch,
+          { backgroundColor: color },
+          outlineColor ? { borderColor: outlineColor, borderWidth: 2 } : null,
+        ]}
+      >
         {dotColor && <View style={[styles.legendBabyDot, { backgroundColor: dotColor }]} />}
       </View>
       <Text style={styles.legendText}>{label}</Text>
@@ -198,10 +192,29 @@ const styles = StyleSheet.create({
   },
   todayBorder: { borderWidth: 2, borderColor: BORDER_TODAY },
   peakBorder: { borderWidth: 2, borderColor: PEAK_BORDER },
+  futureCell: { opacity: 0.4 },
   dayText: { fontSize: 14, fontWeight: '500' },
   babyDot: {
     width: 7, height: 7, borderRadius: 4,
     position: 'absolute', top: 3, right: 3,
+  },
+  bleedingMarker: {
+    position: 'absolute',
+    top: 2,
+    left: 4,
+    fontSize: 9,
+    lineHeight: 11,
+    fontWeight: '700',
+    color: TEXT_PRIMARY,
+  },
+  patternMarker: {
+    position: 'absolute',
+    bottom: 2,
+    left: 3,
+    fontSize: 8,
+    lineHeight: 10,
+    fontWeight: '600',
+    color: TEXT_MUTED,
   },
   roseIcon: {
     position: 'absolute', bottom: 1, right: 1,

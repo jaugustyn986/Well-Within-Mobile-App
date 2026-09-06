@@ -80,19 +80,19 @@ The calendar renders days from ALL cycles correctly, not just the current cycle.
 
 **Current cycle summary (status card)**
 
-The header card above the grid is driven by **`buildCurrentCycleSummary`** from the rules engine (`core-rules-engine`), using the **last cycle slice only** (same source as the active cycle in multi-cycle logic). It is not a second, whole-chart `recalculateCycle` interpretation. Underlying interpretation comes from **`recalculateCycle`** outputs on that slice (see `docs/RULES_ENGINE_SPEC.md` — engine contract). The compact banner shows headline, confidence, cycle day, a completeness line (gaps / missing days), and **one** primary support line chosen via **`compactSupportField`** (`guidance`, optional **`baselineContext`** from prior cycles, **`completeness`**, or a single **`interpretationNote`**). Optional **`baselineComparison`** is supplied by the app via `buildCycleComparisonStructured`. When today is not logged in that slice, **`focusQualification`** states that the summary reflects the last logged day. Headlines align with the Help glossary themes in **`HELP_STATUS_MESSAGE_SECTIONS`** (e.g. **Tracking**, **Fertile pattern**, **Peak day identified**). **Authoritative field matrix and tweak guide:** `docs/CURRENT_CYCLE_SUMMARY_MATRIX.md`.
+The header card above the grid is driven by **`buildCurrentCycleSummary`** from the rules engine (`core-rules-engine`), using the **last cycle slice only**. `evaluateInterpretationSupport` first assigns a product-capability state: `forming`, `summary_available`, `blocked_by_missing`, or `review_recommended`. These states never lock charting and never represent diagnosis or clinical confidence. The banner shows a warm headline/status line, cycle day, completeness, and one support line. Missing/review states suppress derived conclusions and link separately to Help, optional outside charting support, and product issue reporting. **Authoritative field matrix:** `docs/CURRENT_CYCLE_SUMMARY_MATRIX.md`.
 
 **Calendar indicators**
 
 Days may display the following visual states (colors from shared theme):
 
 - **No entry** — white background
-- **Dry day** — light green background
-- **Bleeding day** — light red background
-- **Non-peak mucus day** — light green background with green indicator dot
-- **Peak-type mucus day** — white background with blue indicator dot
-- **Peak day** — blue border around the cell, blue indicator dot
-- **Post-peak day (P+1 – P+3)** — yellow background
+- **Dry day** — soft sage background
+- **Bleeding day** — dusty magenta/pink background
+- **Non-peak mucus day** — soft sage background with a muted green indicator dot
+- **Peak-type mucus day** — warm-grey background
+- **Peak day** — warm-grey background with a charcoal border
+- **Post-peak day (P+1 – P+3)** — warm butter background
 - **Today** — black border around the cell
 - **Intercourse** — rose emoji (🌹) in the bottom-right corner of the cell
 
@@ -119,6 +119,9 @@ The data entry interface must contain the following fields.
 
 - **Bleeding type**  
   - Allowed values: none, spotting, light, moderate, heavy, brown
+  - The selected value shows its Creighton-aligned code and observational definition inline.
+  - An accessible information control expands the complete None / VL / L / M / H / B guide.
+  - The same shared guide appears in **Understanding Your Chart**; it describes what was observed, not why bleeding is happening.
 
 - **Sensation**  
   - Allowed values: dry, damp, wet, slippery
@@ -167,8 +170,8 @@ The chart must show:
 
 **Visual indicators**
 
-- Peak day should be visually highlighted (blue bar, matching `PEAK_ACCENT` from shared theme).
-- Non-peak mucus bars use green (`FERTILE_ACCENT`). Dry bars use light green. Post-peak bars use yellow.
+- Peak day should be visually highlighted with the warm-grey peak treatment and charcoal border.
+- Non-peak mucus bars use muted green (`FERTILE_ACCENT`). Dry bars use soft sage. Post-peak bars use warm butter.
 - Rose emoji (🌹) appears above bars for days where intercourse was recorded.
 
 ### Feature: Deterministic Fertility Rules Engine
@@ -214,6 +217,8 @@ Missing days must be supported.
 
 Each day must be converted to an internal numeric mucus rank (0–3) from `sensation` and `appearances`, using the **maximum** across sensation, appearance boosts, and the lubricative promotion rule. The app and PDF export show **qualitative labels** (Dry, Damp, Wet, Peak-type), not the raw numbers.
 
+A stored entry with neither a sensation nor an appearance has no rank and is not inferred to be dry. Explicit dry is rank 0.
+
 **Canonical logic:** [RULES_ENGINE_SPEC.md](RULES_ENGINE_SPEC.md#mucus-rank-mapping) (single source of truth).
 
 **Rank precedence (summary)**
@@ -221,15 +226,16 @@ Each day must be converted to an internal numeric mucus rank (0–3) from `sensa
 - If multiple signals apply, the **highest** internal rank wins.  
   - Example: wet sensation + clear appearance → peak-type strength (internal rank 3).
 
-#### Rules Engine Step 2 — Fertile Window Start
+#### Rules Engine Step 2 — Possible-pattern opening
 
-The fertile window begins at the first day where mucusRank ≥ 1.
+For the narrow Action 5 chart explanation, the internal opening is the first complete mucus observation with rank ≥ 1 after Cycle Day 1 that is not on heavy/moderate/light menstrual flow. This is not presented as a complete or predictive fertile-window determination.
 
 **Algorithm**
 
 - Iterate through entries.
-- If rank ≥ 1: fertileStartIndex = current index.
-- If no such day exists: fertile window does not open.
+- If rank ≥ 1 and menstrual flow does not block the row: `fertileStartIndex = current index`.
+- Spotting or brown preserves the completed underlying observation rather than blocking it.
+- If no such day exists: the internal possible-pattern interval does not open.
 
 #### Rules Engine Step 3 — Peak Identification
 
@@ -237,7 +243,7 @@ Peak day is defined as the last day of highest quality mucus before a sustained 
 
 **Candidate rule**
 
-- Any day where mucusRank = 3.
+- Any complete day where mucusRank = 3 and bleeding is not heavy, moderate, or light. Spotting/brown may coexist with the Peak-type observation.
 
 **Confirmation rule**
 
@@ -254,12 +260,14 @@ Example:
 
 **Missing Day Rule**
 
-- If any of the confirmation days (P+1, P+2, P+3) are missing: peak cannot be confirmed; peak remains unconfirmed.
+- If any of the confirmation days (P+1, P+2, P+3) are missing or incomplete: peak cannot be confirmed; peak remains unconfirmed.
+- A complete lower-rank spotting/brown observation may carry P+1, P+2, or P+3. Spotting/brown alone does not extend or reopen a completed count.
 
-#### Rules Engine Step 4 — Fertile Window End
+#### Rules Engine Step 4 — Retrospective possible-pattern boundary
 
-- Fertile window ends on: Peak + 3.  
-  - Example: Peak = Day 10 → Fertile window end = Day 13
+- The narrow possible-pattern presentation may be bounded through P+3 only after the Action 5 support and Cycle Day 1 gates pass.
+  - Example: Peak = Day 10 → P+3 = Day 13
+- User-facing copy says `Possible fertile pattern` and `through P+3`; it does not claim fertility ended, identify infertile days, or provide pregnancy-avoidance guidance.
 
 #### Phase Labels
 
@@ -320,6 +328,7 @@ Possible implementation: SQLite, AsyncStorage.
 **Future phase**
 
 - Cloud sync.
+- Permanent authenticated deletion uses account identity rather than a specific sign-in method. A server-side reset marker prevents stale devices from restoring chart data after a delete-everywhere action.
 
 ### Feature: Privacy and Security
 
@@ -347,11 +356,11 @@ As a user who has tracked multiple cycles, I want to view my cycle history, see 
 The app must provide a Cycle History screen accessible from the Calendar screen. This screen replaces the original Timeline view and includes:
 
 - **Cycle Summary Panel** — 2x2 grid showing: Cycles Tracked, Average Cycle Length (days), Average Peak Day, Average Luteal Phase (days).
-- **Pattern Insights** — Bullet-point list of computed insights (peak day range, fertile window start, luteal phase average, cycle consistency). Requires at least 2 completed cycles. Empty state shown otherwise.
-- **Peak-Aligned Overlay** — Last 3–6 **completed** cycles with a confirmed peak, shown as rows of colored cells aligned on peak day (column **P**). Cell colors match the calendar grid exactly (shared theme). Tapping a row navigates to Cycle Detail. In-progress and no-peak cycles are excluded (current-cycle comparison may be handled separately).
-- **Cycle Comparison Cards** — Vertical list of all cycles (newest first). Each card shows cycle number, start date, length, peak day, luteal phase, and a status badge (Complete / In Progress / No Peak). Tapping a card navigates to Cycle Detail.
+- **Pattern Insights** — Bullet-point list of computed insights (peak day range, luteal phase average, cycle-length consistency). Requires at least 2 completed cycles. Empty state shown otherwise. The app does not back-calculate a typical fertile-window start from Peak timing.
+- **Peak-Aligned Overlay** — Last 3–6 eligible completed cycles with `summary_available`, shown as rows aligned on Peak. Missing/review cycles are excluded without being hidden from the cycle list.
+- **Cycle Comparison Cards** — Vertical list of all cycles (newest first). Missing/review cycles remain visible with a warm eligibility explanation while derived Peak/luteal stats are suppressed.
 
-The app must provide a Cycle Detail screen that shows:
+The app must provide a Cycle Detail screen that shows derived summaries only when the support state allows them. Missing/review states preserve charting, editing, daily observations, optional Find Care, and an observation-focused export while suppressing conclusions.
 
 - **Stats Header** — Three stat cards: Length (days), Peak Day (cycle day), Fertile End (day number or "--").
 - **Daily Mucus Pattern Chart** — Adapted MucusChart with bar colors matching the calendar grid. Rose emoji (🌹) above bars for intercourse days.
@@ -380,14 +389,14 @@ All UI colors are defined in a single file: `apps/mobile/src/theme/colors.ts`. E
 
 Semantic color constants:
 
-- `BG_DRY` (#dcfce7) — light green for dry days
-- `BG_BLEEDING` (#fca5a5) — light red for bleeding
-- `BG_POST_PEAK` (#fef08a) — yellow for P+1 through P+3
+- `BG_DRY` (#E3ECE1) — soft sage for dry days
+- `BG_BLEEDING` (#D09AAF) — dusty magenta/pink for bleeding
+- `BG_POST_PEAK` (#F2E6B5) — warm butter for P+1 through P+3
 - `BG_NO_ENTRY` (#ffffff) — white for unlogged days
-- `BG_PEAK_TYPE` (#ffffff) — white for peak-type mucus (distinguished by indicator dot)
-- `BG_MISSING` (#f1f5f9) — light gray for no data
-- `PEAK_ACCENT` (#0369a1) — blue for peak dots, borders, and bars
-- `FERTILE_ACCENT` (#16a34a) — green for non-peak mucus dots and fertile bars
+- `BG_PEAK_TYPE` (#D6D3CF) — warm grey for peak-type mucus
+- `BG_MISSING` (#F5F3F1) — warm light grey for no data
+- `PEAK_BORDER` (#4A4541) — charcoal for confirmed Peak borders
+- `FERTILE_ACCENT` (#65815F) — muted green for non-peak mucus dots and fertile bars
 - `BORDER_TODAY` (#000000) — black border for today
 - `INTERCOURSE_ICON` (🌹) — rose emoji for intercourse
 
@@ -413,10 +422,10 @@ The Cycle Detail screen includes an "Export" button in the top-right header. The
 
 1. User taps Export
 2. A modal asks "Include intercourse markers?" (Yes / No / Cancel)
-3. A PDF is generated via `expo-print` from an HTML template (`exportCyclePdf.ts`)
-4. The iOS share sheet opens via `expo-sharing`, allowing save to Files, AirDrop, email, print, etc.
+3. A PDF is generated via `expo-print` from an HTML template (`exportCyclePdf.ts`). On web, the same HTML opens in an isolated print view so the browser prints the report instead of the current app screen.
+4. The native share sheet opens via `expo-sharing`, allowing save to Files, AirDrop, email, print, etc. Desktop browsers open their print dialog, where the report can be saved as a PDF.
 
-PDF content includes: cycle number, date range, summary stats (length, peak day, fertile window, luteal phase), and a day-by-day observation table (Day, Date, Bleeding, Sensation, Appearance, Freq, Chart, Code, Phase, optional I/C). The **Chart** column shows qualitative strength (Dry, Damp, Wet, Peak-type), not numeric ranks. The **Daily Mucus Pattern chart is in-app only**; it is not included in the PDF because the HTML-to-PDF renderer (expo-print) does not reliably render the chart.
+PDF content includes: cycle number, date range, chart status, summary stats, and a color-keyed day-by-day table (Day, Date, Bleeding, Sensation, Appearance, Freq, Chart result, Phase, optional I/C). The report remains one row per date, repeats table headers on later pages, and labels dates with multiple mucus observations while showing the chart-driving observation in the row. The **Chart result** column shows qualitative strength (Dry, Damp, Wet, Peak-type), not numeric ranks. The **Daily Mucus Pattern chart is in-app only**; it is not included in the PDF because the HTML-to-PDF renderer (expo-print) does not reliably render the chart.
 
 ### Feature: Settings
 
@@ -432,7 +441,10 @@ Layout:
 - **Privacy card**: "How your data works" heading + 4 trust-building bullet items (local storage, observation-based calculations, no ad tracking, exportable/clearable data)
 - **Data Management card**:
   - "Export Data" — exports all entries as JSON via `expo-file-system` + `expo-sharing`
-  - "Clear All Data" — opens a confirmation modal ("Are you sure? This cannot be undone.") with Cancel and Confirm buttons. On confirm, removes all entry data from AsyncStorage.
+  - "Clear Data From This Device" — removes only local chart data and clearly states that cloud backup remains for signed-in users.
+  - "Delete Backed-Up Chart Data" — signed-in only; permanently removes cloud chart data across devices while keeping the account.
+  - "Delete Account" — signed-in only; permanently removes the account, cloud chart, associated authenticated feedback, and current-device chart data.
+  - Every destructive action has action-specific confirmation and success/failure copy.
 - **App Version** footer — reads version from `expo-constants` / `app.json`
 
 ### Feature: First-launch onboarding
@@ -508,7 +520,7 @@ Log of implemented features and doc updates for traceability.
 | 2025-03-05 | Data migration v2 | Automatic migration on app load: `appearance:'stretchy'` → `stretch:'stretchy'`, `timesObserved` → `frequency`, `quantity` removed. Runs once then flags completion. |
 | 2025-03-05 | Calendar coloring update | Peak-type boxes now use light grey (#D6D3CF) background instead of white+teal dot. Confirmed peak day has dark charcoal border (#4A4541). |
 | 2025-03-05 | Entry modal refinements | Removed "Vulva" from "Sensation at Vulva" → now just "Sensation". Added info bubble next to "Notes (Optional)" with PMS/symptom guidance text. |
-| 2026-03-05 | Entry Modal Creighton Refactor | Full Creighton alignment: Sensation expanded to 7 options (dry/damp/wet/shiny/sticky/tacky/stretchy), removed slippery. Appearance changed to multi-select array with 10 Creighton-aligned options. Stretch section removed entirely. Lubricative promotion rule: damp/shiny/wet + lubricative → base codes 10DL/10SL/10WL (peak_type). New base code `4` for shiny sensation. No Creighton codes shown in UI — human-readable labels only; codes stored in backend for future consultant/grid views. |
+| 2026-03-05 | Entry Modal Creighton Refactor | Full Creighton alignment: Sensation expanded to 7 options (dry/damp/wet/shiny/sticky/tacky/stretchy), removed slippery. Appearance changed to multi-select array with 10 Creighton-aligned options. Stretch section removed entirely. Lubricative promotion rule: damp/shiny/wet + lubricative → base codes 10DL/10SL/10WL (peak_type). New base code `4` for shiny sensation. Mucus codes remain hidden behind human-readable labels; bleeding education now shows H/M/L/VL/B for category clarity. |
 | 2026-03-05 | Rules engine v3 | Rewrote rank.ts with new sensation ranks, multi-select appearance boost, and lubricative promotion logic. Rewrote creightonCode.ts with full base code table and multi-select appearance suffix concatenation in Creighton order. |
 | 2026-03-05 | Data migration v3 | Migrates: `slippery` → `wet` + `lubricative`; `stretch` values merged into `sensation`; single `appearance` → `appearances` array. |
 | 2026-03-05 | PDF export update | Replaced Stretch column with Appearance column showing all selected appearances. Updated to use `appearances` array field. |
@@ -522,6 +534,7 @@ Log of implemented features and doc updates for traceability.
 | 2026-03-11 | PDF: remove Daily Mucus Pattern chart | Removed the Daily Mucus Pattern chart from the cycle PDF export. The HTML-to-PDF engine (expo-print) did not render the chart reliably (sparse/wrong layout in PDF). PDF now contains cycle stats and day-by-day table only; chart strength is preserved in the day-by-day table. Chart remains in-app on Cycle Detail. `apps/mobile/src/utils/exportCyclePdf.ts`. |
 | 2026-03-11 | Magic link auth screen dismiss | When the user opens the app via the magic link while still on the Auth (email) screen, the Auth screen now automatically dismisses (goBack) so they see Settings with signed-in state. AuthScreen.tsx: useEffect navigates back when auth.user is set. |
 | 2026-03-11 | Entry modal layout | Daily Entry modal: sticky bottom primary action "Save Entry"; Cancel moved to header (top right, secondary). Scrollable form has bottom padding so the sticky button does not overlap the last fields. EntryForm.tsx + DailyEntryScreen.tsx. |
+| 2026-07-11 | Bleeding education and softened chart palette | Daily Entry shows the selected Creighton-aligned bleeding definition and an accessible full None/VL/L/M/H/B guide; Understanding Your Chart reuses the same typed education source. Shared chart tokens changed to dusty magenta (`#D09AAF`), soft sage (`#E3ECE1`), warm butter (`#F2E6B5`), and muted green (`#65815F`) across calendar, chart, history, onboarding previews, and Help. Stored values and interpretation rules are unchanged. |
 | 2026-03-11 | App image update — single rose-on-cream asset | Replaced app icon and in-app logo with one asset: `apps/mobile/assets/icon-1024.png` (stylized rose on cream #F6F3EF). Used for home screen/App Store icon, splash, onboarding slide 1, and Calendar header. Docs: `README.md`, `skills/ux_tone_well_within.md`, `docs/APP_ASSETS.md`, TestFlight checklist. |
 | 2026-03-11 | Privacy copy update | Settings Privacy card first bullet updated to describe local storage and optional cloud backup (sign in to back up; data securely sent and stored to restore on a new device). |
 | 2026-03-05 | Codebase cleanup | Removed unused color constants (PEAK_ACCENT, ACCENT_RED_DARK, BG_CARD_GRADIENT_END). Fixed `catch (e: any)` to `catch (e: unknown)` with proper type guards. Updated always-dry.json fixture to new `appearances` schema. Expanded index.test.ts to cover all 9 exported functions. |
@@ -533,6 +546,7 @@ Log of implemented features and doc updates for traceability.
 | 2026-03-05 | Transparent logo background | Removed opaque beige background from logo PNG so the logo overlays the app's background color seamlessly on onboarding and in the main header. Asset remains at `apps/mobile/assets/logo.png`. |
 | 2026-03-05 | Clock icon refinement | Clock icon (onboarding slide 3, Cycle History toggle) finalized: hands at 10:30 and 4:30 with center dot, same stroke as circle, centered in frame. Implemented in `LineIcon` clock variant. |
 | 2026-03-30 | Help & onboarding — engine-aligned copy | Understanding Your Chart: status messages as seven titled sections from `HELP_STATUS_MESSAGE_SECTIONS` (`observationEducationCopy.ts`); sensation/appearance and Peak Day bodies refreshed; onboarding slide 3 adds de-emphasized “Consistency matters” footer. Premium visual-composition skill: `skills/ux_visual_composition_premium.md`; registered in `.cursor/rules/skills-reference.mdc`. |
+| 2026-07-14 | Spotting/brown observation layers | Calendar, Today, Daily Log, recorded-pattern chart, Help, and export preserve spotting/brown with the completed underlying observation. `S`/`B` and P+ markers are independent; brown + dry remains dry; incomplete combined rows never infer dry. See the Action 5 working decision addendum. |
 
 ---
 
@@ -551,7 +565,7 @@ Log of implemented features and doc updates for traceability.
 - Daily entry structure: bleeding, ESQ (sensation/appearance/quantity), intercourse boolean, notes.
 - Deterministic mucus rank (0–3) internally; user-facing labels without numeric ranks.
 - Peak detection algorithm: candidate + confirmation after 3 lower-quality days.
-- Fertile window starts first mucus day after bleeding, ends at P+3 inclusive.
+- Qualified retrospective `Possible fertile pattern` uses the first eligible mucus observation through P+3 only after Action 5 support/boundary gates pass; no safe/infertile or predictive claim.
 - Recompute entire cycle on any edit.
 - Unit tests covering edge cases.
 - Minimal Expo app demonstrating daily entry UI + timeline + partner view stub.

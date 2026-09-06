@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
     "strict": true,
-    "jsx": "react-jsx",
-    "moduleResolution": "Node",
     "baseUrl": ".",
     "paths": {
       "core-rules-engine": ["../../core/rulesEngine/src/index.ts"],

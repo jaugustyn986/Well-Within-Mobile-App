@@ -43,7 +43,7 @@ npm run start:mobile
 - On Windows, use a physical iPhone with Expo Go (or a dev build). iOS Simulator is macOS-only.
 - Iterate on UI/logic locally before cloud build submission.
 
-2. Release preflight (fast gate — validates Expo config)
+2. Release preflight (required gate — validates Expo config, intended app-feature coverage, and iOS/TestFlight version state)
 ```bash
 npm run mobile:preflight:release
 ```
@@ -72,6 +72,7 @@ Notes:
 
 Before each release run, update and follow:
 - `docs/TESTFLIGHT_READINESS_CHECKLIST.md`
+- `docs/RELEASE_PROCESS.md`
 - `skills/app_store_release_best_practices.md`
 - `skills/expo_release_commands.md`
 

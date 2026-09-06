@@ -1,5 +1,7 @@
 # Instagram Experiment Log
 
+> July 2026 reset: use `SOCIAL_METRICS_DASHBOARD.md` for the current live metric read and decisions. This file remains historical detail and should not be treated as complete until reconciled against live Instagram data.
+
 Use this file to track planned, posted, measured, and retired Instagram content tests.
 
 ## Status Values
@@ -440,3 +442,95 @@ Use this file to track planned, posted, measured, and retired Instagram content 
 - What did not:
 - Confidence: low
 - Next action: Check Story views at 24h. If Story views exceed feed reach, Stories are worth repeating weekly as a low-cost activity signal.
+
+## Experiment: Record One Observation. See It On Your Chart.
+
+- Status: superseded before publishing
+- Date planned: 2026-07-03
+- Date posted:
+- Post URL:
+- Media ID:
+- Format: short Reel or 3-slide carousel
+- Primary variable: product-light proof angle
+- Strategic bet: showing one real daily observation becoming chart context can earn saves and profile visits without relying on prediction or outcome claims
+- Audience: charting-curious users who want fertility charting to feel simple, concrete, and useful
+- Hook: "Record one observation. See it on your chart."
+- Visual: real Well Within UI only; warm app-led product proof, optionally with a quiet desk/phone context
+- Caption angle: one observation is enough to begin building cycle history; chart first, interpret only when there is enough observed context
+- CTA: save for your next charting day; follow for calmer charting notes; light link-in-bio mention
+- Target metric: saves and profile visits; secondary link taps
+- Baseline or comparison: compare against prior beginner education carousels once insights are available; current confidence remains low because recent post metrics are missing
+- Review checkpoints: 24h, 72h, 7d
+- Research reinforcement: 2026-07-04 public fallback research supported the saveable one-action utility angle, but July 8–17 listening made the generic “one observation” wording too shallow. Replaced by `Some Days Don’t Fit One Neat Box`, which uses verified multi-observation product proof.
+
+### Results
+
+- 24h snapshot:
+- 72h snapshot:
+- 7d snapshot:
+- Reach:
+- Views/plays:
+- Likes:
+- Comments:
+- Shares:
+- Saves:
+- Profile visits:
+- Follows:
+- Link taps:
+- App Store clicks:
+
+### Learning
+
+- What worked:
+- What did not:
+- Confidence: low
+- Next action: do not publish this version. Use the replacement experiment below.
+
+## Experiment: Some Days Don’t Fit One Neat Box
+
+- Status: posted and verified
+- Date planned: 2026-07-17
+- Date posted: 2026-07-17 at 09:45:07 CDT
+- Post URL: `https://www.instagram.com/reel/Da5dbL3kUpJ/`
+- Media ID: `18090981767086429`
+- Format: 9-second Reel, 1080 x 1920, proof-first cover
+- Hypothesis: `H3 — One Real Daily Entry Demo`, sharpened to competing observations on one imperfect day
+- Primary variable: a specific tension hook plus verified, uncovered product behavior
+- Strategic bet: a real Brown-plus-Wet entry that remains visible in the chart will feel more human, useful, and trustworthy than another generic reassurance post or text-heavy carousel
+- Audience: fertility-charting users who experience cognitive load when signs or routines do not feel tidy
+- Hook: “Some days don’t fit one neat box.”
+- Visual: real Well Within 2.1.4 UI only; blank entry → Brown → Wet → saved chart; no stock footage or generated interface
+- Caption angle: keep what happened visible and in context without claiming that one sign confirms ovulation or predicts what comes next
+- CTA: save this for the charting day that feels less clear
+- Target metric: saves and profile visits; secondary follows, replies, comments, and DMs
+- Baseline or comparison: July 3 Reel — 32 views, 29 reach, 1 save
+- Decision rule: continue only if reach is greater than 29 or the post produces at least two concrete intent signals among saves, profile visits, follows, replies, comments, or DMs
+- Review checkpoints: 24h, 72h, 7d
+- Package: `docs/social/generated/some-days-dont-fit-one-neat-box/content-package.md`
+- Release note: Jim approved showing imminent 2.1.4 behavior before public release on 2026-07-17; no download CTA is included
+- Publishing route: Composio CLI (`INSTAGRAM_POST_IG_USER_MEDIA` → `INSTAGRAM_POST_IG_USER_MEDIA_PUBLISH`), local MP4 upload, `share_to_feed=true`, first-frame cover; container ID `18106412036018990`
+- Verification note: live API readback confirmed Reel/Video media type, `@wellwithinapp`, permalink, comments enabled, and the exact approved caption. Instagram’s edit interface was used immediately after publishing to correct literal `%23` strings produced by the Composio caption layer and to add the approved alt text.
+
+### Results
+
+- Immediate verification: 0 likes, 0 comments; views, reach, saves, profile visits, and follows not yet available
+- 24h snapshot: 153 views, 136 reach, 0 saves, 0 likes, 0 comments, 0 shares, 0 total interactions; account at 4 followers
+- 72h snapshot: not captured at the exact checkpoint
+- 7d snapshot: 153 views, 136 reach, 0 saves, 0 likes, 0 comments, 0 shares, 0 total interactions; account still at 4 followers
+- Reach: 136 lifetime at 7d
+- Views/plays: 153 lifetime at 7d
+- Likes: 0
+- Comments: 0
+- Shares: 0
+- Saves: 0
+- Profile visits: unavailable post-attributed
+- Follows: unavailable post-attributed; account total unchanged at 4
+- Link taps: unavailable post-attributed
+- App Store clicks: unavailable
+
+### Learning
+
+- What worked: the specific tension hook plus screen-forward product proof cleared the reach threshold by 4.7x (136 versus >29) and materially out-distributed the prior Reel baseline.
+- What did not: the post produced no measurable intent or interaction, and it gained no additional views or reach between the 24h and 7d pulls.
+- Confidence: medium that this creative pattern can earn initial distribution; low that the H3 message or save CTA creates intent.
+- Next action: do not create an H3 sibling. Use the completed 7-day window to move to one native H2 audience-language test with a one-response decision rule, or collect the same question through H5 practitioner/community listening if a public post is not likely to reach respondents.

@@ -1,27 +1,67 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import { useCycleHistory } from '../hooks/useCycleHistory';
 import { CycleSummaryPanel } from '../components/CycleSummaryPanel';
-import { PatternInsights } from '../components/PatternInsights';
-import { PeakAlignedOverlay } from '../components/PeakAlignedOverlay';
 import { CycleCard } from '../components/CycleCard';
 import { LineIcon } from '../components/LineIcon';
 import { BG_PAGE, TEXT_MUTED, TEXT_PRIMARY } from '../theme/colors';
+import { FirstCompletedChartAcknowledgement } from '../features/guidedChartLearning/GuidedChartLearningComponents';
+import {
+  DEFAULT_GUIDED_CHART_LEARNING_PREFERENCES,
+  firstCompletedCycle,
+  shouldShowFirstCompletedChartAcknowledgement,
+  type GuidedChartLearningPreferences,
+} from '../features/guidedChartLearning/guidedChartLearning';
+import {
+  acknowledgeFirstCompletedChart,
+  getGuidedChartLearningPreferences,
+} from '../features/guidedChartLearning/guidedChartLearningStorage';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'CycleHistory'>;
 
-export function CycleHistoryScreen(): JSX.Element {
+export function CycleHistoryScreen(): React.JSX.Element {
   const navigation = useNavigation<Nav>();
-  const { cycles, summary, insights, loading, refresh } = useCycleHistory();
+  const { cycles, recordedHistorySummary, loading, refresh } = useCycleHistory();
+  const [guidedPreferences, setGuidedPreferences] =
+    useState<GuidedChartLearningPreferences>(
+      DEFAULT_GUIDED_CHART_LEARNING_PREFERENCES,
+    );
+  const [guidedPreferencesLoaded, setGuidedPreferencesLoaded] = useState(false);
 
-  useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
+  useFocusEffect(useCallback(() => {
+    refresh();
+    void getGuidedChartLearningPreferences().then((preferences) => {
+      setGuidedPreferences(preferences);
+      setGuidedPreferencesLoaded(true);
+    });
+  }, [refresh]));
 
   const goToDetail = useCallback(
     (cycleNumber: number) => navigation.navigate('CycleDetail', { cycleNumber }),
     [navigation],
+  );
+  const resolveCycleStart = useCallback(
+    (date: string) => navigation.navigate('DailyEntry', {
+      date,
+      existingEntry: true,
+      intent: 'confirm_cycle_start',
+    }),
+    [navigation],
+  );
+  const firstCompleted = useMemo(() => firstCompletedCycle(cycles), [cycles]);
+  const showFirstCompletedAcknowledgement = (
+    guidedPreferencesLoaded
+    && shouldShowFirstCompletedChartAcknowledgement(cycles, guidedPreferences)
+  );
+  const completeFirstChartAcknowledgement = useCallback(
+    (review: boolean) => {
+      void acknowledgeFirstCompletedChart().then(setGuidedPreferences);
+      if (review && firstCompleted) goToDetail(firstCompleted.cycleNumber);
+    },
+    [firstCompleted, goToDetail],
   );
 
   if (loading) {
@@ -53,9 +93,14 @@ export function CycleHistoryScreen(): JSX.Element {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <CycleSummaryPanel summary={summary} />
-        <PatternInsights insights={insights} />
-        <PeakAlignedOverlay cycles={cycles} onCyclePress={goToDetail} />
+        <CycleSummaryPanel summary={recordedHistorySummary} />
+
+        {showFirstCompletedAcknowledgement ? (
+          <FirstCompletedChartAcknowledgement
+            onReview={() => completeFirstChartAcknowledgement(true)}
+            onDismiss={() => completeFirstChartAcknowledgement(false)}
+          />
+        ) : null}
 
         <View style={styles.cardsSection}>
           <Text style={styles.cardsHeading}>Your Cycles</Text>
@@ -65,6 +110,7 @@ export function CycleHistoryScreen(): JSX.Element {
               cycle={c}
               allCycles={cycles}
               onPress={() => goToDetail(c.cycleNumber)}
+              onResolveCycleStart={resolveCycleStart}
             />
           ))}
         </View>
@@ -76,7 +122,12 @@ export function CycleHistoryScreen(): JSX.Element {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: BG_PAGE },
   loading: { textAlign: 'center', marginTop: 100, color: TEXT_MUTED, fontSize: 15 },
-  scrollContent: { paddingBottom: 32 },
+  scrollContent: {
+    width: '100%',
+    maxWidth: 760,
+    alignSelf: 'center',
+    paddingBottom: 32,
+  },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 32 },
   emptyTitle: { fontSize: 21, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
   emptyText: { fontSize: 15, fontWeight: '400', color: TEXT_MUTED, textAlign: 'center', lineHeight: 22 },

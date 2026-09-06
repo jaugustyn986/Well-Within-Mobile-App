@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Well Within — Guided Chart Learning, revised</title>
+  <style>
+    :root {
+      --page: #F6F3EF;
+      --card: #FDFCFB;
+      --text: #3F3A36;
+      --secondary: #5A5550;
+      --muted: #6F6A65;
+      --border: #E7E2DE;
+      --accent: #86685C;
+      --accent-soft: #F5F3F1;
+      --sage: #E3ECE1;
+      --sage-soft: #EDF4F0;
+      --sage-deep: #65815F;
+      --peak: #D6D3CF;
+      --butter: #F2E6B5;
+      --bleeding: #D09AAF;
+      --shadow: 0 18px 48px rgba(63, 58, 54, .13);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #EDE8E3; color: var(--text); }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .board {
+      width: 1780px;
+      margin: 0 auto;
+      padding: 74px 66px 90px;
+      background:
+        radial-gradient(circle at 8% 3%, rgba(208,154,175,.14), transparent 25%),
+        radial-gradient(circle at 94% 95%, rgba(101,129,95,.13), transparent 24%),
+        #F3EFEB;
+    }
+    .board-header { max-width: 1240px; margin-bottom: 48px; }
+    .board-kicker { color: var(--accent); font-size: 16px; font-weight: 760; letter-spacing: .12em; text-transform: uppercase; }
+    .board h1 { margin: 15px 0 18px; max-width: 1150px; font-size: 54px; line-height: 1.04; letter-spacing: -.045em; }
+    .board-summary { margin: 0; max-width: 1120px; color: var(--secondary); font-size: 23px; line-height: 1.45; }
+    .boundary-note {
+      margin-top: 22px;
+      max-width: 1130px;
+      padding: 14px 17px;
+      border-left: 4px solid var(--sage-deep);
+      border-radius: 4px 14px 14px 4px;
+      background: rgba(253,252,251,.78);
+      color: var(--secondary);
+      font-size: 16px;
+      line-height: 1.45;
+    }
+    .flow-line {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 48px;
+      padding: 18px 22px;
+      border: 1px solid rgba(134,104,92,.18);
+      border-radius: 22px;
+      background: rgba(253,252,251,.72);
+    }
+    .flow-line div { position: relative; padding: 4px 18px 4px 0; color: var(--secondary); font-size: 15px; font-weight: 650; }
+    .flow-line div:not(:last-child)::after { content: "→"; position: absolute; right: 1px; color: var(--accent); }
+    .flow-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 54px 50px; align-items: start; }
+    .flow-item { margin: 0; min-width: 0; }
+    .step-meta { min-height: 102px; margin-bottom: 16px; }
+    .step-number { color: var(--accent); font-size: 14px; font-weight: 780; letter-spacing: .12em; text-transform: uppercase; }
+    .step-title { margin: 7px 0 4px; font-size: 23px; line-height: 1.17; letter-spacing: -.02em; }
+    .step-note { color: var(--muted); font-size: 15px; line-height: 1.38; }
+    .phone {
+      position: relative;
+      width: 390px;
+      height: 844px;
+      overflow: hidden;
+      border: 10px solid #292624;
+      border-radius: 48px;
+      background: var(--page);
+      box-shadow: var(--shadow);
+    }
+    .status-bar {
+      position: relative;
+      height: 44px;
+      padding: 13px 19px 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      color: #111;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .island { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 108px; height: 28px; border-radius: 18px; background: #050505; }
+    .status-icons { display: flex; gap: 6px; align-items: center; }
+    .signal { letter-spacing: -2px; }
+    .battery { width: 20px; height: 10px; border: 1.6px solid #111; border-radius: 3px; position: relative; }
+    .battery::after { content: ""; position: absolute; right: 2px; top: 2px; width: 13px; height: 4px; border-radius: 1px; background: #111; }
+    .app-header { height: 58px; display: flex; align-items: center; justify-content: space-between; padding: 4px 18px 10px; }
+    .brand { display: flex; align-items: center; gap: 9px; font-size: 21px; font-weight: 720; letter-spacing: -.025em; }
+    .brand img { width: 30px; height: 30px; border-radius: 9px; object-fit: cover; }
+    .gear { width: 35px; height: 35px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 11px; color: var(--accent); background: rgba(253,252,251,.72); font-size: 17px; }
+    .segmented { margin: 2px 15px 13px; padding: 4px; display: grid; grid-template-columns: 1fr 1fr; background: var(--card); border: 1px solid var(--border); border-radius: 24px; }
+    .segment { padding: 9px 8px; text-align: center; border-radius: 19px; font-size: 14px; color: var(--secondary); font-weight: 640; }
+    .segment.active { color: white; background: #9A7A6C; }
+    .screen-scroll { padding: 0 15px 20px; }
+    .small-status { margin-bottom: 10px; padding: 13px 14px; background: var(--sage-soft); border-radius: 12px; }
+    .small-status .eyebrow { color: var(--muted); font-size: 9px; font-weight: 650; }
+    .small-status h3 { margin: 5px 0 4px; font-size: 16px; line-height: 1.2; }
+    .small-status p { margin: 0; color: var(--secondary); font-size: 10px; line-height: 1.42; }
+    .calendar-card { margin-bottom: 10px; padding: 10px; border-radius: 12px; background: var(--card); }
+    .calendar-head { display: grid; grid-template-columns: 34px 1fr 34px; align-items: center; margin-bottom: 7px; }
+    .calendar-head span { color: var(--muted); font-size: 18px; text-align: center; }
+    .calendar-head strong { color: var(--text); font-size: 15px; text-align: center; }
+    .weekdays, .cal-row { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .weekdays span { padding-bottom: 3px; color: var(--muted); font-size: 9px; font-weight: 600; text-align: center; }
+    .day {
+      position: relative;
+      height: 31px;
+      margin: 1px;
+      display: grid;
+      place-items: center;
+      border-radius: 7px;
+      background: white;
+      color: var(--text);
+      font-size: 11px;
+      font-style: normal;
+      font-weight: 550;
+    }
+    .day.empty { background: transparent; }
+    .day.future { color: #B5B0AC; opacity: .55; }
+    .day.dry { background: var(--sage); }
+    .day.mucus { background: var(--sage); }
+    .day.peak-type { background: var(--peak); }
+    .day.bleeding { background: var(--bleeding); }
+    .day.post { background: var(--butter); }
+    .day.today { border: 2px solid #111; }
+    .day.peak-day { border: 2px solid #4A4541; }
+    .day .dot { position: absolute; right: 3px; top: 3px; width: 5px; height: 5px; border-radius: 50%; background: var(--sage-deep); }
+    .day .marker { position: absolute; left: 3px; bottom: 1px; color: var(--muted); font-size: 6px; font-weight: 700; }
+    .day .bleed-mark { position: absolute; left: 3px; top: 1px; color: var(--text); font-size: 7px; font-weight: 700; }
+    .legend { margin-top: 6px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 7px; }
+    .legend-item { display: flex; align-items: center; gap: 3px; color: var(--muted); font-size: 7px; }
+    .swatch { position: relative; width: 10px; height: 10px; border: 1px solid var(--border); border-radius: 3px; background: white; }
+    .swatch.dry { background: var(--sage); }
+    .swatch.bleeding { background: var(--bleeding); }
+    .swatch.peak-type { background: var(--peak); }
+    .swatch .dot { position: absolute; right: 1px; top: 1px; width: 4px; height: 4px; border-radius: 50%; background: var(--sage-deep); }
+    .legend-key { margin: 5px 0 0; color: var(--muted); font-size: 7px; line-height: 1.35; text-align: center; }
+    .today-card { margin-bottom: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+    .card-head { display: flex; justify-content: space-between; align-items: center; }
+    .card-head strong { font-size: 14px; }
+    .card-head span { color: var(--muted); font-size: 10px; }
+    .tags { display: flex; gap: 6px; margin: 7px 0 4px; }
+    .tag { padding: 4px 7px; border-radius: 7px; background: var(--accent-soft); color: var(--secondary); font-size: 9px; }
+    .today-card p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.4; }
+    .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 9px; }
+    .mini-button { min-height: 32px; display: grid; place-items: center; border-radius: 8px; background: var(--accent); color: white; font-size: 9px; font-weight: 700; }
+    .mini-button.secondary { color: var(--accent); background: var(--accent-soft); }
+    .lesson-section { margin-bottom: 10px; padding: 11px 12px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: rgba(253,252,251,.46); }
+    .lesson-top { display: flex; align-items: center; justify-content: space-between; }
+    .lesson-label { color: var(--accent); font-size: 8px; font-weight: 780; letter-spacing: .1em; }
+    .more { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; color: var(--muted); font-size: 15px; font-weight: 700; }
+    .lesson-link { display: grid; grid-template-columns: 31px 1fr 18px; align-items: center; gap: 9px; margin-top: 4px; }
+    .lesson-icon { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 10px; background: var(--sage); color: var(--sage-deep); font-size: 15px; }
+    .lesson-copy strong { display: block; font-size: 12px; line-height: 1.3; }
+    .lesson-copy span { display: block; margin-top: 2px; color: var(--muted); font-size: 9px; line-height: 1.35; }
+    .chevron { color: var(--accent); font-size: 22px; }
+    .help-card { padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+    .help-card strong { display: block; color: var(--secondary); font-size: 12px; }
+    .help-card span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; line-height: 1.35; }
+    .screen-dim { position: absolute; inset: 0; background: rgba(63,58,54,.36); }
+    .sheet {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 12px 22px 27px;
+      border-radius: 28px 28px 0 0;
+      background: var(--card);
+      box-shadow: 0 -18px 40px rgba(63,58,54,.12);
+    }
+    .handle { width: 38px; height: 4px; margin: 0 auto 19px; border-radius: 4px; background: #D8D2CD; }
+    .success-mark { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; color: var(--sage-deep); background: var(--sage); font-size: 24px; font-weight: 750; }
+    .sheet-kicker { margin-top: 17px; color: var(--accent); font-size: 10px; font-weight: 780; letter-spacing: .11em; }
+    .sheet h2 { margin: 7px 0 9px; font-size: 27px; line-height: 1.08; letter-spacing: -.035em; }
+    .sheet p { margin: 0; color: var(--secondary); font-size: 14px; line-height: 1.52; }
+    .button { margin-top: 18px; min-height: 46px; display: grid; place-items: center; border-radius: 12px; color: white; background: var(--accent); font-size: 14px; font-weight: 720; }
+    .text-button { margin-top: 12px; text-align: center; color: var(--muted); font-size: 13px; font-weight: 620; }
+    .lesson-screen { padding: 0 20px 24px; }
+    .lesson-header { height: 52px; display: grid; grid-template-columns: 70px 1fr 70px; align-items: center; border-bottom: 1px solid var(--border); }
+    .back { color: var(--accent); font-size: 13px; font-weight: 650; }
+    .lesson-header strong { text-align: center; font-size: 15px; }
+    .lesson-body { padding-top: 24px; }
+    .lesson-body .lesson-icon { width: 42px; height: 42px; font-size: 20px; }
+    .lesson-body h2 { margin: 16px 0 10px; font-size: 27px; line-height: 1.1; letter-spacing: -.035em; }
+    .lesson-body > p { color: var(--secondary); font-size: 14px; line-height: 1.52; }
+    .example-block { margin: 20px 0; padding: 16px; border: 1px solid var(--border); border-radius: 15px; background: var(--card); }
+    .example-title { margin-bottom: 12px; color: var(--muted); font-size: 10px; font-weight: 720; letter-spacing: .07em; text-transform: uppercase; }
+    .example-days { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; }
+    .example-day { text-align: center; }
+    .example-tile { position: relative; height: 56px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 12px; background: white; font-size: 16px; font-weight: 690; }
+    .example-tile.dry { background: var(--sage); }
+    .example-tile .dot { position: absolute; right: 6px; top: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--sage-deep); }
+    .example-day span { display: block; margin-top: 6px; color: var(--muted); font-size: 9px; line-height: 1.25; }
+    .callout { padding: 13px 14px; border-radius: 13px; background: var(--sage-soft); color: var(--secondary); font-size: 12px; line-height: 1.45; }
+    .secondary-link { margin-top: 12px; color: var(--accent); font-size: 12px; font-weight: 650; text-align: center; }
+    .options-sheet h3 { margin: 0 0 5px; font-size: 20px; }
+    .options-sheet .context { margin-bottom: 12px; color: var(--muted); font-size: 12px; }
+    .sheet-option { min-height: 48px; display: flex; align-items: center; border-top: 1px solid var(--border); color: var(--text); font-size: 14px; font-weight: 600; }
+    .sheet-option.danger { color: var(--accent); }
+    .sheet-cancel { min-height: 46px; margin-top: 8px; display: grid; place-items: center; border-radius: 11px; background: var(--accent-soft); color: var(--secondary); font-size: 14px; font-weight: 650; }
+    .history-scroll { padding: 0 15px 20px; }
+    .history-title { margin: 4px 0 9px; font-size: 23px; letter-spacing: -.03em; }
+    .metric-card { min-height: 112px; display: grid; place-items: center; margin-bottom: 15px; padding: 12px; border: 1px solid #EACFC6; border-radius: 15px; background: var(--card); text-align: center; }
+    .metric-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: #F4DFD8; font-size: 20px; }
+    .metric-card strong { margin-top: 5px; font-size: 22px; }
+    .metric-card span { color: var(--muted); font-size: 11px; }
+    .history-subtitle { margin: 0 0 7px; font-size: 18px; }
+    .patterns-card { padding: 13px; border: 1px solid var(--border); border-radius: 13px; background: var(--card); }
+    .progress-pill { display: inline-block; margin-bottom: 8px; padding: 4px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--muted); font-size: 9px; font-weight: 650; }
+    .patterns-card p { margin: 0; color: var(--secondary); font-size: 10px; line-height: 1.45; }
+    .patterns-card .note { margin-top: 7px; color: var(--muted); font-size: 9px; }
+    .history-ack { margin-top: 12px; padding: 13px; border-left: 3px solid var(--sage-deep); border-radius: 11px; background: var(--sage-soft); }
+    .history-ack small { color: var(--sage-deep); font-size: 8px; font-weight: 780; letter-spacing: .1em; }
+    .history-ack strong { display: block; margin-top: 5px; font-size: 14px; }
+    .history-ack p { margin: 4px 0 8px; color: var(--secondary); font-size: 10px; line-height: 1.4; }
+    .history-ack a { color: var(--accent); font-size: 11px; font-weight: 700; }
+    .your-cycles { margin: 13px 0 7px; font-size: 17px; }
+    .cycle-card { padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); }
+    .cycle-card strong { font-size: 13px; }
+    .cycle-card p { margin: 4px 0 0; color: var(--muted); font-size: 10px; }
+    @media print { body { background: white; } .board { margin: 0; } }
+  </style>
+</head>
+<body>
+  <main class="board" id="flow-overview">
+    <header class="board-header">
+      <div class="board-kicker">Action 10 · Revised UX concept</div>
+      <h1>Guided Chart Learning without redesigning the Calendar</h1>
+      <p class="board-summary">The current summary, full month calendar, Today card, Help, and History remain intact. The only additions are a first-save acknowledgement, one finite contextual lesson, user controls, and one completed-chart acknowledgement.</p>
+      <div class="boundary-note"><strong>Source lock:</strong> Calendar screens below reproduce the complete month grid. Some screens show a normal scrolled position so the new section beneath Today's Observation is visible; the current summary and Catch Up content remain above, unchanged.</div>
+    </header>
+
+    <section class="flow-line" aria-label="Flow summary">
+      <div>Save succeeds</div>
+      <div>See full Calendar</div>
+      <div>Open one lesson</div>
+      <div>Dismiss or hide</div>
+      <div>Tips retire</div>
+      <div>Review first chart</div>
+    </section>
+
+    <section class="flow-grid">
+      <figure class="flow-item">
+        <figcaption class="step-meta">
+          <div class="step-number">Step 1</div>
+          <h2 class="step-title">Confirm the first value moment</h2>
+          <div class="step-note">One time after a successful intentional save. Existing Calendar remains behind the native sheet.</div>
+        </figcaption>
+        <div class="phone" id="screen-first-save">
+          <div class="status-bar"><span>9:41</span><span class="island"></span><span class="status-icons"><span class="signal">•••</span><span>⌁</span><span class="battery"></span></span></div>
+          <div class="app-header"><div class="brand"><img src="../../../apps/mobile/assets/logo-cream.png" alt="" />Well Within</div><div class="gear">⚙</div></div>
+          <div class="segmented"><div class="segment active">Calendar</div><div class="segment">Cycle History</div></div>
+          <div class="screen-scroll">
+            <div class="small-status"><div class="eyebrow">Cycle Day 1 · All days charted so far</div><h3>Your chart is still taking shape</h3><p>Keep charting normally; the card updates whenever an observation changes.</p></div>
+            <div class="calendar-card">
+              <div class="calendar-head"><span>‹</span><strong>July 2026</strong><span>›</span></div>
+              <div class="weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+              <div class="cal-row"><i class="day empty"></i><i class="day empty"></i><i class="day empty"></i><i class="day">1</i><i class="day">2</i><i class="day">3</i><i class="day">4</i></div>
+              <div class="cal-row"><i class="day">5</i><i class="day">6</i><i class="day">7</i><i class="day">8</i><i class="day">9</i><i class="day">10</i><i class="day">11</i></div>
+              <div class="cal-row"><i class="day">12</i><i class="day">13</i><i class="day">14</i><i class="day">15</i><i class="day dry today">16</i><i class="day future">17</i><i class="day future">18</i></div>
+              <div class="cal-row"><i class="day future">19</i><i class="day future">20</i><i class="day future">21</i><i class="day future">22</i><i class="day future">23</i><i class="day future">24</i><i class="day future">25</i></div>
+              <div class="cal-row"><i class="day future">26</i><i class="day future">27</i><i class="day future">28</i><i class="day future">29</i><i class="day future">30</i><i class="day future">31</i><i class="day empty"></i></div>
+              <div class="legend"><span class="legend-item"><i class="swatch"></i>No entry</span><span class="legend-item"><i class="swatch bleeding"></i>Bleeding</span><span class="legend-item"><i class="swatch dry"></i>Dry</span><span class="legend-item"><i class="swatch dry"><b class="dot"></b></i>Non-peak mucus</span><span class="legend-item"><i class="swatch peak-type"></i>Peak-type sign</span></div>
+              <p class="legend-key">Gray = Peak-type sign · dot = mucus · S/B = spotting or brown</p>
+            </div>
+          </div>
+          <div class="screen-dim"></div>
+          <div class="sheet">
+            <div class="handle"></div>
+            <div class="success-mark">✓</div>
+            <div class="sheet-kicker">FIRST OBSERVATION SAVED</div>
+            <h2>Your chart has started</h2>
+            <p>Your observation is saved. As you keep charting, short tips will appear below Today's Observation to help you understand what you're seeing.</p>
+            <div class="button">Got it</div>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="flow-item">
+        <figcaption class="step-meta">
+          <div class="step-number">Step 2</div>
+          <h2 class="step-title">Add one lesson below existing UI</h2>
+          <div class="step-note">Scrolled position. The complete current month grid and Today's Observation are unchanged.</div>
+        </figcaption>
+        <div class="phone" id="screen-calendar-lesson">
+          <div class="status-bar"><span>9:42</span><span class="island"></span><span class="status-icons"><span class="signal">•••</span><span>⌁</span><span class="battery"></span></span></div>
+          <div class="app-header"><div class="brand"><img src="../../../apps/mobile/assets/logo-cream.png" alt="" />Well Within</div><div class="gear">⚙</div></div>
+          <div class="segmented"><div class="segment active">Calendar</div><div class="segment">Cycle History</div></div>
+          <div class="screen-scroll">
+            <div class="calendar-card">
+              <div class="calendar-head"><span>‹</span><strong>July 2026</strong><span>›</span></div>
+              <div class="weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+              <div class="cal-row"><i class="day empty"></i><i class="day empty"></i><i class="day empty"></i><i class="day">1</i><i class="day">2</i><i class="day">3</i><i class="day">4</i></div>
+              <div class="cal-row"><i class="day">5</i><i class="day">6</i><i class="day">7</i><i class="day">8</i><i class="day">9</i><i class="day">10</i><i class="day">11</i></div>
+              <div class="cal-row"><i class="day">12</i><i class="day">13</i><i class="day">14</i><i class="day">15</i><i class="day dry today">16</i><i class="day future">17</i><i class="day future">18</i></div>
+              <div class="cal-row"><i class="day future">19</i><i class="day future">20</i><i class="day future">21</i><i class="day future">22</i><i class="day future">23</i><i class="day future">24</i><i class="day future">25</i></div>
+              <div class="cal-row"><i class="day future">26</i><i class="day future">27</i><i class="day future">28</i><i class="day future">29</i><i class="day future">30</i><i class="day future">31</i><i class="day empty"></i></div>
+              <div class="legend"><span class="legend-item"><i class="swatch"></i>No entry</span><span class="legend-item"><i class="swatch bleeding"></i>Bleeding</span><span class="legend-item"><i class="swatch dry"></i>Dry</span><span class="legend-item"><i class="swatch dry"><b class="dot"></b></i>Non-peak mucus</span><span class="legend-item"><i class="swatch peak-type"></i>Peak-type sign</span></div>
+              <p class="legend-key">Gray = Peak-type sign · dot = mucus · S/B = spotting or brown</p>
+            </div>
+            <div class="today-card"><div class="card-head"><strong>Today's Observation</strong><span>Jul 16</span></div><div class="tags"><span class="tag">Dry</span></div><p>Dry observation recorded.</p><div class="action-row"><div class="mini-button">Review day</div><div class="mini-button secondary">+ Add observation</div></div></div>
+            <section class="lesson-section">
+              <div class="lesson-top"><span class="lesson-label">LEARN FROM YOUR CHART</span><span class="more">•••</span></div>
+              <div class="lesson-link"><div class="lesson-icon">◉</div><div class="lesson-copy"><strong>How your observation appears on the calendar</strong><span>See what is recorded—and what an empty date means.</span></div><div class="chevron">›</div></div>
+            </section>
+            <div class="help-card"><strong>Need help understanding your chart?</strong><span>Learn about sensation, appearance, peak day, and more</span></div>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="flow-item">
+        <figcaption class="step-meta">
+          <div class="step-number">Step 3</div>
+          <h2 class="step-title">Teach a standalone product concept</h2>
+          <div class="step-note">The summary remains sufficient on its own; this explains calendar mechanics, not current-cycle interpretation.</div>
+        </figcaption>
+        <div class="phone" id="screen-lesson-detail">
+          <div class="status-bar"><span>9:42</span><span class="island"></span><span class="status-icons"><span class="signal">•••</span><span>⌁</span><span class="battery"></span></span></div>
+          <div class="lesson-screen">
+            <div class="lesson-header"><div class="back">‹ Back</div><strong>Chart tip</strong><div></div></div>
+            <div class="lesson-body">
+              <div class="lesson-icon">◉</div>
+              <h2>How your observation appears on the calendar</h2>
+              <p>The calendar reflects what you saved. A Dry observation uses the app's Dry treatment. A date with no entry stays empty.</p>
+              <div class="example-block">
+                <div class="example-title">Three calendar treatments</div>
+                <div class="example-days">
+                  <div class="example-day"><div class="example-tile">14</div><span>No entry</span></div>
+                  <div class="example-day"><div class="example-tile dry">15</div><span>Dry recorded</span></div>
+                  <div class="example-day"><div class="example-tile dry">16<i class="dot"></i></div><span>Non-peak mucus recorded</span></div>
+                </div>
+              </div>
+              <div class="callout">Well Within updates the chart from saved observations. It does not fill in an observation you did not record.</div>
+              <div class="button">Back to my chart</div>
+              <div class="secondary-link">Open the full calendar color guide</div>
+            </div>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="flow-item">
+        <figcaption class="step-meta">
+          <div class="step-number">Step 4</div>
+          <h2 class="step-title">Give the user control</h2>
+          <div class="step-note">Dismiss one topic or hide contextual tips entirely. Status and safety explanations are never hidden.</div>
+        </figcaption>
+        <div class="phone" id="screen-tip-controls">
+          <div class="status-bar"><span>8:16</span><span class="island"></span><span class="status-icons"><span class="signal">•••</span><span>⌁</span><span class="battery"></span></span></div>
+          <div class="app-header"><div class="brand"><img src="../../../apps/mobile/assets/logo-cream.png" alt="" />Well Within</div><div class="gear">⚙</div></div>
+          <div class="segmented"><div class="segment active">Calendar</div><div class="segment">Cycle History</div></div>
+          <div class="screen-scroll">
+            <div class="calendar-card">
+              <div class="calendar-head"><span>‹</span><strong>July 2026</strong><span>›</span></div>
+              <div class="weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+              <div class="cal-row"><i class="day empty"></i><i class="day empty"></i><i class="day empty"></i><i class="day">1</i><i class="day">2</i><i class="day">3</i><i class="day">4</i></div>
+              <div class="cal-row"><i class="day">5</i><i class="day">6</i><i class="day">7</i><i class="day">8</i><i class="day">9</i><i class="day">10</i><i class="day">11</i></div>
+              <div class="cal-row"><i class="day">12</i><i class="day">13</i><i class="day dry">14</i><i class="day dry">15</i><i class="day mucus today">16<b class="dot"></b></i><i class="day future">17</i><i class="day future">18</i></div>
+              <div class="cal-row"><i class="day future">19</i><i class="day future">20</i><i class="day future">21</i><i class="day future">22</i><i class="day future">23</i><i class="day future">24</i><i class="day future">25</i></div>
+              <div class="cal-row"><i class="day future">26</i><i class="day future">27</i><i class="day future">28</i><i class="day future">29</i><i class="day future">30</i><i class="day future">31</i><i class="day empty"></i></div>
+              <div class="legend"><span class="legend-item"><i class="swatch"></i>No entry</span><span class="legend-item"><i class="swatch bleeding"></i>Bleeding</span><span class="legend-item"><i class="swatch dry"></i>Dry</span><span class="legend-item"><i class="swatch dry"><b class="dot"></b></i>Non-peak mucus</span><span class="legend-item"><i class="swatch peak-type"></i>Peak-type sign</span></div>
+              <p class="legend-key">Gray = Peak-type sign · dot = mucus · S/B = spotting or brown</p>
+            </div>
+            <div class="today-card"><div class="card-head"><strong>Today's Observation</strong><span>Jul 16</span></div><div class="tags"><span class="tag">Damp</span></div><p>A mucus sign was recorded.</p></div>
+            <section class="lesson-section"><div class="lesson-top"><span class="lesson-label">LEARN FROM YOUR CHART</span><span class="more">•••</span></div><div class="lesson-link"><div class="lesson-icon">?</div><div class="lesson-copy"><strong>How sensation and appearance work together</strong><span>Two parts of the observation you record.</span></div><div class="chevron">›</div></div></section>
+          </div>
+          <div class="screen-dim"></div>
+          <div class="sheet options-sheet">
+            <div class="handle"></div>
+            <h3>Chart tip options</h3>
+            <p class="context">How sensation and appearance work together</p>
+            <div class="sheet-option">Not relevant to me</div>
+            <div class="sheet-option danger">Hide chart tips</div>
+            <div class="sheet-cancel">Cancel</div>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="flow-item">
+        <figcaption class="step-meta">
+          <div class="step-number">Step 5</div>
+          <h2 class="step-title">Retire the surface when it is done</h2>
+          <div class="step-note">After all lessons are seen or tips are hidden, nothing recycles. Existing Calendar, Today, and Help remain.</div>
+        </figcaption>
+        <div class="phone" id="screen-tips-exhausted">
+          <div class="status-bar"><span>8:17</span><span class="island"></span><span class="status-icons"><span class="signal">•••</span><span>⌁</span><span class="battery"></span></span></div>
+          <div class="app-header"><div class="brand"><img src="../../../apps/mobile/assets/logo-cream.png" alt="" />Well Within</div><div class="gear">⚙</div></div>
+          <div class="segmented"><div class="segment active">Calendar</div><div class="segment">Cycle History</div></div>
+          <div class="screen-scroll">
+            <div class="calendar-card">
+              <div class="calendar-head"><span>‹</span><strong>July 2026</strong><span>›</span></div>
+              <div class="weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+              <div class="cal-row"><i class="day empty"></i><i class="day empty"></i><i class="day empty"></i><i class="day bleeding">1</i><i class="day dry"><b class="bleed-mark">B</b>2</i><i class="day dry">3</i><i class="day dry">4</i></div>
+              <div class="cal-row"><i class="day mucus">5<b class="dot"></b></i><i class="day mucus">6<b class="dot"></b></i><i class="day peak-type peak-day">7</i><i class="day post">8<b class="marker">P+1</b></i><i class="day post">9<b class="bleed-mark">S</b><b class="marker">P+2</b></i><i class="day post">10<b class="marker">P+3</b></i><i class="day dry">11</i></div>
+              <div class="cal-row"><i class="day dry">12</i><i class="day dry">13</i><i class="day dry"><b class="bleed-mark">B</b>14</i><i class="day">15</i><i class="day today">16</i><i class="day future">17</i><i class="day future">18</i></div>
+              <div class="cal-row"><i class="day future">19</i><i class="day future">20</i><i class="day future">21</i><i class="day future">22</i><i class="day future">23</i><i class="day future">24</i><i class="day future">25</i></div>
+              <div class="cal-row"><i class="day future">26</i><i class="day future">27</i><i class="day future">28</i><i class="day future">29</i><i class="day future">30</i><i class="day future">31</i><i class="day empty"></i></div>
+              <div class="legend"><span class="legend-item"><i class="swatch"></i>No entry</span><span class="legend-item"><i class="swatch bleeding"></i>Bleeding</span><span class="legend-item"><i class="swatch dry"></i>Dry</span><span class="legend-item"><i class="swatch dry"><b class="dot"></b></i>Non-peak mucus</span><span class="legend-item"><i class="swatch peak-type"></i>Peak-type sign</span></div>
+              <p class="legend-key">Gray = Peak-type sign · outline = Peak Day · dot = mucus · S/B = spotting or brown</p>
+            </div>
+            <div class="today-card"><div class="card-head"><strong>Today's Observation</strong><span>Jul 16</span></div><p>No observation recorded yet.</p><div class="action-row"><div class="mini-button">Record today</div></div></div>
+            <div class="help-card"><strong>Need help understanding your chart?</strong><span>Learn about sensation, appearance, peak day, and more</span></div>
+          </div>
+        </div>
+      </figure>
+
+      <figure class="flow-item">
+        <figcaption class="step-meta">
+          <div class="step-number">Step 6</div>
+          <h2 class="step-title">Acknowledge the first completed chart</h2>
+          <div class="step-note">One new compact row is added around the current History summary and Cycle card; existing history components stay intact.</div>
+        </figcaption>
+        <div class="phone" id="screen-first-chart">
+          <div class="status-bar"><span>10:05</span><span class="island"></span><span class="status-icons"><span class="signal">•••</span><span>⌁</span><span class="battery"></span></span></div>
+          <div class="app-header"><div class="brand"><img src="../../../apps/mobile/assets/logo-cream.png" alt="" />Well Within</div><div class="gear">⚙</div></div>
+          <div class="segmented"><div class="segment">Calendar</div><div class="segment active">Cycle History</div></div>
+          <div class="history-scroll">
+            <h2 class="history-title">Cycle Summary</h2>
+            <div class="metric-card"><div class="metric-icon">▣</div><strong>1</strong><span>Completed cycles</span></div>
+            <h3 class="history-subtitle">Your pattern history is taking shape</h3>
+            <div class="patterns-card"><span class="progress-pill">1 of 3 cycles ready</span><p>After 3 completed cycles have enough detail, you'll be able to compare what their charts showed.</p><p class="note">Based on 1 completed chart with enough detail.</p></div>
+            <div class="history-ack"><small>FIRST COMPLETED CHART</small><strong>Your first completed chart is ready to review</strong><p>Look back at the observations and retrospective markers saved in this chart.</p><a>Review this chart ›</a></div>
+            <h3 class="your-cycles">Your Cycles</h3>
+            <div class="cycle-card"><strong>Jun 18 – Jul 15</strong><p>28 days · Complete</p></div>
+          </div>
+        </div>
+      </figure>
+    </section>
+  </main>
+</body>
+</html>

@@ -8,13 +8,21 @@ declare const global: { AsyncStorageMock: Record<string, string> };
 jest.mock('../../config/env', () => ({ hasSupabaseEnv: () => true }));
 
 const mockSupabase = {
-  from: () => ({
-    select: () => ({
-      eq: () => ({
-        order: () => Promise.resolve({ data: [], error: null }),
-      }),
-    }),
-  }),
+  from: (table: string) => table === 'profiles'
+    ? {
+        select: () => ({
+          eq: () => ({
+            maybeSingle: () => Promise.resolve({ data: null, error: null }),
+          }),
+        }),
+      }
+    : {
+        select: () => ({
+          eq: () => ({
+            order: () => Promise.resolve({ data: [], error: null }),
+          }),
+        }),
+      },
 };
 jest.mock('../../lib/supabase', () => ({ supabase: mockSupabase }));
 

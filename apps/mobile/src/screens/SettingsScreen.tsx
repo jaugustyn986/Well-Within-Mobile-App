@@ -6,12 +6,18 @@ import { shareAsync } from 'expo-sharing';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { FeedbackModal } from '../components/feedback/FeedbackModal';
+import {
+  getAccountDataConfirmation,
+  type AccountDataAction,
+} from '../components/accountDataConfirmation';
 import { useCycleHistory } from '../hooks/useCycleHistory';
 import { getAllEntries, clearAllEntries } from '../services/storageV2';
+import { deleteBackedUpChartData, deleteCurrentAccount } from '../services/accountData';
 import { useAuth } from '../context/AuthProvider';
 import { useSync } from '../context/SyncProvider';
 import { hasSupabaseEnv } from '../config/env';
 import { LineIcon, type IconName } from '../components/LineIcon';
+import { buildDataExport } from '../utils/exportData';
 import type { RootStackParamList } from '../navigation/AppNavigator';
 import {
   BG_PAGE, BG_CARD,
@@ -22,19 +28,21 @@ import {
 const APP_VERSION = Constants.expoConfig?.version ?? '0.1.0';
 
 const PRIVACY_ITEMS: { icon: IconName; text: string }[] = [
-  { icon: 'device', text: 'Your chart data stays on this device unless you choose to back it up by signing in. If you enable backup, your data is securely sent and stored in the cloud to help restore it on a new device.' },
-  { icon: 'analytics', text: 'The app uses your observations to calculate cycle patterns' },
+  { icon: 'device', text: 'Your chart is stored on this device by default. Sign in only if you want optional cloud backup.' },
+  { icon: 'analytics', text: 'Pattern calculations happen in the app using the observations you record.' },
+  { icon: 'shield', text: 'Feedback is optional. Cycle context is included only when you turn it on.' },
   { icon: 'shield', text: 'No third-party ad tracking is used' },
-  { icon: 'lock', text: 'You can clear or export your data at any time' },
+  { icon: 'lock', text: 'You can clear, delete, or export your data at any time.' },
 ];
 
 type SettingsNav = NativeStackNavigationProp<RootStackParamList, 'Settings'>;
 
-export function SettingsScreen(): JSX.Element {
+export function SettingsScreen(): React.JSX.Element {
   const navigation = useNavigation<SettingsNav>();
   const auth = useAuth();
   const sync = useSync();
-  const [showClearModal, setShowClearModal] = useState(false);
+  const [pendingDataAction, setPendingDataAction] = useState<AccountDataAction | null>(null);
+  const [processingDataAction, setProcessingDataAction] = useState<AccountDataAction | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [exporting, setExporting] = useState(false);
   const showBackupSync = hasSupabaseEnv();
@@ -44,7 +52,7 @@ export function SettingsScreen(): JSX.Element {
     setExporting(true);
     try {
       const entries = await getAllEntries();
-      const json = JSON.stringify(entries, null, 2);
+      const json = JSON.stringify(buildDataExport(entries), null, 2);
       const fileUri = FileSystem.cacheDirectory + 'well-within-data.json';
       await FileSystem.writeAsStringAsync(fileUri, json);
       await shareAsync(fileUri, { mimeType: 'application/json' });
@@ -56,16 +64,36 @@ export function SettingsScreen(): JSX.Element {
     }
   }, []);
 
-  const handleClearAll = useCallback(async () => {
-    setShowClearModal(false);
+  const handleConfirmedDataAction = useCallback(async () => {
+    const action = pendingDataAction;
+    if (!action) return;
+    const confirmation = getAccountDataConfirmation(action, Boolean(auth?.user));
+    setPendingDataAction(null);
+    setProcessingDataAction(action);
     try {
-      await clearAllEntries();
-      Alert.alert('Data Cleared', 'All observations and cycle history have been removed.');
+      if (action === 'local') {
+        await clearAllEntries();
+      } else {
+        const result = action === 'cloud'
+          ? await deleteBackedUpChartData()
+          : await deleteCurrentAccount();
+        if (result.error) {
+          Alert.alert('Could Not Complete Deletion', result.error);
+          return;
+        }
+      }
+      Alert.alert(confirmation.successTitle, confirmation.successBody);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Could not clear data.';
       Alert.alert('Error', msg);
+    } finally {
+      setProcessingDataAction(null);
     }
-  }, []);
+  }, [auth?.user, pendingDataAction]);
+
+  const confirmation = pendingDataAction
+    ? getAccountDataConfirmation(pendingDataAction, Boolean(auth?.user))
+    : null;
 
   const formatSyncTime = (iso: string | null) => {
     if (!iso) return 'Not synced yet';
@@ -83,12 +111,12 @@ export function SettingsScreen(): JSX.Element {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Backup & Sync</Text>
           <Text style={styles.sectionSubtitle}>
-            Your observations stay private. You can keep using the app without an account.
+            Keep using the app without an account, or sign in if you want optional cloud backup.
           </Text>
           {auth?.user ? (
             <>
               <Text style={styles.syncStatus}>
-                Signed in with email {auth.user.email}
+                {auth.user.email ? `Signed in as ${auth.user.email}` : 'Signed in'}
               </Text>
               <Text style={styles.syncMeta}>
                 Last sync: {formatSyncTime(sync?.lastSyncedAt ?? null)}
@@ -100,6 +128,9 @@ export function SettingsScreen(): JSX.Element {
                 style={[styles.actionRow, { marginTop: 12 }]}
                 onPress={() => void sync?.syncNow?.()}
                 disabled={sync?.isSyncing}
+                accessibilityRole="button"
+                accessibilityLabel="Sync now"
+                accessibilityState={{ disabled: sync?.isSyncing }}
               >
                 <View style={styles.actionLeft}>
                   <View style={styles.actionIconCircle}>
@@ -115,6 +146,8 @@ export function SettingsScreen(): JSX.Element {
               <Pressable
                 style={[styles.actionRow, styles.dangerRow]}
                 onPress={() => void auth?.signOut?.()}
+                accessibilityRole="button"
+                accessibilityLabel="Sign out"
               >
                 <View style={styles.actionLeft}>
                   <Text style={[styles.actionTitle, styles.dangerText]}>Sign out</Text>
@@ -125,6 +158,8 @@ export function SettingsScreen(): JSX.Element {
             <Pressable
               style={styles.actionRow}
               onPress={() => navigation.navigate('Auth')}
+              accessibilityRole="button"
+              accessibilityLabel="Sign in with email for optional cloud backup"
             >
               <View style={styles.actionLeft}>
                 <View style={styles.actionIconCircle}>
@@ -152,9 +187,38 @@ export function SettingsScreen(): JSX.Element {
       </View>
 
       <View style={styles.card}>
+        <Text style={styles.sectionTitle}>Care</Text>
+        <Text style={styles.sectionSubtitle}>Outside resources</Text>
+        <Pressable
+          style={styles.actionRow}
+          onPress={() => navigation.navigate('FindCare')}
+          accessibilityRole="button"
+          accessibilityLabel="Find care resources"
+        >
+          <View style={styles.actionLeft}>
+            <View style={styles.actionIconCircle}>
+              <Text style={styles.actionIconText}>{'+'}</Text>
+            </View>
+            <View style={styles.actionText}>
+              <Text style={styles.actionTitle}>Find Care</Text>
+              <Text style={styles.actionSub}>NaPro, NFP, and restorative-care links</Text>
+            </View>
+          </View>
+          <Text style={styles.actionChevron}>{'›'}</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.card}>
         <Text style={styles.sectionTitle}>Data Management</Text>
 
-        <Pressable style={styles.actionRow} onPress={handleExportJson} disabled={exporting}>
+        <Pressable
+          style={styles.actionRow}
+          onPress={handleExportJson}
+          disabled={exporting}
+          accessibilityRole="button"
+          accessibilityLabel="Export data as JSON"
+          accessibilityState={{ disabled: exporting }}
+        >
           <View style={styles.actionLeft}>
             <View style={styles.actionIconCircle}>
               <Text style={styles.actionIconText}>{'↓'}</Text>
@@ -167,24 +231,89 @@ export function SettingsScreen(): JSX.Element {
           <Text style={styles.actionChevron}>{'›'}</Text>
         </Pressable>
 
-        <Pressable style={[styles.actionRow, styles.dangerRow]} onPress={() => setShowClearModal(true)}>
+        <Pressable
+          style={[styles.actionRow, styles.dangerRow]}
+          onPress={() => setPendingDataAction('local')}
+          disabled={processingDataAction !== null}
+          accessibilityRole="button"
+          accessibilityLabel={auth?.user ? 'Clear data from this device' : 'Clear all data'}
+        >
           <View style={styles.actionLeft}>
             <View style={[styles.actionIconCircle, styles.dangerIconCircle]}>
               <Text style={styles.dangerIconText}>{'×'}</Text>
             </View>
-            <View>
-              <Text style={[styles.actionTitle, styles.dangerText]}>Clear All Data</Text>
-              <Text style={styles.actionSub}>Remove all observations and cycle history</Text>
+            <View style={styles.actionText}>
+              <Text style={[styles.actionTitle, styles.dangerText]}>
+                {processingDataAction === 'local'
+                  ? 'Clearing...'
+                  : auth?.user ? 'Clear Data From This Device' : 'Clear All Data'}
+              </Text>
+              <Text style={styles.actionSub}>
+                {auth?.user
+                  ? 'Remove local observations; backed-up data is not deleted'
+                  : 'Remove all observations and cycle history'}
+              </Text>
             </View>
           </View>
           <Text style={styles.actionChevron}>{'›'}</Text>
         </Pressable>
+
+        {auth?.user ? (
+          <>
+            <Pressable
+              style={[styles.actionRow, styles.dangerRow]}
+              onPress={() => setPendingDataAction('cloud')}
+              disabled={processingDataAction !== null}
+              accessibilityRole="button"
+              accessibilityLabel="Delete backed-up chart data"
+            >
+              <View style={styles.actionLeft}>
+                <View style={[styles.actionIconCircle, styles.dangerIconCircle]}>
+                  <Text style={styles.dangerIconText}>{'×'}</Text>
+                </View>
+                <View style={styles.actionText}>
+                  <Text style={[styles.actionTitle, styles.dangerText]}>
+                    {processingDataAction === 'cloud' ? 'Deleting Chart Data...' : 'Delete Backed-Up Chart Data'}
+                  </Text>
+                  <Text style={styles.actionSub}>Permanently remove chart data across your signed-in devices</Text>
+                </View>
+              </View>
+              <Text style={styles.actionChevron}>{'›'}</Text>
+            </Pressable>
+
+            <Pressable
+              style={[styles.actionRow, styles.dangerRow]}
+              onPress={() => setPendingDataAction('account')}
+              disabled={processingDataAction !== null}
+              accessibilityRole="button"
+              accessibilityLabel="Permanently delete account"
+            >
+              <View style={styles.actionLeft}>
+                <View style={[styles.actionIconCircle, styles.dangerIconCircle]}>
+                  <Text style={styles.dangerIconText}>{'×'}</Text>
+                </View>
+                <View style={styles.actionText}>
+                  <Text style={[styles.actionTitle, styles.dangerText]}>
+                    {processingDataAction === 'account' ? 'Deleting Account...' : 'Delete Account'}
+                  </Text>
+                  <Text style={styles.actionSub}>Permanently remove your account and associated data</Text>
+                </View>
+              </View>
+              <Text style={styles.actionChevron}>{'›'}</Text>
+            </Pressable>
+          </>
+        ) : null}
       </View>
 
       {showBackupSync ? (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Feedback</Text>
-          <Pressable style={styles.actionRow} onPress={() => setShowFeedbackModal(true)}>
+          <Pressable
+            style={styles.actionRow}
+            onPress={() => setShowFeedbackModal(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Send feedback"
+          >
             <View style={styles.actionLeft}>
               <View style={styles.actionIconCircle}>
                 <Text style={styles.actionIconText}>{'✉'}</Text>
@@ -207,19 +336,32 @@ export function SettingsScreen(): JSX.Element {
         cycles={feedbackCycles}
       />
 
-      <Modal visible={showClearModal} transparent animationType="fade">
+      <Modal
+        visible={confirmation !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPendingDataAction(null)}
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Clear All Data?</Text>
-            <Text style={styles.modalBody}>
-              This will permanently remove all your observations and cycle history. This action cannot be undone.
-            </Text>
+            <Text style={styles.modalTitle}>{confirmation?.title}</Text>
+            <Text style={styles.modalBody}>{confirmation?.body}</Text>
             <View style={styles.modalButtons}>
-              <Pressable style={styles.modalBtnOutline} onPress={() => setShowClearModal(false)}>
+              <Pressable
+                style={styles.modalBtnOutline}
+                onPress={() => setPendingDataAction(null)}
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
+              >
                 <Text style={styles.modalBtnOutlineText}>Cancel</Text>
               </Pressable>
-              <Pressable style={styles.modalBtnDanger} onPress={handleClearAll}>
-                <Text style={styles.modalBtnDangerText}>Confirm</Text>
+              <Pressable
+                style={styles.modalBtnDanger}
+                onPress={handleConfirmedDataAction}
+                accessibilityRole="button"
+                accessibilityLabel={confirmation?.confirmLabel ?? 'Confirm deletion'}
+              >
+                <Text style={styles.modalBtnDangerText}>{confirmation?.confirmLabel}</Text>
               </Pressable>
             </View>
           </View>
@@ -253,6 +395,7 @@ const styles = StyleSheet.create({
     borderTopColor: BORDER_CARD,
   },
   actionLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  actionText: { flex: 1 },
   actionIconCircle: {
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: ACCENT_WARM_TINT,

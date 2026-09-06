@@ -1,5 +1,18 @@
 import { recalculateCycle } from './recalc';
-import { CycleResult, DailyEntry } from './types';
+import { evaluateInterpretationSupport } from './interpretationSupport';
+import {
+  resolveCycleBoundaries,
+  type CycleBoundaryAssessment,
+} from './cycleBoundary';
+import {
+  addDaysIso,
+  calendarDayNumber,
+  calendarDatesInclusive,
+  calendarDaysBetween,
+  calendarSpanLength,
+  cycleDayForEntryIndex,
+} from './calendar';
+import { CycleResult, DailyEntry, PhaseLabel, PrimaryDayClass } from './types';
 
 export interface CycleSlice {
   cycleNumber: number;
@@ -11,6 +24,8 @@ export interface CycleSlice {
   peakDay: number | null;
   lutealPhase: number | null;
   status: 'complete' | 'in_progress' | 'no_peak';
+  /** Evidence and first-release eligibility for this cycle's Cycle Day 1. */
+  cycleBoundary: CycleBoundaryAssessment;
 }
 
 export interface CycleSummary {
@@ -22,52 +37,90 @@ export interface CycleSummary {
   avgLutealPhase: number | null;
 }
 
-/**
- * First slice has no heavy/moderate bleeding (preamble before first period day).
- * Drop the next boundary so those days merge into the cycle that starts with H/M.
- */
-function leadingSliceHasNoHeavyModerate(
-  entries: DailyEntry[],
-  boundaries: number[],
-): boolean {
-  if (boundaries.length < 2) return false;
-  const start = boundaries[0];
-  const endExclusive = boundaries[1];
-  for (let i = start; i < endExclusive; i++) {
-    const b = entries[i]?.bleeding;
-    if (b === 'heavy' || b === 'moderate') return false;
+export interface CalendarAlignedCycleDay {
+  date: string;
+  cycleDay: number;
+  entryIndex: number | null;
+  entry: DailyEntry | null;
+  mucusRank: number | null;
+  phaseLabel: PhaseLabel;
+  primaryDayClass: PrimaryDayClass;
+}
+
+/** True when a completed cycle is eligible for derived history aggregates. */
+export function cycleHasSummaryAvailable(cycle: CycleSlice): boolean {
+  if (cycle.status !== 'complete') return false;
+  const hasFullEngineResult =
+    Array.isArray(cycle.result.mucusRanks) &&
+    Array.isArray(cycle.result.phaseLabels) &&
+    typeof cycle.result.peakConfirmed === 'boolean';
+  // Keeps manually constructed/legacy CycleSlice consumers deterministic while
+  // production slices always take the support-state path below.
+  if (!hasFullEngineResult) return true;
+  return evaluateInterpretationSupport(cycle.entries, cycle.result).status === 'summary_available';
+}
+
+/** Expands a cycle to one slot per calendar date so gaps remain visible. */
+export function buildCalendarAlignedCycleDays(
+  cycle: CycleSlice,
+): CalendarAlignedCycleDay[] {
+  const dates = calendarDatesInclusive(cycle.startDate, cycle.endDate);
+  if (dates.length === 0) {
+    return cycle.entries.map((entry, entryIndex) => ({
+      date: entry.date ?? '',
+      cycleDay: entryIndex + 1,
+      entryIndex,
+      entry,
+      mucusRank: cycle.result.mucusRanks[entryIndex] ?? null,
+      phaseLabel: cycle.result.phaseLabels[entryIndex] ?? 'missing',
+      primaryDayClass: cycle.result.primaryDayClassByDay[entryIndex] ?? 'missing',
+    }));
   }
-  return true;
+
+  const indexByDate = new Map<string, number>();
+  cycle.entries.forEach((entry, index) => {
+    if (entry.date) indexByDate.set(entry.date, index);
+  });
+
+  return dates.map((date, cycleDayIndex) => {
+    const entryIndex = indexByDate.get(date) ?? null;
+    if (entryIndex === null) {
+      return {
+        date,
+        cycleDay: cycleDayIndex + 1,
+        entryIndex: null,
+        entry: null,
+        mucusRank: null,
+        phaseLabel: 'missing' as const,
+        primaryDayClass: 'missing' as const,
+      };
+    }
+    return {
+      date,
+      cycleDay: cycleDayIndex + 1,
+      entryIndex,
+      entry: cycle.entries[entryIndex],
+      mucusRank: cycle.result.mucusRanks[entryIndex] ?? null,
+      phaseLabel: cycle.result.phaseLabels[entryIndex] ?? 'missing',
+      primaryDayClass: cycle.result.primaryDayClassByDay[entryIndex] ?? 'missing',
+    };
+  });
 }
 
 /**
  * Splits a sorted array of DailyEntry into individual cycles.
- * A new cycle starts on the first day of heavy/moderate bleeding that
- * is NOT preceded by another heavy/moderate day.
+ * A new legacy cycle starts on the first H/M day not preceded by H/M.
+ * An explicit confirmed true-flow day can establish an earlier light-flow
+ * boundary and suppress a later H/M reset in that same flow run.
  *
- * Leading days with no heavy/moderate bleeding before the first such day are merged
- * into that cycle (avoids a bogus 1-day "cycle" from spotting/light before flow).
+ * Unmarked leading days preserve their legacy grouping; boundary eligibility
+ * separately records whether an exact Cycle Day 1 is supported.
  */
 export function splitIntoCycles(entries: DailyEntry[]): CycleSlice[] {
   if (entries.length === 0) return [];
 
-  const boundaries: number[] = [0];
-
-  for (let i = 1; i < entries.length; i++) {
-    const bleeding = entries[i].bleeding;
-    if (bleeding === 'heavy' || bleeding === 'moderate') {
-      const prevBleeding = entries[i - 1].bleeding;
-      const prevIsHeavyOrModerate =
-        prevBleeding === 'heavy' || prevBleeding === 'moderate';
-      if (!prevIsHeavyOrModerate) {
-        boundaries.push(i);
-      }
-    }
-  }
-
-  while (leadingSliceHasNoHeavyModerate(entries, boundaries)) {
-    boundaries.splice(1, 1);
-  }
+  const resolution = resolveCycleBoundaries(entries);
+  const boundaries = resolution.groups.map((group) => group.groupStartIndex);
 
   const slices: CycleSlice[] = [];
 
@@ -78,13 +131,40 @@ export function splitIntoCycles(entries: DailyEntry[]): CycleSlice[] {
 
     if (cycleEntries.length === 0) continue;
 
+    const resolvedBoundary = resolution.groups[b].boundary;
+    const localBoundaryIndex = Math.max(0, resolvedBoundary.index - start);
     const result = recalculateCycle(cycleEntries);
-    const peakDay = result.peakIndex !== null ? result.peakIndex + 1 : null;
     const isLastCycle = b === boundaries.length - 1;
+    const startDate = resolvedBoundary.date ?? cycleEntries[0].date ?? '';
+    const peakDate = result.peakIndex !== null
+      ? cycleEntries[result.peakIndex]?.date ?? ''
+      : '';
+    const anchoredPeakDay = peakDate
+      ? calendarDayNumber(startDate, peakDate)
+      : null;
+    const peakDay = result.peakIndex !== null
+      ? anchoredPeakDay ?? cycleDayForEntryIndex(cycleEntries, result.peakIndex)
+      : null;
+    const lastLoggedDate = cycleEntries[cycleEntries.length - 1].date ?? '';
+    const nextGroup = !isLastCycle ? resolution.groups[b + 1] : null;
+    const nextStartDate = nextGroup
+      ? nextGroup.boundary.date ?? entries[nextGroup.groupStartIndex]?.date ?? ''
+      : '';
+    const canUseNextBoundary =
+      nextStartDate.length > 0 &&
+      calendarDaysBetween(startDate, nextStartDate) !== null;
+    const endDate = canUseNextBoundary
+      ? addDaysIso(nextStartDate, -1)
+      : lastLoggedDate;
+    const calendarLength = calendarSpanLength(startDate, endDate);
+    const length = calendarLength !== null ? calendarLength : cycleEntries.length;
 
     let lutealPhase: number | null = null;
-    if (peakDay !== null && !isLastCycle) {
-      lutealPhase = cycleEntries.length - peakDay;
+    if (result.peakIndex !== null && peakDay !== null && !isLastCycle) {
+      const daysToNextCycle = calendarDaysBetween(peakDate, nextStartDate);
+      lutealPhase = daysToNextCycle !== null
+        ? Math.max(0, daysToNextCycle - 1)
+        : Math.max(0, length - peakDay);
     }
 
     let status: CycleSlice['status'];
@@ -98,14 +178,18 @@ export function splitIntoCycles(entries: DailyEntry[]): CycleSlice[] {
 
     slices.push({
       cycleNumber: b + 1,
-      startDate: cycleEntries[0].date ?? '',
-      endDate: cycleEntries[cycleEntries.length - 1].date ?? '',
+      startDate,
+      endDate,
       entries: cycleEntries,
       result,
-      length: cycleEntries.length,
+      length,
       peakDay,
       lutealPhase,
       status,
+      cycleBoundary: {
+        ...resolvedBoundary,
+        index: localBoundaryIndex,
+      },
     });
   }
 
@@ -127,7 +211,7 @@ export function computeCycleSummary(cycles: CycleSlice[]): CycleSummary {
     };
   }
 
-  const completedCycles = cycles.filter((c) => c.status === 'complete');
+  const completedCycles = cycles.filter(cycleHasSummaryAvailable);
   const lengths = completedCycles.map((c) => c.length);
   const peakDays = completedCycles.filter((c) => c.peakDay !== null).map((c) => c.peakDay!);
   const lutealPhases = completedCycles.filter((c) => c.lutealPhase !== null).map((c) => c.lutealPhase!);
@@ -147,7 +231,7 @@ export function computeCycleSummary(cycles: CycleSlice[]): CycleSummary {
  * Requires at least 2 completed cycles for meaningful output.
  */
 export function generateInsights(cycles: CycleSlice[]): string[] {
-  const completed = cycles.filter((c) => c.status === 'complete');
+  const completed = cycles.filter(cycleHasSummaryAvailable);
   if (completed.length < 2) return [];
 
   const insights: string[] = [];
@@ -162,8 +246,6 @@ export function generateInsights(cycles: CycleSlice[]): string[] {
         : `Peak day has ranged from cycle day ${minP} to ${maxP}.`
     );
 
-    const earliestFertile = Math.max(1, minP - 5);
-    insights.push(`Fertile window typically opens around cycle day ${earliestFertile}.`);
   }
 
   const lutealPhases = completed.filter((c) => c.lutealPhase !== null).map((c) => c.lutealPhase!);

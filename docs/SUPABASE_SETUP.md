@@ -62,20 +62,29 @@ Never commit the real values or use the service role key in the app.
    - **profiles** (id, created_at, updated_at) linked to `auth.users`
    - **daily_entries** (id, user_id, entry_date, entry_payload jsonb, client_updated_at, server_updated_at, deleted_at) with unique (user_id, entry_date)
    - **user_feedback** (in-app feedback rows: optional user_id, structured fields, optional follow-up email, optional `cycle_context` jsonb). Inserts allowed for signed-in users (`user_id = auth.uid()`) and signed-out users (`user_id` null). No client read/update/delete; review in the Dashboard.
-   - RLS policies so users can only access their own rows on `profiles` and `daily_entries`
+   - `profiles.chart_data_deleted_at` plus `delete_my_chart_data()` for cross-device permanent chart deletion
+   - RLS policies so users can only access or delete their own rows on `profiles` and `daily_entries`
    - A trigger so `server_updated_at` is set by the database on INSERT/UPDATE on `daily_entries` (client never writes it)
 
 ---
 
 ## 6. RLS overview
 
-- **profiles**: select/insert/update where `auth.uid() = id`. No DELETE policy (cascade from auth.users).
-- **daily_entries**: select/insert/update where `auth.uid() = user_id`. **No DELETE policy**; the client never issues DELETE. Deletion is done by setting `deleted_at` (soft delete).
+- **profiles**: select/insert/update where `auth.uid() = id`. No DELETE policy (cascade from auth.users). `chart_data_deleted_at` prevents stale devices from re-uploading a chart after a permanent cloud reset.
+- **daily_entries**: select/insert/update/delete where `auth.uid() = user_id`. Normal single-entry deletion remains a soft delete; hard delete is reserved for the authenticated `delete_my_chart_data()` reset.
 - **user_feedback**: INSERT only. Authenticated clients: insert with `user_id = auth.uid()`. Anonymous (anon key): insert with `user_id` null. Optional `contact_email` is user-entered only when they are open to a follow-up. No SELECT/UPDATE/DELETE for normal client roles; use the Table Editor or SQL (service role) to review feedback.
+
+## 7. Deploy account deletion
+
+For an existing project, apply `supabase/migrations/20260711220000_account_data_deletion.sql` first. Then deploy `supabase/functions/delete-account` as a Supabase Edge Function named `delete-account` with JWT verification enabled. Supabase provides `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` to the function environment; never copy the service-role key into the mobile `.env` file.
+
+See [ACCOUNT_AND_DATA_DELETION.md](ACCOUNT_AND_DATA_DELETION.md) for the deletion contract, provider extension point, deployment order, and safe verification plan.
+
+Production record: the migration and `delete-account` Edge Function version 1 were deployed and verified on July 11, 2026 in project `bbfwwmudofxtdylkqric` with an isolated throwaway account.
 
 ---
 
-## 7. How to test magic link login
+## 8. How to test magic link login
 
 1. Ensure the redirect URLs for the build(s) you test are configured (step 3) and `.env` is set (step 4).
 2. Run the app (development build or TestFlight; Expo Go cannot open the custom scheme).

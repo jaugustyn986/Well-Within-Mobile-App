@@ -1,4 +1,5 @@
-import { CycleSlice } from './multiCycle';
+import { cycleHasSummaryAvailable, CycleSlice } from './multiCycle';
+import { cycleDayForEntryIndex } from './calendar';
 
 export type LengthCompare = 'shorter' | 'similar' | 'longer' | 'not_comparable';
 export type PeakCompare = 'earlier' | 'similar' | 'later' | 'not_comparable';
@@ -21,7 +22,7 @@ export function getPriorCompleted(
   maxPrior = 6,
 ): CycleSlice[] {
   return allCycles
-    .filter((c) => c.status === 'complete' && c.cycleNumber < current.cycleNumber)
+    .filter((c) => cycleHasSummaryAvailable(c) && c.cycleNumber < current.cycleNumber)
     .sort((a, b) => a.cycleNumber - b.cycleNumber)
     .slice(-maxPrior);
 }
@@ -54,7 +55,7 @@ export function buildCycleComparisonStructured(
   current: CycleSlice,
   allCycles: CycleSlice[],
 ): CycleComparisonStructured {
-  const completedTotal = allCycles.filter((c) => c.status === 'complete').length;
+  const completedTotal = allCycles.filter(cycleHasSummaryAvailable).length;
   const priors = getPriorCompleted(current, allCycles);
 
   const priorLengths = priors.map((c) => c.length);
@@ -83,7 +84,7 @@ export function buildCycleComparisonStructured(
 
   const fertileStartDays = priors
     .filter((c) => c.result.fertileStartIndex !== null)
-    .map((c) => c.result.fertileStartIndex! + 1);
+    .map((c) => cycleDayForEntryIndex(c.entries, c.result.fertileStartIndex!));
   const avgFertileStartDay =
     fertileStartDays.length > 0
       ? Math.round(mean(fertileStartDays))

@@ -25,6 +25,24 @@ describe('detectPeak', () => {
     });
   });
 
+  it('uses the latest Peak-type row when separated sequences both qualify', () => {
+    const ranks = [0, 3, 0, 0, 0, 3, 2, 1, 0];
+    expect(detectPeak(entriesForLength(ranks.length), ranks, 0)).toEqual({
+      peakCandidateIndex: 5,
+      peakIndex: 5,
+      fertileEndIndex: 8,
+    });
+  });
+
+  it('does not fall back to an earlier Peak while the latest candidate is forming', () => {
+    const ranks = [0, 3, 0, 0, 0, 3, 2];
+    expect(detectPeak(entriesForLength(ranks.length), ranks, 0)).toEqual({
+      peakCandidateIndex: 5,
+      peakIndex: null,
+      fertileEndIndex: null,
+    });
+  });
+
   it('does not confirm when P+1..P+3 missing', () => {
     const ranks = [0, 1, 3, null, 1, 0, 0];
     expect(detectPeak(entriesForLength(ranks.length), ranks, 0)).toEqual({
@@ -62,6 +80,22 @@ describe('detectPeak', () => {
       peakCandidateIndex: null,
       peakIndex: null,
       fertileEndIndex: null,
+    });
+  });
+
+  it('allows spotting or brown observations to supply Peak and P+ days', () => {
+    const entries: DailyEntry[] = [
+      { date: '2000-02-01', bleeding: 'heavy', mucusRankOverride: 0 },
+      { date: '2000-02-02', bleeding: 'spotting', mucusRankOverride: 3 },
+      { date: '2000-02-03', bleeding: 'brown', mucusRankOverride: 2 },
+      { date: '2000-02-04', bleeding: 'spotting', mucusRankOverride: 1 },
+      { date: '2000-02-05', bleeding: 'brown', mucusRankOverride: 0 },
+    ];
+
+    expect(detectPeak(entries, [0, 3, 2, 1, 0], 0)).toEqual({
+      peakCandidateIndex: 1,
+      peakIndex: 1,
+      fertileEndIndex: 4,
     });
   });
 });

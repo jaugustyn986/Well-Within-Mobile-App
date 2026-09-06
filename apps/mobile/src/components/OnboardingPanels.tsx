@@ -10,6 +10,8 @@
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE } from 'core-rules-engine';
+import { LineIcon } from './LineIcon';
 import {
   BG_CARD, BG_PAGE, BG_CARD_GRADIENT_START, BG_POST_PEAK, BG_PEAK_TYPE,
   BG_BLEEDING, BG_DRY, BG_NO_ENTRY, BG_MISSING,
@@ -23,7 +25,7 @@ import {
    Shared wrapper
 ───────────────────────────────────────────────── */
 
-function PhoneCard({ children }: { children: React.ReactNode }): JSX.Element {
+function PhoneCard({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
     <View style={shared.card}>
       {children}
@@ -103,7 +105,7 @@ function buildSlide7Cells(): CellData[] {
   });
 }
 
-function MiniCalendar({ cells, rows = 3 }: { cells: CellData[]; rows?: number }): JSX.Element {
+function MiniCalendar({ cells, rows = 3 }: { cells: CellData[]; rows?: number }): React.JSX.Element {
   const allRows = padAndChunk(cells);
   const visible = allRows.slice(0, rows);
 
@@ -174,16 +176,15 @@ const cal = StyleSheet.create({
    bleeding days 1-3, dry days 5-6, today=7 (no entry).
 ───────────────────────────────────────────────── */
 
-export function OnboardingCalendarUncertaintyPanel(): JSX.Element {
+export function OnboardingCalendarUncertaintyPanel(): React.JSX.Element {
   return (
     <View style={{ gap: 10 }}>
       <PhoneCard>
         <View style={[banner.container, { backgroundColor: BG_CARD_GRADIENT_START }]}>
-          <Text style={banner.headline}>Tracking</Text>
-          <Text style={banner.confidence}>Moderate confidence — pattern still forming</Text>
-          <Text style={banner.cycleDay}>Cycle Day 7</Text>
-          <Text style={banner.extra}>1 day still open in this cycle</Text>
-          <Text style={banner.support}>As you add days, your cycle pattern becomes clearer.</Text>
+          <Text style={banner.headline}>Your pattern is still taking shape</Text>
+          <Text style={banner.confidence}>No mucus signs are recorded for this day.</Text>
+          <Text style={banner.cycleDay}>Cycle Day 7 · 1 day still open in this cycle</Text>
+          <Text style={banner.support}>Keep charting daily. This card will update as your observations change.</Text>
         </View>
       </PhoneCard>
       <PhoneCard>
@@ -195,21 +196,23 @@ export function OnboardingCalendarUncertaintyPanel(): JSX.Element {
 
 /* ─────────────────────────────────────────────────
    SLIDE 4 — "See where you are in your cycle"
-   Matches reference: Post-peak phase banner (green bg)
+   Matches reference: post-Peak pattern banner (green bg)
    + calendar with mucus days 1-2 (dot), post-peak 5-7,
    today=7.
 ───────────────────────────────────────────────── */
 
-export function OnboardingStatusBannerPanel(): JSX.Element {
+export function OnboardingStatusBannerPanel(): React.JSX.Element {
   return (
     <View style={{ gap: 10 }}>
       <PhoneCard>
         <View style={[banner.container, { backgroundColor: BANNER_TONE_POSITIVE_BG }]}>
-          <Text style={banner.headline}>Post-peak phase</Text>
-          <Text style={banner.confidence}>High confidence — Peak confirmed</Text>
-          <Text style={banner.cycleDay}>Cycle Day 15</Text>
-          <Text style={banner.extra}>No gaps in your chart this cycle</Text>
-          <Text style={banner.support}>Three days past Peak confirm the post-Peak phase.</Text>
+          <Text style={banner.headline}>Your chart shows a post-Peak pattern</Text>
+          <Text style={banner.confidence}>
+            Cycle Day 12 was the last Peak-type sign before three days without another one, so your chart marks it as Peak Day.
+          </Text>
+          <Text style={banner.limitation}>{POSSIBLE_FERTILE_PATTERN_IN_APP_NOTE}</Text>
+          <Text style={banner.cycleDay}>Cycle Day 15 · All days charted so far</Text>
+          <Text style={banner.support}>Keep charting daily. This summary updates when your observations change.</Text>
         </View>
       </PhoneCard>
       <PhoneCard>
@@ -223,8 +226,8 @@ const banner = StyleSheet.create({
   container: { borderRadius: 10, padding: 14 },
   headline: { fontSize: 19, fontWeight: '600', color: TEXT_PRIMARY, letterSpacing: -0.2 },
   confidence: { fontSize: 13, fontWeight: '500', color: TEXT_SECONDARY, marginTop: 8, lineHeight: 20 },
+  limitation: { fontSize: 12, color: TEXT_SUBTLE, marginTop: 5, lineHeight: 17 },
   cycleDay: { fontSize: 12, color: TEXT_SUBTLE, marginTop: 4, lineHeight: 17 },
-  extra: { fontSize: 12, color: TEXT_SUBTLE, marginTop: 2, lineHeight: 17 },
   support: { fontSize: 13, color: TEXT_SECONDARY, marginTop: 8, lineHeight: 20 },
 });
 
@@ -233,154 +236,590 @@ const banner = StyleSheet.create({
    Shows the top section of EntryForm (bleeding, hint).
 ───────────────────────────────────────────────── */
 
-const BLEEDING_LABELS = ['None', 'Spotting', 'Light', 'Moderate', 'Heavy', 'Brown'];
-const SENSATION_LABELS = ['Dry', 'Damp', 'Wet', 'Stretchy'];
-
-export function OnboardingEntryPanel(): JSX.Element {
+export function OnboardingEntryPanel(): React.JSX.Element {
   return (
     <PhoneCard>
-      <Text style={entry.title}>Daily Observation</Text>
-      <View style={entry.dateBox}>
-        <Text style={entry.dateText}>April 7, 2026</Text>
-      </View>
-
-      <View style={entry.toggleRow}>
-        <Text style={entry.toggleLabel}>Did you observe today?</Text>
-        {/* Static toggle in "on" position */}
-        <View style={entry.switchTrack}>
-          <View style={entry.switchThumb} />
+      <View style={entry.headingRow}>
+        <Text style={entry.title}>Daily Observation</Text>
+        <View style={entry.todayBadge}>
+          <Text style={entry.todayBadgeText}>Today</Text>
         </View>
       </View>
-
-      <View style={entry.section}>
-        <Text style={entry.fieldLabel}>Bleeding</Text>
-        <View style={entry.pillRow}>
-          {BLEEDING_LABELS.map((label, i) => (
-            <View key={label} style={[entry.pill, i === 0 && entry.pillSelected]}>
-              <Text style={[entry.pillText, i === 0 && entry.pillTextSel]}>{label}</Text>
-            </View>
-          ))}
+      <View style={entry.concepts}>
+        <View style={entry.conceptRow}>
+          <LineIcon name="droplet" size={20} />
+          <View style={entry.conceptCopy}>
+            <Text style={entry.conceptTitle}>Sensation</Text>
+            <Text style={entry.conceptBody}>
+              The strongest quality you observed—from dry, damp, or wet through sticky, tacky, or stretchy.
+            </Text>
+          </View>
+        </View>
+        <View style={[entry.conceptRow, entry.conceptDivider]}>
+          <LineIcon name="eye" size={20} />
+          <View style={entry.conceptCopy}>
+            <Text style={entry.conceptTitle}>Appearance</Text>
+            <Text style={entry.conceptBody}>
+              What you see on the tissue. Color or clarity and consistency can both apply.
+            </Text>
+          </View>
         </View>
       </View>
-
-      <View style={entry.hintCard}>
-        <Text style={entry.hintText}>
-          Record your most fertile observation of the day — not just the most recent.
+      <View style={entry.intentNote}>
+        <Text style={entry.intentText}>
+          You do not need to memorize every term now. A guide stays beside these choices when you log.
         </Text>
-      </View>
-
-      <View style={entry.section}>
-        <Text style={entry.fieldLabel}>Sensation</Text>
-        <View style={entry.pillRow}>
-          {SENSATION_LABELS.map(s => (
-            <View key={s} style={entry.pill}>
-              <Text style={entry.pillText}>{s}</Text>
-            </View>
-          ))}
-        </View>
       </View>
     </PhoneCard>
   );
 }
 
 const entry = StyleSheet.create({
-  title: { fontSize: 19, fontWeight: '600', color: TEXT_PRIMARY },
-  dateBox: {
-    borderWidth: 1, borderColor: BORDER_CARD, borderRadius: 8,
-    padding: 10, marginTop: 8,
+  headingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
   },
-  dateText: { fontSize: 14, color: TEXT_PRIMARY },
-  toggleRow: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: BG_MISSING, padding: 12, borderRadius: 10, marginTop: 10,
+  title: { fontSize: 18, fontWeight: '600', color: TEXT_PRIMARY },
+  todayBadge: {
+    borderRadius: 999,
+    backgroundColor: BG_MISSING,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
   },
-  toggleLabel: { fontSize: 13, fontWeight: '500', color: TEXT_SECONDARY },
-  switchTrack: {
-    width: 42, height: 24, borderRadius: 12, backgroundColor: '#34C759',
-    justifyContent: 'center', alignItems: 'flex-end', paddingHorizontal: 2,
+  todayBadgeText: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    fontWeight: '600',
   },
-  switchThumb: {
-    width: 20, height: 20, borderRadius: 10, backgroundColor: '#FFFFFF',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15, shadowRadius: 2, elevation: 2,
+  concepts: { marginTop: 14 },
+  conceptRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    paddingVertical: 14,
   },
-  section: { marginTop: 12 },
-  fieldLabel: { fontSize: 12, fontWeight: '600', color: TEXT_SECONDARY, marginBottom: 6 },
-  pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  pill: {
-    paddingHorizontal: 11, paddingVertical: 6,
-    borderRadius: 20, borderWidth: 1, borderColor: BORDER_CARD,
+  conceptDivider: { borderTopWidth: 1, borderTopColor: BORDER_CARD },
+  conceptCopy: { flex: 1 },
+  conceptTitle: { color: TEXT_PRIMARY, fontSize: 16, fontWeight: '600' },
+  conceptBody: { color: TEXT_SECONDARY, fontSize: 13, lineHeight: 19, marginTop: 4 },
+  intentNote: {
+    marginTop: 10,
+    paddingHorizontal: 13,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: BANNER_TONE_POSITIVE_BG,
   },
-  pillSelected: { backgroundColor: ACCENT_WARM_TINT, borderColor: ACCENT_WARM },
-  pillText: { fontSize: 12, color: TEXT_SECONDARY },
-  pillTextSel: { color: BRAND_NAME, fontWeight: '600' },
-  hintCard: {
-    backgroundColor: '#f0fdf4', borderLeftWidth: 3, borderLeftColor: '#16a34a',
-    padding: 9, borderRadius: 8, marginTop: 10,
+  intentText: {
+    color: TEXT_SECONDARY,
+    fontSize: 12,
+    lineHeight: 17,
+    flex: 1,
   },
-  hintText: { fontSize: 11, color: '#166534', fontStyle: 'italic', lineHeight: 17 },
 });
 
 /* ─────────────────────────────────────────────────
-   SLIDE 6 — "Understand your pattern over time"
-   Mock data sourced from reference screenshot provided by user.
+   ONBOARDING — explain intercourse context before use
 ───────────────────────────────────────────────── */
 
-const STAT_CARDS = [
-  { label: 'Complete cycles', value: '3' },
-  { label: 'Avg Cycle (days)', value: '27' },
-  { label: 'Avg Peak Day',     value: 'Day 17' },
-  { label: 'Avg Luteal Phase', value: '11 days' },
-];
-
-const PATTERN_INSIGHTS = [
-  'Peak day has ranged from cycle day 13 to 22.',
-  'Fertile window typically opens around cycle day 8.',
-  'Average luteal phase is 11 days.',
-  'Your cycles show significant variation in length.',
-];
-
-export function OnboardingHistoryPanel(): JSX.Element {
+export function OnboardingIntercoursePanel(): React.JSX.Element {
   return (
-    <View style={{ gap: 10 }}>
+    <View style={intercourse.wrap}>
       <PhoneCard>
-        <Text style={hist.heading}>Cycle Summary</Text>
-        <View style={hist.grid}>
-          {STAT_CARDS.map(c => (
-            <View key={c.label} style={hist.card}>
-              <Text style={hist.value}>{c.value}</Text>
-              <Text style={hist.label}>{c.label}</Text>
+        <View style={intercourse.toggleRow}>
+          <View style={intercourse.toggleCopy}>
+            <Text style={intercourse.title}>Intercourse Today?</Text>
+            <Text style={intercourse.subtitle}>Recorded with the whole day</Text>
+          </View>
+          <View style={intercourse.toggle} accessibilityLabel="Intercourse Today is on">
+            <View style={intercourse.toggleThumb} />
+          </View>
+        </View>
+        <View style={intercourse.note}>
+          <Text style={intercourse.noteText}>
+            Seminal fluid can resemble mucus. For the most accurate observation, check before intercourse or note any difference in sensation.
+          </Text>
+        </View>
+      </PhoneCard>
+      <View style={intercourse.reassurance}>
+        <Text style={intercourse.reassuranceText}>
+          You can change this later if you need to edit the day.
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const intercourse = StyleSheet.create({
+  wrap: { gap: 12 },
+  toggleRow: {
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  toggleCopy: { flex: 1 },
+  title: { color: TEXT_PRIMARY, fontSize: 16, fontWeight: '600' },
+  subtitle: { color: TEXT_MUTED, fontSize: 12, marginTop: 4 },
+  toggle: {
+    width: 50,
+    height: 30,
+    borderRadius: 15,
+    padding: 3,
+    alignItems: 'flex-end',
+    backgroundColor: ACCENT_WARM,
+  },
+  toggleThumb: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: BG_CARD,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.16,
+    shadowRadius: 3,
+  },
+  note: {
+    marginTop: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    borderRadius: 12,
+    backgroundColor: BG_POST_PEAK,
+  },
+  noteText: { color: TEXT_SECONDARY, fontSize: 13, lineHeight: 19 },
+  reassurance: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: ACCENT_WARM_TINT,
+  },
+  reassuranceText: { color: TEXT_SECONDARY, fontSize: 12, lineHeight: 18 },
+});
+
+/* ─────────────────────────────────────────────────
+   ACTIVATION — show how one observation gains context
+───────────────────────────────────────────────── */
+
+export function OnboardingChartContextPanel(): React.JSX.Element {
+  return (
+    <View style={chartContext.wrap}>
+      <PhoneCard>
+        <View style={chartContext.exampleHeader}>
+          <View>
+            <Text style={chartContext.eyebrow}>Example observation</Text>
+            <Text style={chartContext.entryDate}>One saved entry</Text>
+          </View>
+          <View style={chartContext.observationBadge}>
+            <Text style={chartContext.observationBadgeText}>Wet · Cloudy</Text>
+          </View>
+        </View>
+      </PhoneCard>
+
+      <View style={chartContext.connector}>
+        <View style={chartContext.connectorLine} />
+        <Text style={chartContext.connectorText}>becomes part of your chart</Text>
+        <Text style={chartContext.connectorArrow}>⌄</Text>
+      </View>
+
+      <PhoneCard>
+        <View style={chartContext.statusCard}>
+          <Text style={chartContext.statusTitle}>Your pattern is still taking shape</Text>
+          <Text style={chartContext.statusBody}>
+            Keep charting daily. This summary updates as your observations change.
+          </Text>
+        </View>
+        <View style={chartContext.weekRow}>
+          {[
+            { day: 'S', date: '1', tone: BG_BLEEDING },
+            { day: 'M', date: '2', tone: BG_BLEEDING },
+            { day: 'T', date: '3', tone: BG_DRY },
+            { day: 'W', date: '4', tone: BG_PEAK_TYPE },
+            { day: 'T', date: '5', tone: BG_POST_PEAK },
+            { day: 'F', date: '6', tone: BG_POST_PEAK },
+            { day: 'S', date: '7', tone: BG_NO_ENTRY },
+          ].map((item, index) => (
+            <View key={`${item.day}-${item.date}`} style={chartContext.weekDay}>
+              <Text style={chartContext.weekDayLabel}>{item.day}</Text>
+              <View
+                style={[
+                  chartContext.dateCell,
+                  { backgroundColor: item.tone },
+                  index === 6 && chartContext.todayCell,
+                ]}
+              >
+                <Text style={chartContext.dateText}>{item.date}</Text>
+              </View>
             </View>
           ))}
         </View>
       </PhoneCard>
 
-      <PhoneCard>
-        <Text style={hist.heading}>Your Patterns</Text>
-        {PATTERN_INSIGHTS.map((text, i) => (
-          <View key={i} style={hist.bulletRow}>
-            <Text style={hist.bullet}>{'\u2022'}</Text>
-            <Text style={hist.insight}>{text}</Text>
-          </View>
-        ))}
-      </PhoneCard>
+      <View style={chartContext.benefitNote}>
+        <Text style={chartContext.benefitText}>
+          Over time, review past cycles and export your chart when you need it.
+        </Text>
+      </View>
     </View>
+  );
+}
+
+const chartContext = StyleSheet.create({
+  wrap: { gap: 10 },
+  exampleHeader: {
+    minHeight: 54,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  eyebrow: {
+    color: TEXT_PRIMARY,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  entryDate: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    marginTop: 5,
+  },
+  observationBadge: {
+    borderRadius: 999,
+    backgroundColor: BG_PEAK_TYPE,
+    paddingVertical: 7,
+    paddingHorizontal: 11,
+  },
+  observationBadgeText: {
+    color: TEXT_PRIMARY,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  connector: {
+    minHeight: 53,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  connectorLine: {
+    height: 10,
+    width: 1,
+    backgroundColor: BORDER_CARD,
+  },
+  connectorText: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    marginTop: 2,
+  },
+  connectorArrow: {
+    color: ACCENT_WARM,
+    fontSize: 20,
+    lineHeight: 20,
+  },
+  statusCard: {
+    backgroundColor: BANNER_TONE_POSITIVE_BG,
+    borderRadius: 12,
+    paddingHorizontal: 13,
+    paddingVertical: 12,
+  },
+  statusTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  statusBody: {
+    color: TEXT_SECONDARY,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 5,
+  },
+  weekRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 14,
+  },
+  weekDay: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  weekDayLabel: {
+    color: TEXT_MUTED,
+    fontSize: 10,
+    fontWeight: '600',
+    marginBottom: 5,
+  },
+  dateCell: {
+    width: 30,
+    height: 30,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  todayCell: {
+    borderWidth: 2,
+    borderColor: BORDER_TODAY,
+  },
+  dateText: {
+    color: TEXT_PRIMARY,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  benefitNote: {
+    backgroundColor: ACCENT_WARM_TINT,
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+  },
+  benefitText: {
+    color: TEXT_SECONDARY,
+    fontSize: 12,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
+});
+
+/* ─────────────────────────────────────────────────
+   ACTIVATION — reinforce local-first privacy
+───────────────────────────────────────────────── */
+
+const PRIVACY_ROWS = [
+  {
+    icon: 'device',
+    title: 'Stored on this device',
+    body: 'Your chart is local by default.',
+  },
+  {
+    icon: 'lock',
+    title: 'Optional cloud backup',
+    body: 'Turn it on later if you choose.',
+  },
+  {
+    icon: 'shield',
+    title: 'Export or delete',
+    body: 'Use your chart and data controls when you need them.',
+  },
+] as const;
+
+export function OnboardingPrivacyPanel(): React.JSX.Element {
+  return (
+    <View style={privacy.wrap}>
+      <View style={privacy.heroIcon}>
+        <LineIcon name="lock" size={48} />
+      </View>
+      {PRIVACY_ROWS.map((row) => (
+        <PhoneCard key={row.title}>
+          <View style={privacy.row}>
+            <LineIcon name={row.icon} size={22} />
+            <View style={privacy.copy}>
+              <Text style={privacy.title}>{row.title}</Text>
+              <Text style={privacy.body}>{row.body}</Text>
+            </View>
+          </View>
+        </PhoneCard>
+      ))}
+    </View>
+  );
+}
+
+const privacy = StyleSheet.create({
+  wrap: { gap: 10 },
+  heroIcon: {
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  row: {
+    minHeight: 53,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 13,
+  },
+  copy: {
+    flex: 1,
+  },
+  title: {
+    color: TEXT_PRIMARY,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  body: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 4,
+  },
+});
+
+/* ─────────────────────────────────────────────────
+   ACTIVATION — preview the direct first action
+───────────────────────────────────────────────── */
+
+const SHORT_WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const SHORT_MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
+function currentWeek(date: Date): Date[] {
+  const start = new Date(date.getFullYear(), date.getMonth(), date.getDate() - date.getDay());
+  return Array.from(
+    { length: 7 },
+    (_, index) => new Date(start.getFullYear(), start.getMonth(), start.getDate() + index),
+  );
+}
+
+export function OnboardingFirstActionPanel(): React.JSX.Element {
+  const today = new Date();
+  const week = currentWeek(today);
+
+  return (
+    <View style={firstAction.wrap}>
+      <PhoneCard>
+        <View style={firstAction.weekRow}>
+          {week.map((date, index) => {
+            const isToday = date.toDateString() === today.toDateString();
+            return (
+              <View key={date.toISOString()} style={firstAction.weekDay}>
+                <Text style={firstAction.weekLabel}>{SHORT_WEEKDAYS[index]}</Text>
+                <View style={[firstAction.dayCircle, isToday && firstAction.dayCircleToday]}>
+                  <Text style={[firstAction.dayNumber, isToday && firstAction.dayNumberToday]}>
+                    {date.getDate()}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      </PhoneCard>
+
+      <PhoneCard>
+        <View style={firstAction.entryRow}>
+          <View>
+            <Text style={firstAction.entryTitle}>Today’s Observation</Text>
+            <Text style={firstAction.entryDate}>
+              {SHORT_MONTHS[today.getMonth()]} {today.getDate()}
+            </Text>
+          </View>
+          <LineIcon name="observe" size={25} />
+        </View>
+      </PhoneCard>
+
+      <View style={firstAction.intentNote}>
+        <View style={firstAction.checkCircle}>
+          <Text style={firstAction.checkText}>✓</Text>
+        </View>
+        <Text style={firstAction.intentText}>
+          Nothing is saved until you choose an observation.
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const firstAction = StyleSheet.create({
+  wrap: { gap: 11 },
+  weekRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  weekDay: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  weekLabel: {
+    color: TEXT_MUTED,
+    fontSize: 10,
+    fontWeight: '600',
+    marginBottom: 7,
+  },
+  dayCircle: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: BG_NO_ENTRY,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dayCircleToday: {
+    backgroundColor: ACCENT_WARM,
+  },
+  dayNumber: {
+    color: TEXT_PRIMARY,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  dayNumberToday: {
+    color: '#FFFFFF',
+  },
+  entryRow: {
+    minHeight: 62,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  entryTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  entryDate: {
+    color: TEXT_MUTED,
+    fontSize: 13,
+    marginTop: 5,
+  },
+  intentNote: {
+    backgroundColor: BANNER_TONE_POSITIVE_BG,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  checkCircle: {
+    width: 21,
+    height: 21,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    borderColor: FERTILE_ACCENT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkText: {
+    color: FERTILE_ACCENT,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 15,
+  },
+  intentText: {
+    color: TEXT_SECONDARY,
+    fontSize: 12,
+    lineHeight: 17,
+    flex: 1,
+  },
+});
+
+/* ─────────────────────────────────────────────────
+   LEGACY — retained for older previews
+───────────────────────────────────────────────── */
+
+export function OnboardingHistoryPanel(): React.JSX.Element {
+  return (
+    <PhoneCard>
+      <Text style={hist.heading}>What your past cycles have shown</Text>
+      <Text style={hist.body}>
+        We’ll compare completed cycles once three have enough chart detail.
+      </Text>
+      <Text style={hist.note}>
+        See what repeats or changes from cycle to cycle. Every cycle can be different.
+      </Text>
+    </PhoneCard>
   );
 }
 
 const hist = StyleSheet.create({
   heading: { fontSize: 17, fontWeight: '600', color: TEXT_PRIMARY, marginBottom: 8 },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  card: {
-    backgroundColor: BG_PAGE, borderRadius: 10, padding: 12,
-    width: '48%' as unknown as number, flexGrow: 1,
-    borderWidth: 1, borderColor: BORDER_CARD,
-  },
-  value: { fontSize: 20, fontWeight: '700', color: TEXT_PRIMARY },
-  label: { fontSize: 10, color: TEXT_MUTED, marginTop: 2 },
-  bulletRow: { flexDirection: 'row', marginBottom: 6 },
-  bullet: { fontSize: 13, color: TEXT_SECONDARY, marginRight: 7, lineHeight: 20 },
-  insight: { flex: 1, fontSize: 13, color: TEXT_SECONDARY, lineHeight: 20 },
+  body: { fontSize: 13, color: TEXT_SECONDARY, lineHeight: 20 },
+  note: { fontSize: 12, color: TEXT_MUTED, lineHeight: 18, marginTop: 8 },
 });
 
 /* ─────────────────────────────────────────────────
@@ -388,7 +827,7 @@ const hist = StyleSheet.create({
    Empty calendar + today's entry prompt below.
 ───────────────────────────────────────────────── */
 
-export function OnboardingEmptyCalendarPanel(): JSX.Element {
+export function OnboardingEmptyCalendarPanel(): React.JSX.Element {
   return (
     <View style={{ gap: 10 }}>
       <PhoneCard>
