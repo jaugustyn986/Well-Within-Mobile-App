@@ -179,8 +179,8 @@ Recommended location: `Settings -> Support`
 ## Internal Testing
 
 - [x] `[INT-BLOCKER]` build uploaded to App Store Connect
-- [x] `[INT-BLOCKER]` build processed by Apple (2.1.5 build 27, `VALID`)
-- [x] `[INT-BLOCKER]` internal testers added (`Team (Expo)` group includes build 27; one invite shown)
+- [x] `[INT-BLOCKER]` build processed by Apple (2.1.6 build 29, `VALID`)
+- [x] `[INT-BLOCKER]` internal testers added (`Team (Expo)` is an internal group with access to all builds, including build 29)
 - [ ] `[INT-BLOCKER]` internal testers can install build
 
 TestFlight build management: https://appstoreconnect.apple.com/apps/6760519448/testflight/ios
@@ -204,6 +204,9 @@ Notes:
 - Production baseline: version 2.1.4 is live in the App Store.
 - TestFlight upload succeeded for version 2.1.5, build 27: Apple build ID `509e8327-1a03-43f1-8f5b-84a6d36e7a17`, EAS build ID `1e76a376-8bb5-4fba-a2e3-f06ea07c8224`, and EAS submission ID `89ea3a3c-6ea0-4a66-a29d-439330d21741`.
 - App Store Connect reports 2.1.5 build 27 as `VALID`, not expired, and included in the internal `Team (Expo)` group.
+- Version 2.1.5 build 28 was rejected during ingestion with `ITMS-90186` and `ITMS-90062` because the 2.1.5 pre-release train had closed after approval.
+- Version 2.1.6 build 29 corrected the marketing version, uploaded successfully, and is `VALID` and not expired. Apple build ID: `0c6eff51-3fe7-4dad-8b40-fe577e3bfbe6`; EAS build ID: `c37bf2f9-80ac-4999-98e0-297f7b070d25`; EAS submission ID: `9791a5ec-63be-4173-9c6d-999ccffedbf3`.
+- The internal `Team (Expo)` group has access to all builds, so build 29 is available to that group without changing tester membership.
 - Apple agreements are current for this free release; the Free Apps Agreement is active.
 - Public privacy-policy and support URLs are published and saved in App Store Connect.
 - The combined Actions 9 and 10 release passed 245 engine tests, 135 mobile tests with 1 pre-existing skip, both typechecks, engine lint, Expo validation, full browser journey review, and a native iOS Release build/device check; see the [Action 10 implementation report](strategy/action-10-guided-chart-progress-2026-08-09/IMPLEMENTATION_REPORT.md).
@@ -239,24 +242,24 @@ Notes:
 
 # 14. Current Release Status (Update Every Audit)
 
-Build Status: version **2.1.5**, build **27**, is `VALID`, not expired, available to the internal `Team (Expo)` group, and `WAITING_FOR_REVIEW` for the App Store.
-Version: **2.1.5** · next iOS build number: **remote auto-increment**
+Build Status: version **2.1.6**, build **29**, is `VALID`, not expired, and available to the internal `Team (Expo)` group. Version 2.1.5 build 27 remains `WAITING_FOR_REVIEW` for the App Store.
+Version: **2.1.6** · next iOS build number: **remote auto-increment**
 
-EAS Build ID: `1e76a376-8bb5-4fba-a2e3-f06ea07c8224` — [Expo build](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/builds/1e76a376-8bb5-4fba-a2e3-f06ea07c8224)
-EAS Submission ID: `89ea3a3c-6ea0-4a66-a29d-439330d21741` — [Submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/89ea3a3c-6ea0-4a66-a29d-439330d21741)
-Apple Build ID: `509e8327-1a03-43f1-8f5b-84a6d36e7a17`
-App Store Version ID: `31a5577b-c1dc-4f9a-b390-d3d5e7bf3eef`
-Review Submission ID: `22ae2d08-20eb-43b5-aac4-52c551807a84`
+EAS Build ID: `c37bf2f9-80ac-4999-98e0-297f7b070d25` — [Expo build](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/builds/c37bf2f9-80ac-4999-98e0-297f7b070d25)
+EAS Submission ID: `9791a5ec-63be-4173-9c6d-999ccffedbf3` — [Submission details](https://expo.dev/accounts/jaugustyn986/projects/modern-creighton/submissions/9791a5ec-63be-4173-9c6d-999ccffedbf3)
+Apple Build ID: `0c6eff51-3fe7-4dad-8b40-fe577e3bfbe6`
+App Store Version ID (2.1.5 review): `31a5577b-c1dc-4f9a-b390-d3d5e7bf3eef`
+Review Submission ID (2.1.5): `22ae2d08-20eb-43b5-aac4-52c551807a84`
 Release Type: `AFTER_APPROVAL`
 
 TestFlight: https://appstoreconnect.apple.com/apps/6760519448/testflight/ios
 
-Last Audit Date: 2026-08-23
+Last Audit Date: 2026-09-05
 Audited By: Codex
 
-Release notes (build 27): cumulative Actions 9 and 10 release, plus removal of the redundant explanatory sentence beneath the Calendar visual key. The full key, Calendar layout, core UX, and rules engine remain unchanged.
+Release notes (build 29): observation-confidence improvements, including clearer onboarding, in-context Sensation and Appearance guides, intercourse education, and the two-step calendar walkthrough. Existing charting data contracts and rules-engine behavior remain unchanged.
 
-Release verification: mobile typecheck, 11 focused Calendar presentation tests, release preflight, signed iOS build, Apple upload/processing, and internal-group inclusion all passed.
+Release verification: 140 mobile tests passed with 1 existing skip; mobile typecheck, release preflight, native iOS simulator build, browser flow review, EAS production build, Apple upload/processing, and internal-group availability all passed.
 
 App Store submission: description and What’s New were refreshed; all six live screenshots were inherited unchanged and remain `COMPLETE`. Apple accepted the review submission at `2026-08-24T00:56:24.123Z`.
 
