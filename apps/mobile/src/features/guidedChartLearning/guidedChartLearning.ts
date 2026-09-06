@@ -74,12 +74,12 @@ export const CHART_TIPS: readonly ChartTipDefinition[] = [
   {
     id: 'observation-on-calendar',
     topicId: 'calendar-treatments',
-    contentVersion: 1,
+    contentVersion: 2,
     trigger: 'first-qualifying-save',
     title: 'How your observation appears on the calendar',
-    summary: 'See what is recorded—and what an empty date means.',
+    summary: 'See what the colors, dots, borders, and labels mean.',
     body:
-      'The calendar reflects what you saved. A Dry observation uses the app’s Dry treatment. A date with a mucus observation keeps that observation visible. A date with no entry stays empty.',
+      'The calendar reflects what you saved. Day colors show the strongest recorded observation, while dots, borders, and small labels add supporting chart context.',
     sourceLabel: 'CalendarGrid, calendar day presentation, and Calendar color guide',
     sourceSection: 'calendar_colors',
     reviewStatus: 'approved-existing-product-contract',

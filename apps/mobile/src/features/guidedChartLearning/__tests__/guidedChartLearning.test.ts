@@ -177,6 +177,12 @@ describe('guided chart learning eligibility', () => {
       expect(lesson.reviewStatus).toBe('approved-existing-product-contract');
     });
   });
+
+  it('keeps the calendar walkthrough first and promises the complete visual guide', () => {
+    expect(CHART_TIPS[0].id).toBe('observation-on-calendar');
+    expect(CHART_TIPS[0].summary).toContain('colors, dots, borders, and labels');
+    expect(CHART_TIPS[0].contentVersion).toBe(2);
+  });
 });
 
 describe('first-save and first-completed-chart acknowledgement', () => {

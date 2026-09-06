@@ -51,6 +51,12 @@ import {
   shouldShowMenstrualFlowStartQuestion,
   type MenstrualFlowStartChoice,
 } from './entryMenstrualFlowStart';
+import { ObservationGuideModal } from '../features/observationGuide/ObservationGuideModal';
+import {
+  APPEARANCE_GUIDE_OPTIONS,
+  SENSATION_GUIDE_OPTIONS,
+  type ObservationGuideTab,
+} from '../features/observationGuide/observationGuide';
 
 interface Props {
   initialEntry?: DailyEntry | null;
@@ -103,39 +109,16 @@ function currentLocalTime(): string {
 
 function observationSummary(observation: DraftMucusObservation): string {
   if (!observation.sensation) return 'Choose a sensation to finish this observation';
-  const sensation = SENSATION_OPTIONS.find((option) => option.value === observation.sensation)?.label
+  const sensation = SENSATION_GUIDE_OPTIONS.find((option) => option.value === observation.sensation)?.label
     ?? observation.sensation;
   const appearance = observation.appearances.length > 0
     ? observation.appearances
-        .map((value) => APPEARANCE_OPTIONS.find((option) => option.value === value)?.label ?? value)
+        .map((value) => APPEARANCE_GUIDE_OPTIONS.find((option) => option.value === value)?.formLabel ?? value)
         .join(', ')
     : 'No appearance';
   const frequency = FREQUENCY_OPTIONS.find((option) => option.value === observation.frequency)?.label;
   return [sensation, appearance, frequency].filter(Boolean).join(' · ');
 }
-
-const SENSATION_OPTIONS: { value: Sensation; label: string; desc: string }[] = [
-  { value: 'dry', label: 'Dry', desc: 'No sensation' },
-  { value: 'damp', label: 'Damp', desc: 'Slightly moist without lubrication' },
-  { value: 'wet', label: 'Wet', desc: 'Wet without lubrication' },
-  { value: 'shiny', label: 'Shiny', desc: 'Shiny without lubrication' },
-  { value: 'sticky', label: 'Sticky', desc: 'Holds together, does not stretch' },
-  { value: 'tacky', label: 'Tacky', desc: 'Stretches slightly then breaks' },
-  { value: 'stretchy', label: 'Stretchy', desc: 'Stretches 1 inch or more' },
-];
-
-const APPEARANCE_OPTIONS: { value: Appearance; label: string }[] = [
-  { value: 'none', label: 'None' },
-  { value: 'brown', label: 'Brown' },
-  { value: 'cloudy', label: 'Cloudy (white)' },
-  { value: 'cloudy_clear', label: 'Cloudy/Clear' },
-  { value: 'gummy', label: 'Gummy' },
-  { value: 'clear', label: 'Clear' },
-  { value: 'lubricative', label: 'Lubricative' },
-  { value: 'pasty', label: 'Pasty' },
-  { value: 'red', label: 'Red' },
-  { value: 'yellow', label: 'Yellow' },
-];
 
 const FREQUENCY_OPTIONS: { value: Frequency; label: string }[] = [
   { value: 1, label: 'Once' },
@@ -207,6 +190,7 @@ export function EntryForm({
   const [deleting, setDeleting] = useState(false);
   const [showMultipleObservationInfo, setShowMultipleObservationInfo] = useState(false);
   const [showObservationHelp, setShowObservationHelp] = useState(false);
+  const [observationGuideTab, setObservationGuideTab] = useState<ObservationGuideTab | null>(null);
   const [observationToRemove, setObservationToRemove] = useState<string | null>(null);
 
   const [sameAsYesterday, setSameAsYesterday] = useState(false);
@@ -711,9 +695,19 @@ export function EntryForm({
           ) : null}
 
           <View style={styles.section}>
-            <Text style={styles.fieldLabel}>Sensation</Text>
+            <View style={styles.fieldHeadingRow}>
+              <Text style={styles.fieldLabel}>Sensation</Text>
+              <Pressable
+                style={({ pressed }) => [styles.guideButton, pressed && styles.guideButtonPressed]}
+                onPress={() => setObservationGuideTab('sensation')}
+                accessibilityRole="button"
+                accessibilityLabel="View sensation guide"
+              >
+                <Text style={styles.guideButtonText}>View Guide</Text>
+              </Pressable>
+            </View>
             <View style={styles.cardGrid}>
-              {SENSATION_OPTIONS.map((opt) => (
+              {SENSATION_GUIDE_OPTIONS.map((opt) => (
                 <Pressable
                   key={opt.value}
                   style={[styles.card, activeObservation?.sensation === opt.value && styles.cardSelected]}
@@ -727,16 +721,26 @@ export function EntryForm({
                   <Text style={[styles.cardTitle, activeObservation?.sensation === opt.value && styles.cardTitleSelected]}>
                     {opt.label}
                   </Text>
-                  <Text style={styles.cardDesc}>{opt.desc}</Text>
+                  <Text style={styles.cardDesc}>{opt.formDescription}</Text>
                 </Pressable>
               ))}
             </View>
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.fieldLabel}>Appearance</Text>
+            <View style={styles.fieldHeadingRow}>
+              <Text style={styles.fieldLabel}>Appearance</Text>
+              <Pressable
+                style={({ pressed }) => [styles.guideButton, pressed && styles.guideButtonPressed]}
+                onPress={() => setObservationGuideTab('appearance')}
+                accessibilityRole="button"
+                accessibilityLabel="View appearance guide"
+              >
+                <Text style={styles.guideButtonText}>View Guide</Text>
+              </Pressable>
+            </View>
             <View style={styles.pillRow}>
-              {APPEARANCE_OPTIONS.map((opt) => {
+              {APPEARANCE_GUIDE_OPTIONS.map((opt) => {
                 const isNone = opt.value === 'none';
                 const selected = isNone
                   ? (activeObservation?.appearances.length ?? 0) === 0
@@ -748,7 +752,7 @@ export function EntryForm({
                     onPress={() => toggleAppearance(opt.value)}
                   >
                     <Text style={[styles.pillText, selected && styles.pillTextSelected]}>
-                      {opt.label}
+                      {opt.formLabel}
                     </Text>
                   </Pressable>
                 );
@@ -1037,6 +1041,11 @@ export function EntryForm({
         </View>
       </View>
     </Modal>
+    <ObservationGuideModal
+      visible={observationGuideTab !== null}
+      initialTab={observationGuideTab ?? 'appearance'}
+      onClose={() => setObservationGuideTab(null)}
+    />
     </KeyboardAvoidingView>
   );
 }
@@ -1068,6 +1077,20 @@ const styles = StyleSheet.create({
     color: TEXT_SECONDARY,
   },
   fieldLabel: { fontSize: 14, fontWeight: '600', color: TEXT_SECONDARY, marginBottom: 8 },
+  fieldHeadingRow: {
+    minHeight: 32,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  guideButton: {
+    minHeight: 32,
+    justifyContent: 'flex-start',
+    paddingHorizontal: 2,
+  },
+  guideButtonPressed: { opacity: 0.55 },
+  guideButtonText: { color: ACCENT_WARM, fontSize: 13, fontWeight: '600' },
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   pill: {
     paddingHorizontal: 14, paddingVertical: 8,

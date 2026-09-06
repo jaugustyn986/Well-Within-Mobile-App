@@ -37,6 +37,7 @@ import {
 } from '../features/guidedChartLearning/GuidedChartLearningComponents';
 import {
   DEFAULT_GUIDED_CHART_LEARNING_PREFERENCES,
+  chartTipById,
   firstCompletedCycle,
   selectContextualChartTip,
   shouldShowFirstCompletedChartAcknowledgement,
@@ -272,6 +273,18 @@ export function CalendarScreen(): React.JSX.Element {
     });
   }, [navigation]);
 
+  const openFirstSaveGuide = useCallback(() => {
+    setGuidedPreferences((current) => ({
+      ...current,
+      firstSaveAcknowledged: true,
+      pendingFirstSaveAcknowledgement: false,
+    }));
+    void acknowledgeFirstSave().then((preferences) => {
+      setGuidedPreferences(preferences);
+      openLesson(chartTipById('observation-on-calendar'));
+    });
+  }, [openLesson]);
+
   const dismissLesson = useCallback(() => {
     if (!lessonWithOpenOptions) return;
     const lesson = lessonWithOpenOptions;
@@ -463,6 +476,7 @@ export function CalendarScreen(): React.JSX.Element {
           guidedPreferencesLoaded
           && guidedPreferences.pendingFirstSaveAcknowledgement
         }
+        onLearn={openFirstSaveGuide}
         onDismiss={dismissFirstSaveConfirmation}
       />
 

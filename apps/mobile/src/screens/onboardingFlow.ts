@@ -2,6 +2,7 @@ export type OnboardingSlideKind =
   | 'identity'
   | 'chart_context'
   | 'observation'
+  | 'intercourse'
   | 'privacy'
   | 'first_action';
 
@@ -32,6 +33,13 @@ export const ONBOARDING_SLIDES: readonly OnboardingSlideDefinition[] = [
     headline: 'Start with what you notice',
     body:
       'Choose the sensation that best matches what you observed. Add appearance details when they apply.',
+  },
+  {
+    id: 'intercourse-context',
+    kind: 'intercourse',
+    headline: 'A note about intercourse',
+    body:
+      'Recording intercourse gives useful context to the observation you save for that day.',
   },
   {
     id: 'privacy',

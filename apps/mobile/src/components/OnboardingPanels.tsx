@@ -236,20 +236,6 @@ const banner = StyleSheet.create({
    Shows the top section of EntryForm (bleeding, hint).
 ───────────────────────────────────────────────── */
 
-const ONBOARDING_SENSATIONS: readonly {
-  label: string;
-  description: string;
-  wide?: boolean;
-}[] = [
-  { label: 'Dry', description: 'No sensation' },
-  { label: 'Damp', description: 'Slightly moist' },
-  { label: 'Wet', description: 'Wet, no lubrication' },
-  { label: 'Shiny', description: 'Shiny, no lubrication' },
-  { label: 'Sticky', description: 'Holds together' },
-  { label: 'Tacky', description: 'Stretches slightly' },
-  { label: 'Stretchy', description: 'Stretches 1 inch or more', wide: true },
-];
-
 export function OnboardingEntryPanel(): React.JSX.Element {
   return (
     <PhoneCard>
@@ -259,28 +245,29 @@ export function OnboardingEntryPanel(): React.JSX.Element {
           <Text style={entry.todayBadgeText}>Today</Text>
         </View>
       </View>
-      <View style={entry.section}>
-        <Text style={entry.fieldLabel}>Sensation</Text>
-        <View style={entry.cardGrid}>
-          {ONBOARDING_SENSATIONS.map((option) => (
-            <View
-              key={option.label}
-              style={[entry.sensationCard, option.wide && entry.sensationCardWide]}
-            >
-              <Text style={entry.sensationTitle}>{option.label}</Text>
-              <Text style={[entry.sensationDescription, option.wide && entry.wideDescription]}>
-                {option.description}
-              </Text>
-            </View>
-          ))}
+      <View style={entry.concepts}>
+        <View style={entry.conceptRow}>
+          <LineIcon name="droplet" size={20} />
+          <View style={entry.conceptCopy}>
+            <Text style={entry.conceptTitle}>Sensation</Text>
+            <Text style={entry.conceptBody}>
+              The strongest quality you observed—from dry, damp, or wet through sticky, tacky, or stretchy.
+            </Text>
+          </View>
+        </View>
+        <View style={[entry.conceptRow, entry.conceptDivider]}>
+          <LineIcon name="eye" size={20} />
+          <View style={entry.conceptCopy}>
+            <Text style={entry.conceptTitle}>Appearance</Text>
+            <Text style={entry.conceptBody}>
+              What you see on the tissue. Color or clarity and consistency can both apply.
+            </Text>
+          </View>
         </View>
       </View>
       <View style={entry.intentNote}>
-        <View style={entry.checkCircle}>
-          <Text style={entry.checkText}>✓</Text>
-        </View>
         <Text style={entry.intentText}>
-          Nothing is selected for you. Choose a sensation before saving.
+          You do not need to memorize every term now. A guide stays beside these choices when you log.
         </Text>
       </View>
     </PhoneCard>
@@ -306,78 +293,23 @@ const entry = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  section: { marginTop: 16 },
-  fieldLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: TEXT_SECONDARY,
-    marginBottom: 9,
-  },
-  cardGrid: {
+  concepts: { marginTop: 14 },
+  conceptRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 8,
-  },
-  sensationCard: {
-    width: '48.7%',
-    minHeight: 58,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_CARD,
-    paddingHorizontal: 11,
-    paddingVertical: 9,
-    justifyContent: 'center',
-  },
-  sensationCardWide: {
-    width: '100%',
-    minHeight: 48,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     gap: 12,
+    paddingVertical: 14,
   },
-  sensationTitle: {
-    color: TEXT_PRIMARY,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  sensationDescription: {
-    color: TEXT_MUTED,
-    fontSize: 11,
-    lineHeight: 15,
-    marginTop: 3,
-  },
-  wideDescription: {
-    marginTop: 0,
-    textAlign: 'right',
-    flexShrink: 1,
-  },
+  conceptDivider: { borderTopWidth: 1, borderTopColor: BORDER_CARD },
+  conceptCopy: { flex: 1 },
+  conceptTitle: { color: TEXT_PRIMARY, fontSize: 16, fontWeight: '600' },
+  conceptBody: { color: TEXT_SECONDARY, fontSize: 13, lineHeight: 19, marginTop: 4 },
   intentNote: {
-    marginTop: 13,
+    marginTop: 10,
     paddingHorizontal: 13,
     paddingVertical: 12,
     borderRadius: 12,
     backgroundColor: BANNER_TONE_POSITIVE_BG,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  checkCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: FERTILE_ACCENT,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  checkText: {
-    color: FERTILE_ACCENT,
-    fontSize: 12,
-    fontWeight: '700',
-    lineHeight: 15,
   },
   intentText: {
     color: TEXT_SECONDARY,
@@ -385,6 +317,85 @@ const entry = StyleSheet.create({
     lineHeight: 17,
     flex: 1,
   },
+});
+
+/* ─────────────────────────────────────────────────
+   ONBOARDING — explain intercourse context before use
+───────────────────────────────────────────────── */
+
+export function OnboardingIntercoursePanel(): React.JSX.Element {
+  return (
+    <View style={intercourse.wrap}>
+      <PhoneCard>
+        <View style={intercourse.toggleRow}>
+          <View style={intercourse.toggleCopy}>
+            <Text style={intercourse.title}>Intercourse Today?</Text>
+            <Text style={intercourse.subtitle}>Recorded with the whole day</Text>
+          </View>
+          <View style={intercourse.toggle} accessibilityLabel="Intercourse Today is on">
+            <View style={intercourse.toggleThumb} />
+          </View>
+        </View>
+        <View style={intercourse.note}>
+          <Text style={intercourse.noteText}>
+            Seminal fluid can resemble mucus. For the most accurate observation, check before intercourse or note any difference in sensation.
+          </Text>
+        </View>
+      </PhoneCard>
+      <View style={intercourse.reassurance}>
+        <Text style={intercourse.reassuranceText}>
+          You can change this later if you need to edit the day.
+        </Text>
+      </View>
+    </View>
+  );
+}
+
+const intercourse = StyleSheet.create({
+  wrap: { gap: 12 },
+  toggleRow: {
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  toggleCopy: { flex: 1 },
+  title: { color: TEXT_PRIMARY, fontSize: 16, fontWeight: '600' },
+  subtitle: { color: TEXT_MUTED, fontSize: 12, marginTop: 4 },
+  toggle: {
+    width: 50,
+    height: 30,
+    borderRadius: 15,
+    padding: 3,
+    alignItems: 'flex-end',
+    backgroundColor: ACCENT_WARM,
+  },
+  toggleThumb: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: BG_CARD,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.16,
+    shadowRadius: 3,
+  },
+  note: {
+    marginTop: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    borderRadius: 12,
+    backgroundColor: BG_POST_PEAK,
+  },
+  noteText: { color: TEXT_SECONDARY, fontSize: 13, lineHeight: 19 },
+  reassurance: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: ACCENT_WARM_TINT,
+  },
+  reassuranceText: { color: TEXT_SECONDARY, fontSize: 12, lineHeight: 18 },
 });
 
 /* ─────────────────────────────────────────────────

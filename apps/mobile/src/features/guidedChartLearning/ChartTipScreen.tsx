@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -18,13 +18,18 @@ import {
   ACCENT_WARM,
   ACCENT_WARM_TINT,
   BANNER_TONE_POSITIVE_BG,
+  BG_BLEEDING,
   BG_CARD,
   BG_DRY,
   BG_MISSING,
   BG_NO_ENTRY,
   BG_PAGE,
+  BG_PEAK_TYPE,
+  BG_POST_PEAK,
   BORDER_CARD,
   FERTILE_ACCENT,
+  INTERCOURSE_ICON,
+  PEAK_BORDER,
   TEXT_MUTED,
   TEXT_PRIMARY,
   TEXT_SECONDARY,
@@ -37,32 +42,111 @@ function CalendarTreatment({
   label,
   backgroundColor,
   dot,
+  borderColor,
+  markerText,
+  markerPosition = 'top',
+  icon,
+  compact = false,
 }: {
   day: string;
   label: string;
   backgroundColor: string;
   dot?: boolean;
+  borderColor?: string;
+  markerText?: string;
+  markerPosition?: 'top' | 'bottom';
+  icon?: string;
+  compact?: boolean;
 }): React.JSX.Element {
   return (
-    <View style={exampleStyles.calendarTreatment}>
-      <View style={[exampleStyles.calendarDay, { backgroundColor }]}>
+    <View style={[exampleStyles.calendarTreatment, compact && exampleStyles.calendarGuideTreatment]}>
+      <View style={[
+        exampleStyles.calendarDay,
+        { backgroundColor },
+        borderColor ? { borderWidth: 2, borderColor } : null,
+      ]}>
         <Text style={exampleStyles.calendarDayNumber}>{day}</Text>
         {dot ? <View style={exampleStyles.dot} /> : null}
+        {markerText ? (
+          <Text style={[
+            exampleStyles.marker,
+            markerPosition === 'bottom' ? exampleStyles.markerBottom : exampleStyles.markerTop,
+          ]}>
+            {markerText}
+          </Text>
+        ) : null}
+        {icon ? <Text style={exampleStyles.iconMarker}>{icon}</Text> : null}
       </View>
       <Text style={exampleStyles.calendarLabel}>{label}</Text>
     </View>
   );
 }
 
-function TipExample({ lesson }: { lesson: ChartTipDefinition }): React.JSX.Element {
+function TipExample({
+  lesson,
+  calendarStep,
+}: {
+  lesson: ChartTipDefinition;
+  calendarStep: 1 | 2;
+}): React.JSX.Element {
   if (lesson.id === 'observation-on-calendar') {
+    if (calendarStep === 2) {
+      return (
+        <View style={exampleStyles.card}>
+          <Text style={exampleStyles.eyebrow}>SUPPORTING MARKERS</Text>
+          <View style={exampleStyles.calendarGuideGrid}>
+            <CalendarTreatment
+              compact
+              day="14"
+              label="Peak Day"
+              backgroundColor={BG_PEAK_TYPE}
+              borderColor={PEAK_BORDER}
+            />
+            <CalendarTreatment
+              compact
+              day="15"
+              label="P+ day"
+              backgroundColor={BG_POST_PEAK}
+              markerText="P+1"
+              markerPosition="bottom"
+            />
+            <CalendarTreatment
+              compact
+              day="16"
+              label="Spotting / brown"
+              backgroundColor={BG_DRY}
+              dot
+              markerText="S/B"
+            />
+            <CalendarTreatment
+              compact
+              day="17"
+              label="Intercourse"
+              backgroundColor={BG_NO_ENTRY}
+              icon={INTERCOURSE_ICON}
+            />
+          </View>
+        </View>
+      );
+    }
+
     return (
       <View style={exampleStyles.card}>
-        <Text style={exampleStyles.eyebrow}>THREE CALENDAR TREATMENTS</Text>
-        <View style={exampleStyles.calendarRow}>
-          <CalendarTreatment day="14" label="No entry" backgroundColor={BG_NO_ENTRY} />
-          <CalendarTreatment day="15" label="Dry recorded" backgroundColor={BG_DRY} />
-          <CalendarTreatment day="16" label="Mucus recorded" backgroundColor={BG_DRY} dot />
+        <Text style={exampleStyles.eyebrow}>HOW SAVED DAYS APPEAR</Text>
+        <View style={exampleStyles.calendarGuideGrid}>
+          <CalendarTreatment compact day="13" label="No entry" backgroundColor={BG_NO_ENTRY} />
+          <CalendarTreatment compact day="14" label="Bleeding" backgroundColor={BG_BLEEDING} />
+          <CalendarTreatment compact day="15" label="Dry" backgroundColor={BG_DRY} />
+          <CalendarTreatment compact day="16" label="Non-Peak mucus" backgroundColor={BG_DRY} dot />
+          <CalendarTreatment compact day="17" label="Peak-type sign" backgroundColor={BG_PEAK_TYPE} />
+          <CalendarTreatment
+            compact
+            day="18"
+            label="P+ day"
+            backgroundColor={BG_POST_PEAK}
+            markerText="P+1"
+            markerPosition="bottom"
+          />
         </View>
       </View>
     );
@@ -140,10 +224,34 @@ function deeperHelpLabel(lesson: ChartTipDefinition): string {
 export function ChartTipScreen({ route, navigation }: Props): React.JSX.Element {
   const lesson = chartTipById(route.params.lessonId);
   const fromHelp = route.params.source === 'help';
+  const calendarLesson = lesson.id === 'observation-on-calendar';
+  const [calendarStep, setCalendarStep] = useState<1 | 2>(1);
 
   useEffect(() => {
+    setCalendarStep(1);
     void markChartTip(lesson.id, lesson.contentVersion, 'viewed');
   }, [lesson.contentVersion, lesson.id]);
+
+  const returnToSource = () => {
+    if (!fromHelp) {
+      navigation.navigate('Calendar', {
+        restoreScrollY: route.params.returnScrollY,
+      });
+      return;
+    }
+    navigation.goBack();
+  };
+
+  const title = calendarLesson
+    ? (calendarStep === 1 ? 'How your observation appears' : 'Read the supporting markers')
+    : lesson.title;
+  const body = calendarLesson
+    ? (
+        calendarStep === 1
+          ? 'Each saved day uses a color for the strongest observation recorded. A green dot keeps non-Peak mucus visible on a Dry-colored day.'
+          : 'Borders and small labels add context without replacing what you recorded. Peak and P+ markers appear retrospectively when the chart supports them.'
+      )
+    : lesson.body;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -151,33 +259,55 @@ export function ChartTipScreen({ route, navigation }: Props): React.JSX.Element 
         <View style={styles.icon}>
           <View style={styles.iconDot} />
         </View>
-        <Text style={styles.eyebrow}>CHART TIP</Text>
-        <Text style={styles.title}>{lesson.title}</Text>
-        <Text style={styles.body}>{lesson.body}</Text>
-        <TipExample lesson={lesson} />
+        <Text style={styles.eyebrow}>
+          {calendarLesson ? `CHART TIP · ${calendarStep} OF 2` : 'CHART TIP'}
+        </Text>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.body}>{body}</Text>
+        <TipExample lesson={lesson} calendarStep={calendarStep} />
         <View style={styles.note}>
           <Text style={styles.noteText}>
-            Well Within updates the chart from saved observations. It does not fill in an observation you did not record.
+            {calendarLesson && calendarStep === 2
+              ? 'The calendar reflects saved observations. Retrospective markers add chart context; they do not confirm ovulation.'
+              : 'Well Within updates the chart from saved observations. It does not fill in an observation you did not record.'}
           </Text>
         </View>
         <Pressable
           style={({ pressed }) => [styles.primaryButton, pressed && styles.pressed]}
           onPress={() => {
-            if (!fromHelp) {
-              navigation.navigate('Calendar', {
-                restoreScrollY: route.params.returnScrollY,
-              });
+            if (calendarLesson && calendarStep === 1) {
+              setCalendarStep(2);
               return;
             }
-            navigation.goBack();
+            returnToSource();
           }}
           accessibilityRole="button"
         >
           <Text style={styles.primaryButtonText}>
-            {fromHelp ? 'Back to chart tips' : 'Back to my chart'}
+            {calendarLesson && calendarStep === 1
+              ? 'Next: markers'
+              : (calendarLesson ? 'Done' : (fromHelp ? 'Back to chart tips' : 'Back to my chart'))}
           </Text>
         </Pressable>
-        {lesson.sourceSection ? (
+        {calendarLesson ? (
+          <Pressable
+            style={({ pressed }) => [styles.helpButton, pressed && styles.pressed]}
+            onPress={() => {
+              if (calendarStep === 1 || fromHelp) {
+                returnToSource();
+                return;
+              }
+              navigation.navigate('Help', { initialSection: 'chart_tips' });
+            }}
+            accessibilityRole="button"
+          >
+            <Text style={styles.helpButtonText}>
+              {calendarStep === 1
+                ? (fromHelp ? 'Back to chart tips' : 'Back to my chart')
+                : (fromHelp ? 'Back to chart tips' : 'Review later in Chart Tips')}
+            </Text>
+          </Pressable>
+        ) : lesson.sourceSection ? (
           <Pressable
             style={({ pressed }) => [styles.helpButton, pressed && styles.pressed]}
             onPress={() => navigation.navigate('Help', {
@@ -301,9 +431,20 @@ const exampleStyles = StyleSheet.create({
     gap: 8,
     marginTop: 12,
   },
+  calendarGuideGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 12,
+  },
   calendarTreatment: {
     flex: 1,
     alignItems: 'center',
+  },
+  calendarGuideTreatment: {
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: '30%',
   },
   calendarDay: {
     width: '100%',
@@ -328,6 +469,22 @@ const exampleStyles = StyleSheet.create({
     position: 'absolute',
     top: 7,
     right: 7,
+  },
+  marker: {
+    position: 'absolute',
+    left: 5,
+    color: TEXT_PRIMARY,
+    fontSize: 8,
+    lineHeight: 11,
+    fontWeight: '700',
+  },
+  markerTop: { top: 4 },
+  markerBottom: { bottom: 4 },
+  iconMarker: {
+    position: 'absolute',
+    right: 5,
+    bottom: 4,
+    fontSize: 14,
   },
   calendarLabel: {
     color: TEXT_MUTED,

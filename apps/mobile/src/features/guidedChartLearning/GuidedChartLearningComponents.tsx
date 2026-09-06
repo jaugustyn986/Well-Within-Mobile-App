@@ -39,9 +39,11 @@ function useDismissPan(onDismiss: () => void) {
 
 export function FirstSaveConfirmationModal({
   visible,
+  onLearn,
   onDismiss,
 }: {
   visible: boolean;
+  onLearn: () => void;
   onDismiss: () => void;
 }): React.JSX.Element {
   const dismissPan = useDismissPan(onDismiss);
@@ -73,17 +75,27 @@ export function FirstSaveConfirmationModal({
           <Text style={sheetStyles.eyebrow}>FIRST OBSERVATION SAVED</Text>
           <Text style={sheetStyles.title}>Your chart has started</Text>
           <Text style={sheetStyles.body}>
-            Your observation is saved. As you keep charting, short tips will appear below Today&apos;s Observation to help you understand what you&apos;re seeing.
+            Your observation is now visible on the calendar. Want a quick explanation of its color and markers?
           </Text>
           <Pressable
             style={({ pressed }) => [
               sheetStyles.primaryButton,
               pressed && sheetStyles.pressed,
             ]}
+            onPress={onLearn}
+            accessibilityRole="button"
+          >
+            <Text style={sheetStyles.primaryButtonText}>See how it appears</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              sheetStyles.secondaryButton,
+              pressed && sheetStyles.pressed,
+            ]}
             onPress={onDismiss}
             accessibilityRole="button"
           >
-            <Text style={sheetStyles.primaryButtonText}>Got it</Text>
+            <Text style={sheetStyles.secondaryButtonText}>Not now</Text>
           </Pressable>
         </View>
       </View>
@@ -314,6 +326,16 @@ const sheetStyles = StyleSheet.create({
   primaryButtonText: {
     color: BG_CARD,
     fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryButtonText: {
+    color: ACCENT_WARM,
+    fontSize: 15,
     fontWeight: '600',
   },
   optionTitle: {

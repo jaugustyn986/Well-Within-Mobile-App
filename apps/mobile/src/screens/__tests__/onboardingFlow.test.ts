@@ -11,6 +11,7 @@ describe('onboarding activation flow', () => {
       'identity',
       'chart_context',
       'observation',
+      'intercourse',
       'privacy',
       'first_action',
     ]);
@@ -25,6 +26,16 @@ describe('onboarding activation flow', () => {
     expect(chartContext?.body).toContain('not a forecast');
     expect(privacy?.body).toContain('local-first');
     expect(privacy?.body).toContain('export or delete');
+  });
+
+  it('introduces intercourse context immediately after observation basics', () => {
+    const observationIndex = ONBOARDING_SLIDES.findIndex(
+      (slide) => slide.kind === 'observation',
+    );
+    const intercourse = ONBOARDING_SLIDES[observationIndex + 1];
+
+    expect(intercourse.kind).toBe('intercourse');
+    expect(intercourse.body).toContain('useful context');
   });
 
   it('uses a distinct first-entry action only on the final screen', () => {

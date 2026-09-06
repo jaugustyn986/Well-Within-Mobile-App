@@ -27,6 +27,7 @@ import {
   OnboardingChartContextPanel,
   OnboardingEntryPanel,
   OnboardingFirstActionPanel,
+  OnboardingIntercoursePanel,
   OnboardingPrivacyPanel,
 } from '../components/OnboardingPanels';
 import {
@@ -153,6 +154,8 @@ function renderPanelForKind(
       return () => <OnboardingChartContextPanel />;
     case 'observation':
       return () => <OnboardingEntryPanel />;
+    case 'intercourse':
+      return () => <OnboardingIntercoursePanel />;
     case 'privacy':
       return () => <OnboardingPrivacyPanel />;
     case 'first_action':
@@ -403,8 +406,8 @@ const panel = StyleSheet.create({
     flex: 1,
   },
   topNav: {
-    minHeight: 44,
-    paddingTop: 8,
+    minHeight: 52,
+    paddingTop: 16,
     paddingHorizontal: 28,
     flexDirection: 'row',
     alignItems: 'center',
